@@ -1,157 +1,114 @@
 # CLI guideline
 
-## Goals
+## 目标
 
-Purpose of this document is to provide a clear direction to **help design
-delightful command line** experience. This document contains guidelines to
-follow to ensure a consistent and approachable user experience.
+本文档旨在提供清晰的方向，**帮助设计令人愉悦的命令行**体验。文档包含了一系列需要遵循的 guideline，以确保一致且平易近人的用户体验。
 
-## Overview
+## 概述
 
-`nix` command provides a single entry to a number of sub-commands that help
-**developers and system administrators** in the life-cycle of a software
-project. We particularly need to pay special attention to help and assist new
-users of Nix.
+`nix` 命令为多个子命令提供了单一入口，这些子命令在软件项目的生命周期中为**开发者和系统管理员**提供帮助。我们尤其需要特别关注并帮助 Nix 的新用户。
 
-# Naming the `COMMANDS`
+# `COMMANDS` 的命名
 
-Words matter. Naming is an important part of the usability. Users will be
-interacting with Nix on a regular basis so we should **name things for ease of
-understanding**.
+措辞很重要。命名是可用性的重要组成部分。用户会经常与 Nix 交互，因此我们应当**以便于理解为出发点来命名**。
 
-We recommend following the [Principle of Least
-Astonishment](https://en.wikipedia.org/wiki/Principle_of_least_astonishment).
-This means that you should **never use acronyms or abbreviations** unless they
-are commonly used in other tools (e.g. `nix init`). And if the command name is
-too long (> 10-12 characters) then shortening it makes sense (e.g.
-“prioritization” → “priority”).
+我们建议遵循[最小惊讶原则](https://en.wikipedia.org/wiki/Principle_of_least_astonishment)。这意味着你应该**绝不使用首字母缩写或缩略语**，除非它们已在其他工具中被广泛使用（例如 `nix init`）。如果命令名过长（> 10-12 个字符），那么缩短它是有意义的（例如
+“prioritization” → “priority”）。
 
-Commands should **follow a noun-verb dialogue**. Although noun-verb formatting
-seems backwards from a speaking perspective (i.e. `nix store copy` vs. `nix
-copy store`) it allows us to organize commands the same way users think about
-completing an action (the group first, then the command).
+命令应当**遵循名词-动词的对话结构**。虽然名词-动词的格式从口语角度看似乎是颠倒的（即 `nix store copy` 与 `nix
+copy store` 之对比），但它使我们能够按照用户思考完成一个动作的方式来组织命令（先分组，再命令）。
 
-## Naming rules
+## 命名规则
 
-Rules are there to guide you by limiting your options. But not everything can
-fit the rules all the time. In those cases document the exceptions in [Appendix
-1: Commands naming exceptions](#appendix-1-commands-naming-exceptions) and
-provide reason. The rules want to force a Nix developer to look, not just at
-the command at hand, but also the command in a full context alongside other
-`nix` commands.
+规则通过限制你的选项来引导你。但并非所有情况都符合规则。在那些情况下，请在[附录 1：命令命名例外](#appendix-1-commands-naming-exceptions)中记录例外并给出原因。这些规则旨在迫使 Nix 开发者不仅审视眼前的命令，还要在其他 `nix` 命令的完整上下文中审视命令。
 
 ```shell
 $ nix [<GROUP>] <COMMAND> [<ARGUMENTS>] [<OPTIONS>]
 ```
 
-- `GROUP`, `COMMAND`, `ARGUMENTS` and `OPTIONS` should be lowercase and in a
-  singular form.
-- `GROUP` should be a  **NOUN**.
-- `COMMAND` should be a **VERB**.
-- `ARGUMENTS` and `OPTIONS` are discussed in [*Input* section](#input).
+- `GROUP`、`COMMAND`、`ARGUMENTS` 和 `OPTIONS` 应为小写且使用单数形式。
+- `GROUP` 应为**名词**。
+- `COMMAND` 应为**动词**。
+- `ARGUMENTS` 和 `OPTIONS` 在[*输入*一节](#input)中讨论。
 
-## Classification
+## 分类
 
-Some commands are more important, some less. While we want all of our commands
-to be perfect we can only spend limited amount of time testing and improving
-them.
+有些命令更重要，有些则不那么重要。虽然我们希望所有命令都做到完美，但我们只能投入有限的时间来测试和改进它们。
 
-This classification tries to separate commands in 3 categories in terms of
-their importance in regards to the new users. Users who are likely to be
-impacted the most by bad user experience.
+这种分类尝试按照对新用户的重要性，将命令划分为 3 个类别。新用户是最容易被糟糕的用户体验影响的群体。
 
-- **Main commands**
+- **主要命令**
 
-  Commands used for our main use cases and most likely used by new users. We
-  expect attention to details, such as:
+  用于我们主要用例的命令，最有可能被新用户使用。我们期望在这些命令上注重细节，例如：
 
-    - Proper use of [colors](#colors), [emojis](#special-unicode-characters)
-      and [aligning of text](#text-alignment).
-    - [Autocomplete](#shell-completion) of options.
-    - Show [next possible steps](#next-steps).
-    - Showing some [“tips”](#educate-the-user) when running logs running tasks
-      (eg. building / downloading) in order to teach users interesting bits of
-      Nix ecosystem.
-    - [Help pages](#help-is-essential) to be as good as we can write them
-      pointing to external documentation and tutorials for more.
+    - 正确使用[颜色](#colors)、[emoji](#special-unicode-characters)
+      和[文本对齐](#text-alignment)。
+    - 选项的[自动补全](#shell-completion)。
+    - 显示[下一步可能操作](#next-steps)。
+    - 在运行耗时的任务（如构建 / 下载）时展示一些[“提示”](#educate-the-user)，以教会用户 Nix 生态中有趣的知识点。
+    - 尽可能把[帮助页面](#help-is-essential)写得最好，并指向外部文档和教程以获取更多信息。
 
-  Examples of such commands: `nix init`, `nix develop`, `nix build`, `nix run`,
+  此类命令的例子：`nix init`、`nix develop`、`nix build`、`nix run`、
   ...
 
-- **Infrequently used commands**
+- **低频命令**
 
-  From infrequently used commands we expect less attention to details, but
-  still some:
+  对于低频使用的命令，我们期望的细节关注度较低，但仍需要一些：
 
-    - Proper use of [colors](#colors), [emojis](#special-unicode-characters)
-      and [aligning of text](#text-alignment).
-    - [Autocomplete](#shell-completion) of options.
+    - 正确使用[颜色](#colors)、[emoji](#special-unicode-characters)
+      和[文本对齐](#text-alignment)。
+    - 选项的[自动补全](#shell-completion)。
 
-  Examples of such commands: `nix edit`, `nix eval`, ...
+  此类命令的例子：`nix edit`、`nix eval`、...
 
-- **Utility and scripting commands**
+- **工具与脚本命令**
 
-  Commands that expose certain internal functionality of `nix`, mostly used by
-  other scripts.
+  暴露 `nix` 某些内部功能的命令，主要被其他脚本使用。
 
-    - [Autocomplete](#shell-completion) of options.
+    - 选项的[自动补全](#shell-completion)。
 
-  Examples of such commands: `nix store copy`, `nix hash base16`, `nix store
-  ping`, ...
+  此类命令的例子：`nix store copy`、`nix hash base16`、`nix store
+  ping`、...
 
 
-# Help is essential
+# 帮助至关重要
 
-Help should be built into your command line so that new users can gradually
-discover new features when they need them.
+帮助应当内建于你的命令行中，以便新用户在需要时能逐步发现新功能。
 
-## Looking for help
+## 寻求帮助
 
-Since there is no standard way how user will look for help we rely on ways help
-is provided by commonly used tools. As a guide for this we took `git` and
-whenever in doubt look at it as a preferred direction.
+由于用户寻求帮助没有标准方式，我们依赖于常用工具提供帮助的方式。我们以 `git` 为参考，凡有疑问时都把它视为首选方向。
 
-The rules are:
+规则如下：
 
-- Help is shown by using `--help` or `help` command (eg `nix` `--``help` or
-  `nix help`).
-- For non-COMMANDs (eg. `nix` `--``help` and `nix store` `--``help`) we **show
-  a summary** of most common use cases. Summary is presented on the STDOUT
-  without any use of PAGER.
-- For COMMANDs (eg. `nix init` `--``help` or `nix help init`) we display the
-  man page of that command. By default the PAGER is used (as in `git`).
-- At the end of either summary or man page there should be an URL pointing to
-  an online version of more detailed documentation.
-- The structure of summaries and man pages should be the same as in `git`.
+- 通过 `--help` 或 `help` 命令展示帮助（例如 `nix` `--``help` 或
+  `nix help`）。
+- 对于非 COMMAND（例如 `nix` `--``help` 和 `nix store` `--``help`），我们**展示**最常见用例的**摘要**。摘要输出到 STDOUT，不使用任何 PAGER。
+- 对于 COMMAND（例如 `nix init` `--``help` 或 `nix help init`），我们显示该命令的 man 页面。默认使用 PAGER（与 `git` 相同）。
+- 摘要或 man 页面的结尾应有一个 URL，指向更详细文档的在线版本。
+- 摘要和 man 页面的结构应与 `git` 相同。
 
-## Anticipate where help is needed
+## 预判何时需要帮助
 
-Even better then requiring the user to search for help is to anticipate and
-predict when user might need it. Either because the lack of discoverability,
-typo in the input or simply taking the opportunity to teach the user of
-interesting - but less visible - details.
+比要求用户主动寻求帮助更好的做法，是预判并预测用户何时可能需要帮助。可能是因为可发现性不足、输入有拼写错误，或者仅仅是借此机会教给用户一些有趣但不太显眼的细节。
 
-### Shell completion
+### Shell 补全
 
-This type of help is most common and almost expected by users. We need to
-**provide the best shell completion** for `bash`, `zsh` and `fish`.
+这种帮助方式最为常见，几乎被用户视为理所当然。我们需要为 `bash`、`zsh` 和 `fish` **提供最佳的 shell 补全**。
 
-Completion needs to be **context aware**, this mean when a user types:
+补全需要**具备上下文感知能力**，也就是说当用户输入：
 
 ```shell
 $ nix build n<TAB>
 ```
 
-we need to display a list of flakes starting with `n`.
+时，我们需要显示以 `n` 开头的 flake 列表。
 
-### Wrong input
+### 错误输入
 
-As we all know we humans make mistakes, all the time. When a typo - intentional
-or unintentional - is made, we should prompt for closest possible options or
-point to the documentation which would educate user to not make the same
-errors. Here are few examples:
+众所周知，人类总是在犯错。当出现拼写错误——无论有意还是无意——时，我们应当提示最接近的可能选项，或指向能教育用户避免同样错误的文档。这里有几个例子：
 
-In first example we prompt the user for typing wrong command name:
+在第一个例子中，我们提示用户输入了错误的命令名：
 
 
 ```shell
@@ -164,9 +121,7 @@ $ nix int
     |> nix input
 ```
 
-Sometimes users will make mistake either because of a typo or simply because of
-lack of discoverability. Our handling of this cases needs to be context
-sensitive.
+有时用户会犯错，可能是拼写错误，也可能仅仅因为可发现性不足。我们对这类情况的处理需要具备上下文敏感性。
 
 
 ```shell
@@ -181,10 +136,9 @@ Initializing Nix project at `/path/to/here`.
              template#python-poetry
 ```
 
-### Next steps
+### 下一步
 
-It can be invaluable to newcomers to show what a possible next steps and what
-is the usual development workflow with Nix. For example:
+向新手展示可能的下一步以及使用 Nix 的常规开发工作流，其价值无可估量。例如：
 
 
 ```shell
@@ -197,14 +151,11 @@ Initializing project `template#python`
     |> nix build     -- to build your project
 ```
 
-### Educate the user
+### 教育用户
 
-We should take any opportunity to **educate users**, but at the same time we
-must **be very very careful to not annoy users**. There is a thin line between
-being helpful and being annoying.
+我们应当抓住一切机会**教育用户**，但同时必须**极其小心，避免惹恼用户**。在乐于助人和令人厌烦之间只有一线之隔。
 
-An example of educating users might be to provide *Tips* in places where they
-are waiting.
+教育用户的一个例子是在用户等待时提供*提示*。
 
 ```shell
 $ nix build
@@ -226,59 +177,43 @@ Downloading [12 / 200]
 ------------------------------------------------------------------------
 ```
 
-Now **Learn** part of the output is where you educate users. You should only
-show it when you know that a build will take some time and not annoy users of
-the builds that take only few seconds.
+输出中的 **Learn** 部分就是教育用户的地方。你应该只在确知构建会耗时较久时才显示它，避免打扰那些构建只需几秒钟的用户。
 
-Every feature like this should go through an intensive review and testing to
-collect as much feedback as possible and to fine tune every little detail. If
-done right this can be an awesome features beginners and advance users will
-love, but if not done perfectly it will annoy users and leave bad impression.
+每一个这样的功能都应当经过严格的评审和测试，以收集尽可能多的反馈并打磨每一个细节。如果做得好，这可以成为新手和高级用户都会喜爱的出色功能；但如果不完美，它会惹恼用户并留下坏印象。
 
-# Input
+# 输入
 
-Input to a command is provided via `ARGUMENTS` and `OPTIONS`.
+命令的输入通过 `ARGUMENTS` 和 `OPTIONS` 提供。
 
-`ARGUMENTS` represent a required input for a function. When choosing to use
-`ARGUMENTS` over `OPTIONS` please be aware of the downsides that come with it:
+`ARGUMENTS` 表示函数的必需输入。当选择使用 `ARGUMENTS` 而非 `OPTIONS` 时，请注意随之而来的缺点：
 
-- User will need to remember the order of `ARGUMENTS`. This is not a problem if
-  there is only one `ARGUMENT`.
-- With `OPTIONS` it is possible to provide much better auto completion.
-- With `OPTIONS` it is possible to provide much better error message.
-- Using `OPTIONS` it will mean there is a little bit more typing.
+- 用户需要记住 `ARGUMENTS` 的顺序。如果只有一个 `ARGUMENT`，这不是问题。
+- 使用 `OPTIONS` 可以提供好得多的自动补全。
+- 使用 `OPTIONS` 可以提供好得多的错误信息。
+- 使用 `OPTIONS` 意味着要多敲一些键。
 
-We don’t discourage the use of `ARGUMENTS`, but simply want to make every
-developer consider the downsides and choose wisely.
+我们并不反对使用 `ARGUMENTS`，只是希望每位开发者都权衡其缺点并做出明智选择。
 
-## Naming the `OPTIONS`
+## `OPTIONS` 的命名
 
-The only naming convention - apart from the ones mentioned in Naming the
-`COMMANDS` section is how flags are named.
+除了 `COMMANDS` 命名一节中提到的规则外，唯一的命名约定是标志（flag）的命名。
 
-Flags are a type of `OPTION` that represent an option that can be turned ON of
-OFF. We can say **flags are boolean type of** `**OPTION**`.
+标志是 `OPTION` 的一种，表示可以打开或关闭的选项。可以说**标志是布尔类型的** `**OPTION**`。
 
-Here are few examples of flag `OPTIONS`:
+以下是标志 `OPTIONS` 的几个例子：
 
-- `--colors` vs. `--no-colors` (showing colors in the output)
-- `--emojis` vs. `--no-emojis` (showing emojis in the output)
+- `--colors` 与 `--no-colors`（在输出中显示颜色）
+- `--emojis` 与 `--no-emojis`（在输出中显示 emoji）
 
-## Prompt when input not provided
+## 未提供输入时进行提示
 
-For *main commands* (as [per classification](#classification)) we want command
-to improve the discoverability of possible input. A new user will most likely
-not know which `ARGUMENTS` and `OPTIONS` are required or which values are
-possible for those options.
+对于*主要命令*（[按分类](#classification)而言），我们希望命令提升可能输入的可发现性。新用户很可能不知道哪些 `ARGUMENTS` 和 `OPTIONS` 是必需的，也不知道这些选项有哪些可能的取值。
 
-In case the user does not provide the input or they provide wrong input,
-rather than show the error, prompt a user with an option to find and select
-correct input (see examples).
+如果用户未提供输入或提供了错误的输入，与其显示错误，不如向用户提示，让其查找并选择正确的输入（见示例）。
 
-Prompting is of course not required when TTY is not attached to STDIN. This
-would mean that scripts won't need to handle prompt, but rather handle errors.
+当 TTY 未连接到 STDIN 时，当然无需提示。这意味着脚本无需处理提示，而只需处理错误。
 
-A place to use prompt and provide user with interactive select
+适合使用提示并为用户提供交互式选择的场景
 
 
 ```shell
@@ -291,10 +226,8 @@ Initializing Nix project at `/path/to/here`.
              [ Showing 2 templates from 1345 templates ]
 ```
 
-Another great place to add prompts are **confirmation dialogues for dangerous
-actions**. For example when adding new substitutor via `OPTIONS` or via
-`flake.nix` we should prompt - for the first time - and let user review what is
-going to happen.
+另一个适合添加提示的场景是**危险操作的确认对话框**。例如，当通过 `OPTIONS` 或
+`flake.nix` 添加新的 substitutor 时，我们应当（首次）进行提示，让用户确认将要发生什么。
 
 
 ```shell
@@ -309,35 +242,23 @@ $ nix build --option substitutors https://cache.example.org
     [y/N] |> y
 ```
 
-# Output
+# 输出
 
-Terminal output can be quite limiting in many ways. Which should force us to
-think about the experience even more. As with every design the output is a
-compromise between being terse and being verbose, between showing help to
-beginners and annoying advance users. For this it is important that we know
-what are the priorities.
+终端输出在很多方面都相当受限，这更应当促使我们深入思考用户体验。与任何设计一样，输出是在简洁与详尽之间、在帮助新手与不打扰高级用户之间的折中。因此，明确优先级非常重要。
 
-Nix command line should be first and foremost written with beginners in mind.
-But users won't stay beginners for long and what was once useful might quickly
-become annoying. There is no golden rule that we can give in this guideline
-that would make it easier how to draw a line and find best compromise.
+Nix 命令行首先应当以新手为出发点来设计。但用户不会永远是新手，曾经有用的东西可能很快变得令人厌烦。在这份 guideline 中，我们没有一条黄金法则能让划清界限、找到最佳折中变得更容易。
 
-What we would encourage is to **build prototypes**, do some **user testing**
-and collect **feedback**. Then repeat the cycle few times.
+我们鼓励的是**构建原型**、进行一些**用户测试**并收集**反馈**，然后重复这个循环几次。
 
-First design the *happy path* and only after your iron it out, continue to work
-on **edge cases** (handling and displaying errors, changes of the output by
-certain `OPTIONS`, etc…)
+先设计*快乐路径*，只有在打磨完善之后，再继续处理**边缘情况**（错误的处理与展示、某些 `OPTIONS` 对输出的改变等……）
 
-## Follow best practices
+## 遵循最佳实践
 
-Needless to say we Nix must be a good citizen and follow best practices in
-command line.
+不用说，Nix 必须做一个好公民，遵循命令行的最佳实践。
 
-In short: **STDOUT is for output, STDERR is for (human) messaging.**
+简而言之：**STDOUT 用于输出，STDERR 用于（面向人类的）消息。**
 
-STDOUT and STDERR provide a way for you to output messages to the user while
-also allowing them to redirect content to a file. For example:
+STDOUT 和 STDERR 为你提供了一种向用户输出消息的方式，同时也允许用户将内容重定向到文件。例如：
 
 ```shell
 $ nix build > build.txt
@@ -348,10 +269,10 @@ $ nix build > build.txt
   1| with import <nixpkgs> { }; (pkgs.runCommandCC or pkgs.runCommand) "shell" { buildInputs = [ (surge.bin) ]; } ""
 ```
 
-Because this warning is on STDERR, it doesn’t end up in the file.
+由于这条警告位于 STDERR，它最终不会进入文件中。
 
-But not everything on STDERR is an error though. For example, you can run `nix
-build` and collect logs in a file while still seeing the progress.
+不过，STDERR 上的内容并非都是错误。例如，你可以运行 `nix
+build` 并把日志收集到文件中，同时仍能看到进度。
 
 ```
 $ nix build > build.txt
@@ -373,27 +294,19 @@ Downloading [12 / 200]
 ------------------------------------------------------------------------
 ```
 
-## Errors (WIP)
+## 错误（进行中）
 
-**TODO**: Once we have implementation for the *happy path* then we will think
-how to present errors.
+**TODO**：在我们为*快乐路径*完成实现之后，再考虑如何呈现错误。
 
-## Not only for humans
+## 不只是面向人类
 
-Terse, machine-readable output formats can also be useful but shouldn’t get in
-the way of making beautiful CLI output. When needed, commands should offer a
-`--json` flag to allow users to easily parse and script the CLI.
+简洁的、机器可读的输出格式同样有用，但不应妨碍打造美观的 CLI 输出。必要时，命令应提供 `--json` 标志，让用户可以轻松解析 CLI 输出并编写脚本。
 
-When TTY is not detected on STDOUT we should remove all design elements (no
-colors, no emojis and using ASCII instead of Unicode symbols). The same should
-happen when TTY is not detected on STDERR. We should not display progress /
-status section, but only print warnings and errors.
+当 STDOUT 上未检测到 TTY 时，我们应移除所有设计元素（无颜色、无 emoji，使用 ASCII 代替 Unicode 符号）。当 STDERR 上未检测到 TTY 时亦然。此时不应显示进度 / 状态区块，而只打印警告和错误。
 
-## Dialog with the user
+## 与用户对话
 
-CLIs don't always make it clear when an action has taken place. For every
-action a user performs, your CLI should provide an equal and appropriate
-reaction, clearly highlighting the what just happened. For example:
+CLI 并不总是清楚地表明某个操作已经发生。对于用户执行的每个操作，你的 CLI 都应给出平等且恰当的回应，清楚地突出刚刚发生了什么。例如：
 
 ```shell
 $ nix build
@@ -404,16 +317,13 @@ $ nix build
 $
 ```
 
-Above command clearly states that command successfully completed. And in case
-of `nix build`, which is a command that might take some time to complete, it is
-equally important to also show that a command started.
+上面的命令清楚地表明命令已成功完成。而对于 `nix build` 这样可能需要一些时间才能完成的命令，同样重要的是显示命令已经开始执行。
 
-## Text alignment
+## 文本对齐
 
-Text alignment is the number one design element that will present all of the
-Nix commands as a family and not as separate tools glued together.
+文本对齐是头号设计元素，它使所有 Nix 命令呈现为一个家族，而不是拼凑在一起的独立工具。
 
-The format we should follow is:
+我们应当遵循的格式是：
 
 ```shell
 $ nix COMMAND
@@ -422,94 +332,67 @@ $ nix COMMAND
        |> Some details
 ```
 
-Few rules that we can extract from above example:
+从上面的示例中可以总结出几条规则：
 
-- Each line should start at least with one space.
-- First word should be a VERB and must be aligned to the right.
-- Second word should be a NOUN and must be aligned to the left.
-- If you can not find a good VERB / NOUN pair, don’t worry make it as
-  understandable to the user as possible.
-- More details of each line can be provided by `|>` character which is serving
-  as the first word when aligning the text
+- 每行应至少以一个空格开头。
+- 第一个词应是动词，并且必须右对齐。
+- 第二个词应是名词，并且必须左对齐。
+- 如果找不到合适的动词 / 名词配对，别担心，尽量让用户易于理解即可。
+- 每行的更多细节可以用 `|>` 字符提供，在对齐文本时它充当第一个词
 
-Don’t forget you should also test your terminal output with colors and emojis
-off (`--no-colors --no-emojis`).
+别忘了，你还应当在关闭颜色和 emoji（`--no-colors --no-emojis`）的情况下测试终端输出。
 
-## Dim / Bright
+## 暗色 / 亮色
 
-After comparing few terminals with different color schemes we would **recommend
-to avoid using dimmed text**. The difference from the rest of the text is very
-little in many terminal and color scheme combinations. Sometimes the difference
-is not even notable, therefore relying on it wouldn’t make much sense.
+在对比了几个使用不同配色方案的终端之后，我们**建议避免使用暗淡文本**。在许多终端与配色方案的组合下，它与其余文本的差异非常小。有时差异甚至难以察觉，因此依赖它没有太大意义。
 
-**The bright text is much better supported** across terminals and color
-schemes. Most of the time the difference is perceived as if the bright text
-would be bold.
+**亮色文本在各种终端和配色方案中的支持要好得多**。大多数时候，其差异给人的感觉就像是亮色文本被加粗了。
 
-## Colors
+## 颜色
 
-Humans are already conditioned by society to attach certain meaning to certain
-colors. While the meaning is not universal, a simple collection of colors is
-used to represent basic emotions.
+社会早已让人类习惯于把特定含义与特定颜色关联起来。虽然含义并非普适，但一组简单的颜色被用来表达基本的情绪。
 
-Colors that can be used in output
+可用于输出的颜色：
 
-- Red = error, danger, stop
-- Green = success, good
-- Yellow/Orange = proceed with caution, warning, in progress
-- Blue/Magenta = stability, calm
+- 红色 = 错误、危险、停止
+- 绿色 = 成功、良好
+- 黄色 / 橙色 = 谨慎前行、警告、进行中
+- 蓝色 / 品红 = 稳定、平静
 
-While colors are nice, when command line is used by machines (in automation
-scripts) you want to remove the colors. There should be a global `--no-colors`
-option that would remove the colors.
+颜色虽好，但当命令行被机器使用（在自动化脚本中）时，你应当去掉颜色。应当有一个全局的 `--no-colors` 选项来移除颜色。
 
-## Special (Unicode) characters
+## 特殊（Unicode）字符
 
-Most of the terminal have good support for Unicode characters and you should
-use them in your output by default. But always have a backup solution that is
-implemented only with ASCII characters and will be used when `--ascii` option
-is going to be passed in. Please make sure that you test your output also
-without Unicode characters
+大多数终端对 Unicode 字符有良好支持，你应当默认在输出中使用它们。但始终要准备一个仅用 ASCII 字符实现的备用方案，它将在传入 `--ascii` 选项时被使用。请确保你也在没有 Unicode 字符的情况下测试输出
 
-More they showing all the different Unicode characters it is important to
-**establish common set of characters** that we use for certain situations.
+比起展示各种不同的 Unicode 字符，更重要的是**为特定情形建立一套统一的字符集合**。
 
-## Emojis
+## Emoji
 
-Emojis help channel emotions even better than text, colors and special
-characters.
+Emoji 比文本、颜色和特殊字符更能传递情绪。
 
-We recommend **keeping the set of emojis to a minimum**. This will enable each
-emoji to stand out more.
+我们建议**把 emoji 的数量保持在最低限度**。这将使每个 emoji 更加醒目。
 
-As not everybody is happy about emojis we should provide an `--no-emojis`
-option to disable them. Please make sure that you test your output also without
-emojis.
+鉴于并非所有人都喜欢 emoji，我们应提供 `--no-emojis` 选项来禁用它们。请确保你也在没有 emoji 的情况下测试输出。
 
-## Tables
+## 表格
 
-All commands that are listing certain data can be implemented in some sort of a
-table. It’s important that each row of your output is a single ‘entry’ of data.
-Never output table borders. It’s noisy and a huge pain for parsing using other
-tools such as `grep`.
+所有列出某种数据的命令都可以用某种形式的表格实现。重要的是，输出的每一行都是一条单独的数据“条目”。绝不要输出表格边框。边框既嘈杂，也给使用 `grep` 等其他工具进行解析带来巨大痛苦。
 
-Be mindful of the screen width. Only show a few columns by default with the
-table header, for more the table can be manipulated by the following options:
+注意屏幕宽度。默认只显示几列并附带表头；如需更多列，可以通过以下选项操作表格：
 
-- `--no-headers`: Show column headers by default but allow to hide them.
-- `--columns`: Comma-separated list of column names to add.
-- `--sort`: Allow sorting by column. Allow inverse and multi-column sort as well.
+- `--no-headers`：默认显示列标题，但允许隐藏它们。
+- `--columns`：以逗号分隔的待添加列名列表。
+- `--sort`：允许按列排序，同时支持倒序和多列排序。
 
-## Interactive output
+## 交互式输出
 
-Interactive output was selected to be able to strike the balance between
-beginners and advance users. While the default output will target beginners it
-can, with a few key strokes, be changed into and advance introspection tool.
+选择交互式输出是为了在新手和高级用户之间取得平衡。默认输出面向新手，但只需几次按键，就可以切换为高级的自省工具。
 
-### Progress
+### 进度
 
-For longer running commands we should provide and overview the progress.
-This is shown best in `nix build` example:
+对于运行时间较长的命令，我们应提供进度概览。
+这在 `nix build` 的示例中体现得最为明显：
 
 ```shell
 $ nix build
@@ -531,9 +414,9 @@ Downloading [12 / 200]
 ------------------------------------------------------------------------
 ```
 
-### Search
+### 搜索
 
-Use a `fzf` like fuzzy search when there are multiple options to choose from.
+当有多个选项可供选择时，使用类似 `fzf` 的模糊搜索。
 
 ```shell
 $ nix init
@@ -545,10 +428,9 @@ Initializing Nix project at `/path/to/here`.
              [ Showing 2 templates from 1345 templates ]
 ```
 
-### Prompt
+### 提示
 
-In some situations we need to prompt the user and inform the user about what is
-going to happen.
+在某些情况下，我们需要提示用户并告知用户即将发生什么。
 
 ```shell
 $ nix build --option substitutors https://cache.example.org
@@ -562,28 +444,25 @@ $ nix build --option substitutors https://cache.example.org
     [y/N] |> y
 ```
 
-## Verbosity
+## 详细程度（verbosity）
 
-There are many ways that you can control verbosity.
+有多种方式可以控制输出的详细程度。
 
-Verbosity levels are:
+详细程度级别包括：
 
-- `ERROR` (level 0)
-- `WARN` (level 1)
-- `NOTICE` (level 2)
-- `INFO` (level 3)
-- `TALKATIVE` (level 4)
-- `CHATTY` (level 5)
-- `DEBUG` (level 6)
-- `VOMIT` (level 7)
+- `ERROR`（级别 0）
+- `WARN`（级别 1）
+- `NOTICE`（级别 2）
+- `INFO`（级别 3）
+- `TALKATIVE`（级别 4）
+- `CHATTY`（级别 5）
+- `DEBUG`（级别 6）
+- `VOMIT`（级别 7）
 
-The default level that the command starts is `ERROR`. The simplest way to
-increase the verbosity by stacking `-v` option (eg: `-vvv == level 3 == INFO`).
-There are also two shortcuts, `--debug` to run in `DEBUG` verbosity level and
-`--quiet` to run in `ERROR` verbosity level.
+命令启动时的默认级别是 `ERROR`。提高详细程度的最简单方式是叠加 `-v` 选项（例如：`-vvv == level 3 == INFO`）。另外还有两个快捷方式：`--debug` 以 `DEBUG` 详细程度级别运行，`--quiet` 以 `ERROR` 详细程度级别运行。
 
 ----------
 
-# Appendix 1: Commands naming exceptions
+# 附录 1：命令命名例外
 
-`nix init` and `nix repl` are well established
+`nix init` 和 `nix repl` 已深入人心

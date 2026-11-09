@@ -1,28 +1,28 @@
 # Release 2.26.0 (2025-01-22)
 
-- Support for relative path inputs [#10089](https://github.com/NixOS/nix/pull/10089)
+- 支持相对路径输入 [#10089](https://github.com/NixOS/nix/pull/10089)
 
-  Flakes can now refer to other flakes in the same repository using relative paths, e.g.
+  Flakes 现在可以使用相对路径引用同一仓库中的其他 Flakes，例如
   ```nix
   inputs.foo.url = "path:./foo";
   ```
-  uses the flake in the `foo` subdirectory of the referring flake. For more information, see the documentation on [the `path` flake input type](@docroot@/command-ref/new-cli/nix3-flake.md#path-fetcher).
+  会使用所引用 flake 的 `foo` 子目录中的 flake。更多信息请参阅关于 [`path` flake 输入类型](@docroot@/command-ref/new-cli/nix3-flake.md#path-fetcher)的文档。
 
-  This feature required a change to the lock file format. Previous Nix versions will not be able to use lock files that have locks for relative path inputs in them.
+  此特性要求对锁文件格式做出更改。旧版本的 Nix 将无法使用包含相对路径输入锁的锁文件。
 
-- Flake lock file generation now ignores local registries [#12019](https://github.com/NixOS/nix/pull/12019)
+- Flake 锁文件生成现在忽略本地注册表 [#12019](https://github.com/NixOS/nix/pull/12019)
 
-  When resolving indirect flake references like `nixpkgs` in `flake.nix` files, Nix will no longer use the system and user flake registries. It will only use the global flake registry and overrides given on the command line via `--override-flake`.
+  在解析 `flake.nix` 文件中像 `nixpkgs` 这样的间接 flake 引用时，Nix 将不再使用系统和用户 flake 注册表。它只会使用全局 flake 注册表，以及通过 `--override-flake` 在命令行上给出的覆盖项。
 
-  This avoids accidents where users have local registry overrides that map `nixpkgs` to a `path:` flake in the local file system, which then end up in committed lock files pushed to other users.
+  这避免了如下事故：用户在本地注册表中存在把 `nixpkgs` 映射到本地文件系统中某个 `path:` flake 的覆盖项，而这些覆盖最终进入了已提交并推送给其他用户的锁文件。
 
-  In the future, we may remove the use of the registry during lock file generation altogether. It's better to explicitly specify the URL of a flake input. For example, instead of
+  将来，我们可能会在锁文件生成期间完全移除对注册表的使用。显式指定 flake 输入的 URL 是更好的做法。例如，与其写
   ```nix
   {
     outputs = { self, nixpkgs }: { ... };
   }
   ```
-  write
+  不如写
   ```nix
   {
     inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
@@ -30,55 +30,51 @@
   }
   ```
 
-- `nix copy` supports `--profile` and `--out-link` [#11657](https://github.com/NixOS/nix/pull/11657)
+- `nix copy` 支持 `--profile` 与 `--out-link` [#11657](https://github.com/NixOS/nix/pull/11657)
 
-  The `nix copy` command now has flags `--profile` and `--out-link`, similar to `nix build`. `--profile` makes a profile point to the
-  top-level store path, while `--out-link` create symlinks to the top-level store paths.
+  `nix copy` 命令现在拥有与 `nix build` 类似的 `--profile` 和 `--out-link` 标志。`--profile` 使某个 profile 指向顶层存储路径，而 `--out-link` 创建指向顶层存储路径的符号链接。
 
-  For example, when updating the local NixOS system profile from a NixOS system closure on a remote machine, instead of
+  例如，在从远程机器上的 NixOS 系统闭包更新本地 NixOS 系统 profile 时，以前需要
   ```
   # nix copy --from ssh://server $path
   # nix build --profile /nix/var/nix/profiles/system $path
   ```
-  you can now do
+  现在则可以执行
   ```
   # nix copy --from ssh://server --profile /nix/var/nix/profiles/system $path
   ```
-  The advantage is that this avoids a time window where *path* is not a garbage collector root, and so could be deleted by a concurrent `nix store gc` process.
+  这样做的好处是避免了 *path* 不作为垃圾回收器 root、因而可能被并发的 `nix store gc` 进程删除的时间窗口。
 
-- `nix-instantiate --eval` now supports `--raw` [#12119](https://github.com/NixOS/nix/pull/12119)
+- `nix-instantiate --eval` 现在支持 `--raw` [#12119](https://github.com/NixOS/nix/pull/12119)
 
-  The `nix-instantiate --eval` command now supports a `--raw` flag, when used
-  the evaluation result must be a string, which is printed verbatim without
-  quotation marks or escaping.
+  `nix-instantiate --eval` 命令现在支持 `--raw` 标志；使用该标志时，求值结果必须是字符串，它将被原样打印，不带引号或转义。
 
-- Improved `NIX_SSHOPTS` parsing for better SSH option handling [#5181](https://github.com/NixOS/nix/issues/5181) [#12020](https://github.com/NixOS/nix/pull/12020)
+- 改进 `NIX_SSHOPTS` 解析，更好地处理 SSH 选项 [#5181](https://github.com/NixOS/nix/issues/5181) [#12020](https://github.com/NixOS/nix/pull/12020)
 
-  The parsing of the `NIX_SSHOPTS` environment variable has been improved to handle spaces and quotes correctly.
-  Previously, incorrectly split SSH options could cause failures in commands like `nix-copy-closure`,
-  especially when using complex SSH invocations such as `-o ProxyCommand="ssh -W %h:%p ..."`.
+  `NIX_SSHOPTS` 环境变量的解析得到了改进，可以正确处理空格和引号。
+  此前，被错误拆分的 SSH 选项可能导致诸如 `nix-copy-closure` 之类的命令失败，
+  尤其是在使用 `-o ProxyCommand="ssh -W %h:%p ..."` 这类复杂 SSH 调用时。
 
-  This change introduces a `shellSplitString` function to ensure
-  that `NIX_SSHOPTS` is parsed in a manner consistent with shell
-  behavior, addressing common parsing errors.
+  此变更引入了一个 `shellSplitString` 函数，确保
+  `NIX_SSHOPTS` 以与 shell 行为一致的方式解析，从而解决常见的解析错误。
 
-  For example, the following now works as expected:
+  例如，以下内容现在可以按预期工作：
 
   ```bash
   export NIX_SSHOPTS='-o ProxyCommand="ssh -W %h:%p ..."'
   ```
 
-  This update improves the reliability of SSH-related operations using `NIX_SSHOPTS` across Nix CLIs.
+  此更新提升了各 Nix CLI 中使用 `NIX_SSHOPTS` 的 SSH 相关操作的可靠性。
 
-- Nix is now built using Meson
+- Nix 现在使用 Meson 构建
 
-  As proposed in [RFC 132](https://github.com/NixOS/rfcs/pull/132), Nix's build system now uses Meson/Ninja. The old Make-based build system has been removed.
+  如 [RFC 132](https://github.com/NixOS/rfcs/pull/132) 所提议，Nix 的构建系统现在使用 Meson/Ninja。旧的基于 Make 的构建系统已被移除。
 
-- Evaluation caching now works for dirty Git workdirs [#11992](https://github.com/NixOS/nix/pull/11992)
+- 求值缓存现在对脏的 Git 工作目录生效 [#11992](https://github.com/NixOS/nix/pull/11992)
 
-## Contributors
+## 贡献者
 
-This release was made possible by the following 45 contributors:
+本发布版本得益于以下 45 位贡献者：
 
 - Anatoli Babenia [**(@abitrolly)**](https://github.com/abitrolly)
 - Domagoj Mišković [**(@allrealmsoflife)**](https://github.com/allrealmsoflife)

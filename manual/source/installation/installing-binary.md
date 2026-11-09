@@ -1,80 +1,80 @@
-# Installing a Binary Distribution
+# 安装二进制发行版
 
-> **Updating to macOS 15 Sequoia**
+> **更新到 macOS 15 Sequoia**
 >
-> If you recently updated to macOS 15 Sequoia and are getting
+> 如果你最近更新到了 macOS 15 Sequoia，并且在运行 Nix 命令时遇到
 > ```console
 > error: the user '_nixbld1' in the group 'nixbld' does not exist
 > ```
-> when running Nix commands, refer to GitHub issue [NixOS/nix#10892](https://github.com/NixOS/nix/issues/10892) for instructions to fix your installation without reinstalling.
+> 错误，请参阅 GitHub issue [NixOS/nix#10892](https://github.com/NixOS/nix/issues/10892)，了解在不重新安装的情况下修复安装的方法。
 
-To install the latest version Nix, run the following command:
+要安装最新版本的 Nix，请运行以下命令：
 
 ```console
 $ curl -L https://nixos.org/nix/install | sh
 ```
 
-This performs the default type of installation for your platform:
+该命令会为你的平台执行默认类型的安装：
 
-- [Multi-user](#multi-user-installation):
-  - Linux with systemd and without SELinux
+- [多用户安装](#multi-user-installation)：
+  - 带 systemd 且无 SELinux 的 Linux
   - macOS
-- [Single-user](#single-user-installation):
-  - Linux without systemd
-  - Linux with SELinux
+- [单用户安装](#single-user-installation)：
+  - 无 systemd 的 Linux
+  - 带 SELinux 的 Linux
 
-We recommend the multi-user installation if it supports your platform and you can authenticate with `sudo`.
+如果多用户安装支持你的平台，并且你可以通过 `sudo` 进行身份验证，我们推荐使用多用户安装。
 
-The installer can be configured with various command line arguments and environment variables.
-To show available command line flags:
+安装器可以通过多种命令行参数和环境变量进行配置。
+要查看可用的命令行选项：
 
 ```console
 $ curl -L https://nixos.org/nix/install | sh -s -- --help
 ```
 
-To check what it does and how it can be customised further, [download and edit the second-stage installation script](#installing-from-a-binary-tarball).
+要了解它会执行哪些操作以及如何进一步定制，请[下载并编辑第二阶段安装脚本](#installing-from-a-binary-tarball)。
 
-# Installing a pinned Nix version from a URL
+# 从 URL 安装指定版本的 Nix
 
-Version-specific installation URLs for all Nix versions since 1.11.16 can be found at [releases.nixos.org](https://releases.nixos.org/?prefix=nix/).
-The directory for each version contains the corresponding SHA-256 hash.
+自 1.11.16 起的所有 Nix 版本都有对应的特定版本安装 URL，可在 [releases.nixos.org](https://releases.nixos.org/?prefix=nix/) 找到。
+每个版本的目录中包含相应的 SHA-256 哈希值。
 
-All installation scripts are invoked the same way:
+所有安装脚本的调用方式都相同：
 
 ```console
 $ export VERSION=2.19.2 
 $ curl -L https://releases.nixos.org/nix/nix-$VERSION/install | sh
 ```
 
-# Multi User Installation
+# 多用户安装
 
-The multi-user Nix installation creates system users and a system service for the Nix daemon.
+多用户 Nix 安装会为 Nix daemon（守护进程）创建系统用户和系统服务。
 
-Supported systems:
+支持的系统：
 
-- Linux running systemd, with SELinux disabled
+- 运行 systemd 且禁用了 SELinux 的 Linux
 - macOS
 
-To explicitly instruct the installer to perform a multi-user installation on your system:
+要明确指示安装器在你的系统上执行多用户安装：
 
 ```console
 $ bash <(curl -L https://nixos.org/nix/install) --daemon
 ```
 
-You can run this under your usual user account or `root`.
-The script will invoke `sudo` as needed.
+你可以在常用的用户账户或 `root` 下运行此命令。
+脚本会按需调用 `sudo`。
 
-# Single User Installation
+# 单用户安装
 
-To explicitly select a single-user installation on your system:
+要在你的系统上明确选择单用户安装：
 
 ```console
 $ bash <(curl -L https://nixos.org/nix/install) --no-daemon
 ```
 
-In a single-user installation, `/nix` is owned by the invoking user.
-The script will invoke `sudo` to create `/nix` if it doesn’t already exist.
-If you don’t have `sudo`, manually create `/nix` as `root`:
+在单用户安装中，`/nix` 由执行安装的用户所有。
+如果 `/nix` 尚不存在，脚本会调用 `sudo` 来创建它。
+如果你没有 `sudo`，请以 `root` 身份手动创建 `/nix`：
 
 ```console
 $ su root
@@ -82,14 +82,14 @@ $ su root
 # chown alice /nix
 ```
 
-# Installing from a binary tarball
+# 从二进制 tarball 安装
 
-You can also download a binary tarball that contains Nix and all its dependencies:
-- Choose a [version](https://releases.nixos.org/?prefix=nix/) and [system type](../development/building.md#platforms)
-- Download and unpack the tarball
-- Run the installer
+你也可以下载一个包含 Nix 及其所有依赖的二进制 tarball：
+- 选择一个[版本](https://releases.nixos.org/?prefix=nix/)和[系统类型](../development/building.md#platforms)
+- 下载并解压 tarball
+- 运行安装器
 
-> **Example**
+> **示例**
 >
 > ```console
 > $ pushd $(mktemp -d)
@@ -102,57 +102,41 @@ You can also download a binary tarball that contains Nix and all its dependencie
 > $ popd
 > ```
 
-The installer can be customised with the environment variables declared in the file named `install-multi-user`.
+安装器可以通过文件 `install-multi-user` 中声明的环境变量进行定制。
 
-## Native packages for Linux distributions
+## Linux 发行版的原生软件包
 
-The Nix community maintains installers for some Linux distributions in their native packaging format(https://nix-community.github.io/nix-installers/).
+Nix 社区以部分 Linux 发行版的原生打包格式维护了安装器(https://nix-community.github.io/nix-installers/)。
 
-# macOS Installation
+# macOS 安装
 
 <!-- anchors to catch existing links -->
 []{#sect-macos-installation-change-store-prefix}[]{#sect-macos-installation-encrypted-volume}[]{#sect-macos-installation-symlink}[]{#sect-macos-installation-recommended-notes}
 
-We believe we have ironed out how to cleanly support the read-only root file system
-on modern macOS. New installs will do this automatically.
+我们相信已经彻底解决了如何完美支持现代 macOS 上的只读根文件系统的问题。新安装会自动完成这项处理。
 
-This section previously detailed the situation, options, and trade-offs,
-but it now only outlines what the installer does. You don't need to know
-this to run the installer, but it may help if you run into trouble:
+本节此前详细介绍了相关情况、选项和权衡取舍，但现在只概述安装器所做的工作。运行安装器并不需要了解这些内容，不过如果你遇到问题，它们可能有所帮助：
 
-- create a new APFS volume for your Nix store
-- update `/etc/synthetic.conf` to direct macOS to create a "synthetic"
-  empty root directory to mount your volume
-- specify mount options for the volume in `/etc/fstab`
-  - `rw`: read-write
-  - `noauto`: prevent the system from auto-mounting the volume (so the
-    LaunchDaemon mentioned below can control mounting it, and to avoid
-    masking problems with that mounting service).
-  - `nobrowse`: prevent the Nix Store volume from showing up on your
-    desktop; also keeps Spotlight from spending resources to index
-    this volume
+- 为你的 Nix store 创建一个新的 APFS 卷
+- 更新 `/etc/synthetic.conf`，指示 macOS 创建一个"合成的"空根目录用于挂载该卷
+- 在 `/etc/fstab` 中为该卷指定挂载选项
+  - `rw`：读写
+  - `noauto`：阻止系统自动挂载该卷（这样下文提到的 LaunchDaemon 可以控制挂载，并避免掩盖该挂载服务的问题）。
+  - `nobrowse`：防止 Nix Store 卷出现在你的桌面上；同时也让 Spotlight 不再消耗资源为该卷建立索引
   <!-- TODO:
-  - `suid`: honor setuid? surely not? ...
-  - `owners`: honor file ownership on the volume
+  - `suid`: 是否遵循 setuid？显然不应该？……
 
-    For now I'll avoid pretending to understand suid/owners more
-    than I do. There've been some vague reports of file-ownership
-    and permission issues, particularly in cloud/VM/headless setups.
-    My pet theory is that this has something to do with these setups
-    not having a token that gets delegated to initial/admin accounts
-    on macOS. See scripts/create-darwin-volume.sh for a little more.
+    目前我不想假装自己对 suid/owners 的理解超出现有水平。
+    曾有一些关于文件所有权和权限问题的模糊报告，尤其是在云/虚拟机/无头（headless）环境中。
+    我个人的猜测是，这与这些环境缺少一个会被委派给 macOS 上初始/管理员账户的 token 有关。
+    更多细节参见 scripts/create-darwin-volume.sh。
 
-    In any case, by Dec 4 2021, it _seems_ like some combination of
-    suid, owners, and calling diskutil enableOwnership have stopped
-    new reports from coming in. But I hesitate to celebrate because we
-    haven't really named and catalogued the behavior, understood what
-    we're fixing, and validated that all 3 components are essential.
+    无论如何，截至 2021 年 12 月 4 日，suid、owners 以及调用 diskutil enableOwnership
+    的某种组合似乎已经让新的报告不再出现。但我还不敢庆祝，因为我们尚未真正命名并
+    归档该行为、理解我们修复的是什么，也没有验证这 3 个组成部分都是必需的。
   -->
-- if you have FileVault enabled
-    - generate an encryption password
-    - put it in your system Keychain
-    - use it to encrypt the volume
-- create a system LaunchDaemon to mount this volume early enough in the
-  boot process to avoid problems loading or restoring any programs that
-  need access to your Nix store
-
+- 如果你启用了 FileVault
+    - 生成一个加密密码
+    - 将其存入你的系统钥匙串（Keychain）
+    - 使用它加密该卷
+- 创建一个系统 LaunchDaemon，在启动过程中尽早挂载该卷，以避免在加载或恢复任何需要访问你的 Nix store 的程序时出现问题

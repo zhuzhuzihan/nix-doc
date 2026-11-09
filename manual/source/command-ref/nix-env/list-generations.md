@@ -1,17 +1,16 @@
 # Name
 
-`nix-env --list-generations` - list profile generations
+`nix-env --list-generations` - 列出 profile 的 generation（代）
 
-# Synopsis
+概要
 
 `nix-env` `--list-generations`
 
-# Description
+# 描述
 
-This operation print a list of all the currently existing generations
-for the active profile. These may be switched to using the
-`--switch-generation` operation. It also prints the creation date of the
-generation, and indicates the current generation.
+该操作打印当前激活 profile 的所有现存 generation 的列表。
+可以使用 `--switch-generation` 操作切换到这些 generation。
+它还会打印每个 generation 的创建日期，并标明当前 generation。
 
 {{#include ./opt-common.md}}
 
@@ -21,7 +20,7 @@ generation, and indicates the current generation.
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
 ```console
 $ nix-env --list-generations
@@ -30,4 +29,3 @@ $ nix-env --list-generations
   97   2004-02-06 16:22:45
   98   2004-02-06 16:24:33   (current)
 ```
-

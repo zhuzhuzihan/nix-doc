@@ -1,89 +1,89 @@
-# Common Environment Variables
+# 通用环境变量
 
-Most Nix commands interpret the following environment variables.
+大多数 Nix 命令都会解释以下环境变量。
 
-## Configuration environment variables
+## 配置类环境变量
 
-The following environment variables affect how Nix loads its configuration.
-See the [configuration file](@docroot@/command-ref/conf-file.md#configuration-file) documentation for full details.
+以下环境变量影响 Nix 加载其配置的方式。
+完整细节请参见[配置文件](@docroot@/command-ref/conf-file.md#configuration-file)文档。
 
 - <span id="env-NIX_CONF_DIR">[`NIX_CONF_DIR`](#env-NIX_CONF_DIR)</span>
 
-  Overrides the system configuration directory.
+  覆盖系统配置目录。
 
 - <span id="env-NIX_USER_CONF_FILES">[`NIX_USER_CONF_FILES`](#env-NIX_USER_CONF_FILES)</span>
 
-  Overrides the user configuration file locations.
+  覆盖用户配置文件的位置。
 
 - <span id="env-NIX_CONFIG">[`NIX_CONFIG`](#env-NIX_CONFIG)</span>
 
-  Provides configuration settings inline.
+  以内联方式提供配置设置。
 
-## Store setting environment variables
+## store 设置类环境变量
 
 - <span id="env-NIX_IGNORE_SYMLINK_STORE">[`NIX_IGNORE_SYMLINK_STORE`](#env-NIX_IGNORE_SYMLINK_STORE)</span>
 
-  Normally, the Nix store directory (typically `/nix/store`) is not
-  allowed to contain any symlink components. This is to prevent
-  “impure” builds. Builders sometimes “canonicalise” paths by
-  resolving all symlink components. Thus, builds on different machines
-  (with `/nix/store` resolving to different locations) could yield
-  different results. This is generally not a problem, except when
-  builds are deployed to machines where `/nix/store` resolves
-  differently. If you are sure that you’re not going to do that, you
-  can set `NIX_IGNORE_SYMLINK_STORE` to `1`.
+  通常，Nix store 目录（通常是 `/nix/store`）
+  的路径中不允许包含任何符号链接组件。这是为了防止
+  “不纯”的构建。构建器有时会通过
+  解析所有符号链接组件来“规范化（canonicalise）”路径。因此，在不同机器上
+  （`/nix/store` 解析到不同位置）进行的构建可能产生
+  不同的结果。这通常不是问题，除非
+  构建被部署到 `/nix/store` 解析结果
+  不同的机器上。如果你确定不会这样做，你
+  可以将 `NIX_IGNORE_SYMLINK_STORE` 设置为 `1`。
 
-  Note that if you’re symlinking the Nix store so that you can put it
-  on another file system than the root file system, on Linux you’re
-  better off using `bind` mount points, e.g.,
+  请注意，如果你是为了把 Nix store 放到
+  根文件系统之外的另一个文件系统上而对其使用符号链接，在 Linux 上
+  更好的做法是使用 `bind` 挂载点，例如：
 
   ```console
   $ mkdir /nix
   $ mount -o bind /mnt/otherdisk/nix /nix
   ```
 
-  Consult the mount 8 manual page for details.
+  详情请查阅 mount 8 手册页。
 
 - <span id="env-NIX_STORE_DIR">[`NIX_STORE_DIR`](#env-NIX_STORE_DIR)</span>
 
-  Overrides the location of the Nix store.
-  On Unix, the default is `/nix/store`, set at compile time by the `libstore:store-dir` build option.
-  On Windows, there is no compile-time setting; the default is `%PROGRAMDATA%\nix\store`, determined at runtime using the [`%PROGRAMDATA%` Known Folder](#known-folders).
+  覆盖 Nix store 的位置。
+  在 Unix 上，默认值为 `/nix/store`，由编译期的 `libstore:store-dir` 构建选项设置。
+  在 Windows 上没有编译期设置；默认值为 `%PROGRAMDATA%\nix\store`，运行时通过 [`%PROGRAMDATA%` Known Folder](#known-folders) 确定。
 
-  See the [Store Types] chapter; each store has a `store` setting linking back to this as its default.
+  参见 [Store Types] 一章；每种 store 都有一个 `store` 设置，其默认值指向这里。
 
 - <span id="env-NIX_LOG_DIR">[`NIX_LOG_DIR`](#env-NIX_LOG_DIR)</span>
 
-  Overrides the location of the Nix log directory.
-  On Unix, the default is `/nix/var/log/nix`, set at compile time by the `log-dir` build option.
-  On Windows, there is no compile-time setting; the default is `%PROGRAMDATA%\nix\log`, determined at runtime using the [`%PROGRAMDATA%` Known Folder](#known-folders).
+  覆盖 Nix 日志目录的位置。
+  在 Unix 上，默认值为 `/nix/var/log/nix`，由编译期的 `log-dir` 构建选项设置。
+  在 Windows 上没有编译期设置；默认值为 `%PROGRAMDATA%\nix\log`，运行时通过 [`%PROGRAMDATA%` Known Folder](#known-folders) 确定。
 
-  The [Local Store], [Local Daemon Store], and [Experimental SSH Store with filesystem mounted] have per-store settings that override this.
+  [Local Store]、[Local Daemon Store] 和 [Experimental SSH Store with filesystem mounted] 都有覆盖此项的 per-store 设置。
 
 - <span id="env-NIX_STATE_DIR">[`NIX_STATE_DIR`](#env-NIX_STATE_DIR)</span>
 
-  Overrides the location of the Nix state directory.
-  On Unix, the default is `${localstatedir}/nix`, where `localstatedir` is a compile-time build option defaulting to `/nix/var`.
-  On Windows, there is no compile-time setting; the default is `%PROGRAMDATA%\nix\state`, determined at runtime using the [`%PROGRAMDATA%` Known Folder](#known-folders).
+  覆盖 Nix 状态目录的位置。
+  在 Unix 上，默认值为 `${localstatedir}/nix`，其中 `localstatedir` 是一个编译期构建选项，默认为 `/nix/var`。
+  在 Windows 上没有编译期设置；默认值为 `%PROGRAMDATA%\nix\state`，运行时通过 [`%PROGRAMDATA%` Known Folder](#known-folders) 确定。
 
-  The [Local Store], [Local Daemon Store], and [Experimental SSH Store with filesystem mounted] have per-store settings that override this.
+  [Local Store]、[Local Daemon Store] 和 [Experimental SSH Store with filesystem mounted] 都有覆盖此项的 per-store 设置。
 
 - <span id="env-NIX_DAEMON_SOCKET_PATH">[`NIX_DAEMON_SOCKET_PATH`](#env-NIX_DAEMON_SOCKET_PATH)</span>
 
-  Overrides the path to the Unix domain socket used to communicate with the Nix daemon.
-  Defaults to `daemon-socket/socket` within the state directory (see [`NIX_STATE_DIR`](#env-NIX_STATE_DIR)).
+  覆盖用于与 Nix daemon（守护进程）通信的 Unix domain socket 的路径。
+  默认为状态目录中的 `daemon-socket/socket`（参见 [`NIX_STATE_DIR`](#env-NIX_STATE_DIR)）。
 
-  See the [Local Daemon Store] documentation for details on how the socket path is resolved.
+  关于 socket 路径如何解析的细节，请参见 [Local Daemon Store] 文档。
 
 - <span id="env-TMPDIR">[`TMPDIR`](#env-TMPDIR)</span>
 
-  Use the specified directory to store temporary files. In particular,
-  this includes temporary build directories; these can take up
-  substantial amounts of disk space. The default is `/tmp`.
+  使用指定目录存放临时文件。特别是，
+  其中包括临时构建目录；它们可能占用
+  相当可观的磁盘空间。默认值为 `/tmp`。
 
 - <span id="env-NIX_REMOTE">[`NIX_REMOTE`](#env-NIX_REMOTE)</span>
 
-  Overrides the [`store`](@docroot@/command-ref/conf-file.md#conf-store) setting.
+  覆盖 [`store`](@docroot@/command-ref/conf-file.md#conf-store) 设置。
 
 [Store Types]: @docroot@/store/types/index.md
 [store URL format]: @docroot@/store/types/index.md#store-url-format
@@ -91,107 +91,107 @@ See the [configuration file](@docroot@/command-ref/conf-file.md#configuration-fi
 [Local Daemon Store]: @docroot@/store/types/local-daemon-store.md
 [Experimental SSH Store with filesystem mounted]: @docroot@/store/types/experimental-ssh-store-with-filesystem-mounted.md
 
-## Nix language evaluator settings
+## Nix 语言求值器设置
 
 - <span id="env-NIX_SHOW_STATS">[`NIX_SHOW_STATS`](#env-NIX_SHOW_STATS)</span>
 
-  If set to `1`, Nix will print some evaluation statistics, such as
-  the number of values allocated.
+  如果设置为 `1`，Nix 将打印一些求值统计信息，例如
+  分配的值的数量。
 
 - <span id="env-NIX_COUNT_CALLS">[`NIX_COUNT_CALLS`](#env-NIX_COUNT_CALLS)</span>
 
-  If set to `1`, Nix will print how often functions were called during
-  Nix expression evaluation. This is useful for profiling your Nix
-  expressions.
+  如果设置为 `1`，Nix 将打印 Nix 表达式求值期间
+  函数被调用的次数。这对于对 Nix
+  表达式做性能分析很有用。
 
 - <span id="env-GC_INITIAL_HEAP_SIZE">[`GC_INITIAL_HEAP_SIZE`](#env-GC_INITIAL_HEAP_SIZE)</span>
 
-  If Nix has been configured to use the Boehm garbage collector, this
-  variable sets the initial size of the heap in bytes. It defaults to
-  384 MiB. Setting it to a low value reduces memory consumption, but
-  will increase runtime due to the overhead of garbage collection.
+  如果 Nix 被配置为使用 Boehm 垃圾回收器，这个
+  变量以字节为单位设置堆的初始大小。默认值为
+  384 MiB。将其设为较小的值可以降低内存占用，但由于垃圾回收的开销，
+  会增加运行时间。
 
 - <span id="env-NIX_PATH">[`NIX_PATH`](#env-NIX_PATH)</span>
 
-  A colon-separated list of search path entries used to resolve [lookup paths](@docroot@/language/constructs/lookup-path.md).
+  以冒号分隔的搜索路径条目列表，用于解析 [lookup paths](@docroot@/language/constructs/lookup-path.md)。
 
-  This environment variable overrides the value of the [`nix-path` configuration setting](@docroot@/command-ref/conf-file.md#conf-nix-path).
+  此环境变量覆盖 [`nix-path` 配置设置](@docroot@/command-ref/conf-file.md#conf-nix-path)的值。
 
-  It can be extended using the [`-I` option](@docroot@/command-ref/opt-common.md#opt-I).
+  可以使用 [`-I` 选项](@docroot@/command-ref/opt-common.md#opt-I)扩展。
 
-  > **Example**
+  > **示例**
   >
   > ```bash
   > $ export NIX_PATH=/home/eelco/Dev:nixos-config=/etc/nixos
   > ```
 
-  If `NIX_PATH` is set to an empty string, resolving search paths will always fail.
+  如果 `NIX_PATH` 被设置为空字符串，解析搜索路径将总是失败。
 
-  > **Example**
+  > **示例**
   >
   > ```bash
   > $ NIX_PATH= nix-instantiate --eval '<nixpkgs>'
   > error: file 'nixpkgs' was not found in the Nix search path (add it using $NIX_PATH or -I)
   > ```
 
-## User Directories
+## 用户目录
 
-Nix supports per-user **configuration**, **state**, and **cache** directories.
-The following environment variables override the locations for these directories:
+Nix 支持针对每个用户的**配置**、**状态**和**缓存**目录。
+以下环境变量覆盖这些目录的位置：
 
-- [user configuration directory]{#user-conf-dir}: [`NIX_CONFIG_HOME`]{#env-NIX_CONFIG_HOME}
-- user state directory: [`NIX_STATE_HOME`]{#env-NIX_STATE_HOME}
-- user cache directory: [`NIX_CACHE_HOME`]{#env-NIX_CACHE_HOME}
+- [用户配置目录]{#user-conf-dir}：[`NIX_CONFIG_HOME`]{#env-NIX_CONFIG_HOME}
+- 用户状态目录：[`NIX_STATE_HOME`]{#env-NIX_STATE_HOME}
+- 用户缓存目录：[`NIX_CACHE_HOME`]{#env-NIX_CACHE_HOME}
 
-When these are not set, the defaults depend on the platform:
+当这些变量未设置时，默认值取决于平台：
 
-- On Unix, the [XDG base directories](#xdg-base-directories): `$XDG_CONFIG_HOME/nix`, `$XDG_STATE_HOME/nix`, `$XDG_CACHE_HOME/nix`
-- On Windows, the [Windows Known Folders](#known-folders): `%APPDATA%\nix\config`, `%LOCALAPPDATA%\nix\state`, `%LOCALAPPDATA%\nix\cache`
+- 在 Unix 上，为 [XDG base directories](#xdg-base-directories)：`$XDG_CONFIG_HOME/nix`、`$XDG_STATE_HOME/nix`、`$XDG_CACHE_HOME/nix`
+- 在 Windows 上，为 [Windows Known Folders](#known-folders)：`%APPDATA%\nix\config`、`%LOCALAPPDATA%\nix\state`、`%LOCALAPPDATA%\nix\cache`
 
 [`use-xdg-base-directories`]: @docroot@/command-ref/conf-file.md#conf-use-xdg-base-directories
 
-For backwards compatibility, legacy Nix commands (e.g. `nix-env`, `nix-channel`) use dotfiles in `$HOME` instead of these directories unless [`use-xdg-base-directories`] is enabled.
-[New Nix commands](@docroot@/command-ref/new-cli/nix.md) (experimental) use the proper directories by default.
+为了向后兼容，旧式 Nix 命令（例如 `nix-env`、`nix-channel`）使用 `$HOME` 中的点文件而非这些目录，除非启用了 [`use-xdg-base-directories`]。
+[新式 Nix 命令](@docroot@/command-ref/new-cli/nix.md)（实验性）默认使用正确的目录。
 
-When [`use-xdg-base-directories`] is enabled, the configuration directory is resolved as:
+启用 [`use-xdg-base-directories`] 时，配置目录按如下方式解析：
 
-1. `$NIX_CONFIG_HOME`, if it is defined
-2. Otherwise, the platform default (e.g. `$XDG_CONFIG_HOME/nix` on Unix)
+1. `$NIX_CONFIG_HOME`，如果它已定义
+2. 否则，使用平台默认值（例如 Unix 上的 `$XDG_CONFIG_HOME/nix`）
 
-Likewise for the state and cache directories.
+状态目录和缓存目录的处理方式相同。
 
-## Miscellaneous environment variables
+## 其他环境变量
 
 - <span id="env-IN_NIX_SHELL">[`IN_NIX_SHELL`](#env-IN_NIX_SHELL)</span>
 
-  Indicator that tells if the current environment was set up by
-  `nix-shell`. It can have the values `pure` or `impure`.
+  指示当前环境是否由
+  `nix-shell` 建立。它可以取值 `pure` 或 `impure`。
 
-## Appendix: OS-specific conventions
+## 附录：操作系统特定约定
 
-This information is not Nix-specific, but is referenced above.
+此信息并非 Nix 特有，但上文引用了它。
 
-### Unix: XDG Base Directories {#xdg-base-directories}
+### Unix：XDG Base Directories {#xdg-base-directories}
 
-The [XDG Base Directory Specification] defines standard locations for user-specific configuration, state, and cache files on Unix systems.
+[XDG Base Directory Specification] 定义了 Unix 系统上用户专属配置、状态和缓存文件的标准位置。
 
 [XDG Base Directory Specification]: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
-The following environment variables are used:
+使用以下环境变量：
 
-- [`XDG_CONFIG_HOME`]{#env-XDG_CONFIG_HOME} (default `~/.config`)
-- [`XDG_STATE_HOME`]{#env-XDG_STATE_HOME} (default `~/.local/state`)
-- [`XDG_CACHE_HOME`]{#env-XDG_CACHE_HOME} (default `~/.cache`)
-- [`XDG_CONFIG_DIRS`]{#env-XDG_CONFIG_DIRS} (default `/etc/xdg`) — colon-separated list of additional configuration base directories, searched after `XDG_CONFIG_HOME`
+- [`XDG_CONFIG_HOME`]{#env-XDG_CONFIG_HOME}（默认 `~/.config`）
+- [`XDG_STATE_HOME`]{#env-XDG_STATE_HOME}（默认 `~/.local/state`）
+- [`XDG_CACHE_HOME`]{#env-XDG_CACHE_HOME}（默认 `~/.cache`）
+- [`XDG_CONFIG_DIRS`]{#env-XDG_CONFIG_DIRS}（默认 `/etc/xdg`）——以冒号分隔的附加配置基础目录列表，在 `XDG_CONFIG_HOME` 之后搜索
 
-### Windows: Known Folders {#known-folders}
+### Windows：Known Folders {#known-folders}
 
-On Windows, [Known Folders][windows-known-folders] provide standard locations for application data on Windows.
+在 Windows 上，[Known Folders][windows-known-folders] 为 Windows 上的应用数据提供标准位置。
 
 [windows-known-folders]: https://learn.microsoft.com/en-us/windows/win32/shell/known-folders
 
-The relevant folders are:
+相关的文件夹包括：
 
-- [`%APPDATA%`]{#env-APPDATA} — per-user roaming application data
-- [`%LOCALAPPDATA%`]{#env-LOCALAPPDATA} — per-user local application data
-- [`%PROGRAMDATA%`]{#env-PROGRAMDATA} — system-wide application data
+- [`%APPDATA%`]{#env-APPDATA} —— 每个用户的漫游应用数据
+- [`%LOCALAPPDATA%`]{#env-LOCALAPPDATA} —— 每个用户的本地应用数据
+- [`%PROGRAMDATA%`]{#env-PROGRAMDATA} —— 系统级应用数据

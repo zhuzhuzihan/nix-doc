@@ -1,26 +1,26 @@
-# Derivations
+# derivation（派生）
 
-The most important built-in function is `derivation`, which is used to describe a single store-layer [store derivation].
-Consult the [store chapter](@docroot@/store/derivation/index.md) for what a store derivation is;
-this section just concerns how to create one from the Nix language.
+最重要的内置函数是 `derivation`，它用于描述一个单一的 store 层[store derivation]。
+关于什么是 store derivation，请参阅 [store 章节](@docroot@/store/derivation/index.md)；
+本节只关注如何用 Nix 语言创建一个。
 
-This builtin function takes as input an attribute set, the attributes of which specify the inputs to the process.
-It outputs an attribute set, and produces a [store derivation] as a side effect of evaluation.
+这个内置函数接受一个属性集作为输入，其属性指定了该过程的各项输入。
+它输出一个属性集，并在求值的过程中作为副作用产生一个 [store derivation]。
 
 [store derivation]: @docroot@/glossary.md#gloss-store-derivation
 
-## Input attributes
+## 输入属性
 
-### Required
+### 必需属性
 
-- [`name`]{#attr-name} ([String](@docroot@/language/types.md#type-string))
+- [`name`]{#attr-name}（[字符串](@docroot@/language/types.md#type-string)）
 
-  A symbolic name for the derivation.
-  See [derivation outputs](@docroot@/store/derivation/outputs/index.md#outputs) for what this is affects.
+  derivation 的符号名称。
+  它会影响什么，参见 [derivation 输出](@docroot@/store/derivation/outputs/index.md#outputs)。
 
   [store path]: @docroot@/store/store-path.md
 
-  > **Example**
+  > **示例**
   >
   > ```nix
   > derivation {
@@ -29,16 +29,16 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > }
   > ```
   >
-  > The derivation's path will be `/nix/store/<hash>-hello.drv`.
-  > The [output](#attr-outputs) paths will be of the form `/nix/store/<hash>-hello[-<output>]`
+  > 该 derivation 的路径将是 `/nix/store/<hash>-hello.drv`。
+  > [输出](#attr-outputs)路径的形式将是 `/nix/store/<hash>-hello[-<output>]`
 
-- [`system`]{#attr-system} ([String](@docroot@/language/types.md#type-string))
+- [`system`]{#attr-system}（[字符串](@docroot@/language/types.md#type-string)）
 
-  See [system](@docroot@/store/derivation/index.md#system).
+  参见 [system](@docroot@/store/derivation/index.md#system)。
 
-  > **Example**
+  > **示例**
   >
-  > Declare a derivation to be built on a specific system type:
+  > 声明一个要在特定系统类型上构建的 derivation：
   >
   > ```nix
   > derivation {
@@ -48,9 +48,9 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > }
   > ```
 
-  > **Example**
+  > **示例**
   >
-  > Declare a derivation to be built on the system type that evaluates the expression:
+  > 声明一个要在执行表达式求值的系统类型上构建的 derivation：
   >
   > ```nix
   > derivation {
@@ -60,15 +60,15 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > }
   > ```
   >
-  > [`builtins.currentSystem`](@docroot@/language/builtins.md#builtins-currentSystem) has the value of the [`system` configuration option], and defaults to the system type of the current Nix installation.
+  > [`builtins.currentSystem`](@docroot@/language/builtins.md#builtins-currentSystem) 的值来自 [`system` 配置选项]，默认为当前 Nix 安装的系统类型。
 
-- [`builder`]{#attr-builder} ([Path](@docroot@/language/types.md#type-path) | [String](@docroot@/language/types.md#type-string))
+- [`builder`]{#attr-builder}（[路径](@docroot@/language/types.md#type-path) | [字符串](@docroot@/language/types.md#type-string)）
 
-  See [builder](@docroot@/store/derivation/index.md#builder).
+  参见 [builder](@docroot@/store/derivation/index.md#builder)。
 
-  > **Example**
+  > **示例**
   >
-  > Use the file located at `/bin/bash` as the builder executable:
+  > 使用位于 `/bin/bash` 的文件作为 builder 可执行文件：
   >
   > ```nix
   > derivation {
@@ -80,9 +80,9 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
 
   <!-- -->
 
-  > **Example**
+  > **示例**
   >
-  > Copy a local file to the Nix store for use as the builder executable:
+  > 把一个本地文件复制到 Nix store 中，用作 builder 可执行文件：
   >
   > ```nix
   > derivation {
@@ -94,9 +94,9 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
 
   <!-- -->
 
-  > **Example**
+  > **示例**
   >
-  > Use a file from another derivation as the builder executable:
+  > 使用来自另一个 derivation 的文件作为 builder 可执行文件：
   >
   > ```nix
   > let pkgs = import <nixpkgs> {}; in
@@ -107,17 +107,17 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > };
   > ```
 
-### Optional
+### 可选属性
 
-- [`args`]{#attr-args} ([List](@docroot@/language/types.md#type-list) of [String](@docroot@/language/types.md#type-string))
+- [`args`]{#attr-args}（[字符串](@docroot@/language/types.md#type-string)的[列表](@docroot@/language/types.md#type-list)）
 
-  Default: `[ ]`
+  默认值：`[ ]`
 
-  See [args](@docroot@/store/derivation/index.md#args).
+  参见 [args](@docroot@/store/derivation/index.md#args)。
 
-  > **Example**
+  > **示例**
   >
-  > Pass arguments to Bash to interpret a shell command:
+  > 向 Bash 传递参数以解释执行一条 shell 命令：
   >
   > ```nix
   > derivation {
@@ -128,22 +128,22 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > };
   > ```
 
-- [`outputs`]{#attr-outputs} ([List](@docroot@/language/types.md#type-list) of [String](@docroot@/language/types.md#type-string))
+- [`outputs`]{#attr-outputs}（[字符串](@docroot@/language/types.md#type-string)的[列表](@docroot@/language/types.md#type-list)）
 
-  Default: `[ "out" ]`
+  默认值：`[ "out" ]`
 
-  Symbolic outputs of the derivation.
-  Each output name is passed to the [`builder`](#attr-builder) executable as an environment variable with its value set to the corresponding [store path].
+  derivation 的符号输出。
+  每个输出名称都会作为环境变量传递给 [`builder`](#attr-builder) 可执行文件，其值被设置为对应的[存储路径]。
 
-  By default, a derivation produces a single output called `out`.
-  However, derivations can produce multiple outputs.
-  This allows the associated [store objects](@docroot@/store/store-object.md) and their [closures](@docroot@/glossary.md#gloss-closure) to be copied or garbage-collected separately.
+  默认情况下，derivation 只产生一个名为 `out` 的输出。
+  不过，derivation 可以产生多个输出。
+  这使得关联的 [store object](@docroot@/store/store-object.md) 及其[闭包](@docroot@/glossary.md#gloss-closure)可以被单独复制或垃圾回收。
 
-  > **Example**
+  > **示例**
   >
-  > Imagine a library package that provides a dynamic library, header files, and documentation.
-  > A program that links against such a library doesn’t need the header files and documentation at runtime, and it doesn’t need the documentation at build time.
-  > Thus, the library package could specify:
+  > 想象一个提供动态库、头文件和文档的库软件包。
+  > 链接这样一个库的程序在运行时不需要头文件和文档，在构建时也不需要文档。
+  > 因此，这个库软件包可以指定：
   >
   > ```nix
   > derivation {
@@ -153,8 +153,8 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > }
   > ```
   >
-  > This will cause Nix to pass environment variables `lib`, `dev`, and `doc` to the builder containing the intended store paths of each output.
-  > The builder would typically do something like
+  > 这会让 Nix 向 builder 传递环境变量 `lib`、`dev` 和 `doc`，其中包含每个输出预期的存储路径。
+  > 对于 Autoconf 风格的软件包，builder 通常会做类似这样的事情：
   >
   > ```bash
   > ./configure \
@@ -162,12 +162,10 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   >   --includedir=$dev/include \
   >   --docdir=$doc/share/doc
   > ```
-  >
-  > for an Autoconf-style package.
 
-  The name of an output is combined with the name of the derivation to create the [name part](@docroot@/store/store-path.md#name) of the output's store path, unless it is `out`, in which case just the name of the derivation is used.
+  输出的名称会与 derivation 的名称组合起来，构成该输出的存储路径的[名称部分](@docroot@/store/store-path.md#name)；但如果输出名是 `out`，则只使用 derivation 的名称。
 
-  > **Example**
+  > **示例**
   >
   >
   > ```nix
@@ -178,19 +176,19 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > }
   > ```
   >
-  > The store derivation path will be `/nix/store/<hash>-example.drv`.
-  > The output paths will be
+  > store derivation 的路径将是 `/nix/store/<hash>-example.drv`。
+  > 输出路径将是
   > - `/nix/store/<hash>-example-lib`
   > - `/nix/store/<hash>-example-dev`
   > - `/nix/store/<hash>-example-doc`
   > - `/nix/store/<hash>-example`
 
-  You can refer to each output of a derivation by selecting it as an attribute.
-  The first element of `outputs` determines the *default output* and ends up at the top-level.
+  你可以通过把 derivation 的某个输出当作属性来选择它，从而引用该输出。
+  `outputs` 的第一个元素决定了*默认输出*，它位于顶层。
 
-  > **Example**
+  > **示例**
   >
-  > Select an output by attribute name:
+  > 按属性名选择一个输出：
   >
   > ```nix
   > let
@@ -202,36 +200,35 @@ It outputs an attribute set, and produces a [store derivation] as a side effect 
   > in myPackage.dev
   > ```
   >
-  > Since `lib` is the first output, `myPackage` is equivalent to `myPackage.lib`.
+  > 由于 `lib` 是第一个输出，`myPackage` 等价于 `myPackage.lib`。
 
   <!-- FIXME: refer to the output attributes when we have one -->
 
-- See [Advanced Attributes](./advanced-attributes.md) for more, infrequently used, optional attributes.
+- 更多不常用的可选属性，参见[高级属性](./advanced-attributes.md)。
 
   <!-- FIXME: This should be moved here -->
 
-- Every other attribute is passed as an environment variable to the builder.
-  Attribute values are translated to environment variables as follows:
+- 所有其他属性都会作为环境变量传递给 builder。
+  属性值按以下方式转换为环境变量：
 
-    - Strings are passed unchanged.
+    - 字符串原样传递。
 
-    - Integral numbers are converted to decimal notation.
+    - 整数被转换为十进制表示。
 
-    - Floating point numbers are converted to simple decimal or scientific notation with a preset precision.
+    - 浮点数被转换为预设精度的简单十进制或科学计数法表示。
 
-    - A *path* (e.g., `../foo/sources.tar`) causes the referenced file
-      to be copied to the store; its location in the store is put in
-      the environment variable. The idea is that all sources should
-      reside in the Nix store, since all inputs to a derivation should
-      reside in the Nix store.
+    - *路径*（例如 `../foo/sources.tar`）会导致被引用的文件被复制到 store 中；
+      并把它在 store 中的位置放入环境变量。其设计思想是所有源代码都应
+      存放在 Nix store 中，因为 derivation 的所有输入都应
+      存放在 Nix store 中。
 
-    - A *derivation* causes that derivation to be built prior to the
-      present derivation. The environment variable is set to the [store path] of the derivation's default [output](#attr-outputs).
+    - *derivation* 会导致该 derivation 在当前 derivation 之前被构建。
+      环境变量会被设置为该 derivation 的默认[输出](#attr-outputs)的[存储路径]。
 
-    - Lists of the previous types are also allowed. They are simply
-      concatenated, separated by spaces.
+    - 由前面这些类型组成的列表也是允许的。它们只是被简单地
+      拼接在一起，以空格分隔。
 
-    - `true` is passed as the string `1`, `false` and `null` are
-      passed as an empty string.
+    - `true` 会作为字符串 `1` 传递；`false` 和 `null` 会作为
+      空字符串传递。
 
 <!-- FIXME: add a section on output attributes -->

@@ -1,3 +1,3 @@
-# Utilities
+# 工具
 
-This section lists utilities that you can use when you work with Nix.
+本节列出了使用 Nix 时可以使用的工具。

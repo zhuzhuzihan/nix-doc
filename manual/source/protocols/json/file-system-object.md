@@ -1,14 +1,14 @@
 {{#include file-system-object-v1-fixed.md}}
 
-## Examples
+## 示例
 
-### Simple
+### 简单
 
 ```json
 {{#include schema/file-system-object-v1/simple.json}}
 ```
 
-### Complex
+### 复杂
 
 ```json
 {{#include schema/file-system-object-v1/complex.json}}

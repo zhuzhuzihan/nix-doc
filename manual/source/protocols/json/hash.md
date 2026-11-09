@@ -1,6 +1,6 @@
 {{#include hash-v1-fixed.md}}
 
-## Examples
+## 示例
 
 ### SHA-256
 

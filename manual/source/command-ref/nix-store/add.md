@@ -1,18 +1,16 @@
 # Name
 
-`nix-store --add` - add paths to Nix store
+`nix-store --add` - 将路径添加到 Nix store
 
-# Synopsis
+# 概要
 
 `nix-store` `--add` *paths…*
 
-# Description
+# 描述
 
-The operation `--add` adds the specified paths to the Nix store. It
-prints the resulting paths in the Nix store on standard output.
+`--add` 操作将指定路径添加到 Nix store，并在标准输出上打印生成的存储路径。
 
-*paths* that refer to symlinks are not dereferenced, but added to the store
-as symlinks with the same target.
+指向符号链接的 *paths* 不会被解引用，而是以符号链接的形式添加到 store 中，其目标保持不变。
 
 {{#include ./opt-common.md}}
 
@@ -20,7 +18,7 @@ as symlinks with the same target.
 
 {{#include ../env-common.md}}
 
-# Example
+# 示例
 
 ```console
 $ nix-store --add ./foo.c

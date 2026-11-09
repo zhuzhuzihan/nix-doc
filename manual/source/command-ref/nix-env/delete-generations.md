@@ -1,56 +1,55 @@
 # Name
 
-`nix-env --delete-generations` - delete profile generations
+`nix-env --delete-generations` - 删除 profile 的 generation（代）
 
-# Synopsis
+概要
 
 `nix-env` `--delete-generations` *generations*
 
-# Description
+# 描述
 
-This operation deletes the specified generations of the current profile.
+该操作删除当前 profile 的指定 generation。
 
-*generations* can be a one of the following:
+*generations* 可以是以下之一：
 
 - <span id="generations-list">[`<number>...`](#generations-list)</span>
 
-  A list of generation numbers, each one a separate command-line argument.
+  一组 generation 编号，每个编号作为单独的命令行参数。
 
-  Delete exactly the profile generations given by their generation number.
-  Deleting the current generation is not allowed.
+  按编号精确删除指定的 profile generation。
+  禁止删除当前 generation。
 
-- <span id="generations-old">[The special value `old`](#generations-old)</span>
+- <span id="generations-old">[特殊值 `old`](#generations-old)</span>
 
-  Delete all generations except the current one.
+  删除除当前 generation 之外的所有 generation。
 
-  > **WARNING**
+  > **警告**
   >
-  > Older *and newer* generations will be deleted by this operation.
+  > 该操作会删除比当前 generation 更旧*以及更新*的 generation。
   >
-  > One might expect this to just delete older generations than the current one, but that is only true if the current generation is also the latest.
-  > Because one can roll back to a previous generation, it is possible to have generations newer than the current one.
-  > They will also be deleted.
+  > 有人可能以为它只会删除比当前更旧的 generation，但这只有在当前 generation 同时也是最新 generation 时才成立。
+  > 由于可以回滚到先前的 generation，因此可能存在比当前 generation 更新的 generation。
+  > 它们也会被删除。
 
 - <span id="generations-time">[`<number>d`](#generations-time)</span>
 
-  The last *number* days
+  最近 *number* 天
 
-  *Example*: `30d`
+  *示例*：`30d`
 
-  Delete all generations created more than *number* days ago, except the most recent one of them.
-  This allows rolling back to generations that were available within the specified period.
+  删除创建于 *number* 天前的所有 generation，但保留其中最近的一个。
+  这样可以回滚到指定时间段内曾经可用的 generation。
 
 - <span id="generations-count">[`+<number>`](#generations-count)</span>
 
-  The last *number* generations up to the present
+  截至当前的最后 *number* 个 generation
 
-  *Example*: `+5`
+  *示例*：`+5`
 
-  Keep the last *number* generations, along with any newer than current.
+  保留最后 *number* 个 generation，以及所有比当前 generation 更新的 generation。
 
-Periodically deleting old generations is important to make garbage collection
-effective.
-The is because profiles are also garbage collection roots — any [store object] reachable from a profile is "alive" and ineligible for deletion.
+定期删除旧的 generation 对于使垃圾回收生效非常重要。
+这是因为 profile 也是垃圾回收根——从 profile 可达的任何 [store object] 都是"存活"的，不会被删除。
 
 [store object]: @docroot@/store/store-object.md
 
@@ -62,36 +61,36 @@ The is because profiles are also garbage collection roots — any [store object]
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
-## Delete explicit generation numbers
+## 按编号显式删除 generation
 
 ```console
 $ nix-env --delete-generations 3 4 8
 ```
 
-Delete the generations numbered 3, 4, and 8, so long as the current active generation is not any of those.
+删除编号为 3、4、8 的 generation，前提是当前激活的 generation 不是其中任何一个。
 
-## Keep most-recent by count (number of generations)
+## 按数量（generation 个数）保留最近的
 
 ```console
 $ nix-env --delete-generations +5
 ```
 
-Suppose `30` is the current generation, and we currently have generations numbered `20` through `32`.
+假设 `30` 是当前 generation，且我们目前拥有编号 `20` 到 `32` 的 generation。
 
-Then this command will delete generations `20` through `25` (`<= 30 - 5`),
-and keep generations `26` through `31` (`> 30 - 5`).
+那么该命令会删除 generation `20` 到 `25`（`<= 30 - 5`），
+并保留 generation `26` 到 `31`（`> 30 - 5`）。
 
-## Keep most-recent by time (number of days)
+## 按时间（天数）保留最近的
 
 ```console
 $ nix-env --delete-generations 30d
 ```
 
-This command will delete all generations older than 30 days, except for the generation that was active 30 days ago (if it currently exists).
+该命令会删除所有超过 30 天的 generation，但保留 30 天前激活的那个 generation（如果它目前仍然存在）。
 
-## Delete all older
+## 删除所有更旧的
 
 ```console
 $ nix-env --profile other_profile --delete-generations old

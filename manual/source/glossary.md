@@ -1,19 +1,19 @@
-# Glossary
+# 术语表
 
 - [`∅`]{#gloss-empty-set}
 
-  The empty set symbol. In the context of profile history, this denotes a package is not present in a particular version of the profile.
+  空集符号。在 profile 历史的语境中，它表示某个软件包在特定版本的 profile 中不存在。
 
 - [`ε`]{#gloss-epsilon}
 
-  The epsilon symbol. In the context of a package, this means the version is empty. More precisely, the derivation does not have a version attribute.
+  epsilon 符号。在软件包的语境中，它表示版本号为空。更准确地说，表示该 derivation（派生）没有版本属性。
 
-- [base directory]{#gloss-base-directory}
+- [base directory（基准目录）]{#gloss-base-directory}
 
-  The location from which relative paths are resolved.
+  相对路径的解析起点。
 
-  - For expressions in a file, the base directory is the directory containing that file.
-    This is analogous to the directory of a [base URL](https://datatracker.ietf.org/doc/html/rfc1808#section-3.3).
+  - 对于文件中的表达式，基准目录是包含该文件的目录。
+    这类似于 [base URL](https://datatracker.ietf.org/doc/html/rfc1808#section-3.3) 的基准目录。
     <!-- which is sufficient for resolving non-empty URLs -->
 
   <!--
@@ -23,372 +23,346 @@
         whereas the more natural "passed as an argument" allows an interpretation
         where the expression could be passed by file name.
     -->
-  - For expressions written in command line arguments with [`--expr`](@docroot@/command-ref/opt-common.html#opt-expr), the base directory is the current working directory.
+  - 对于通过命令行参数与 [`--expr`](@docroot@/command-ref/opt-common.html#opt-expr) 编写的表达式，基准目录是当前工作目录。
 
   [base directory]: #gloss-base-directory
 
-- [binary cache]{#gloss-binary-cache}
+- [binary cache（二进制缓存）]{#gloss-binary-cache}
 
-  A *binary cache* is a Nix store which uses a different format: its
-  metadata and signatures are kept in `.narinfo` files rather than in a
-  [Nix database]. This different format simplifies serving store objects
-  over the network, but cannot host builds. Examples of binary caches
-  include S3 buckets and the [NixOS binary cache](https://cache.nixos.org).
+  *二进制缓存*（binary cache）是一种使用不同格式的 Nix store：其元数据和签名保存在 `.narinfo` 文件中，而不是 [Nix 数据库][Nix database]中。这种不同的格式简化了通过网络提供存储对象的服务，但它本身不能执行构建。二进制缓存的例子包括 S3 存储桶和 [NixOS 二进制缓存](https://cache.nixos.org)。
 
-- [build system]{#gloss-build-system}
+- [build system（构建系统）]{#gloss-build-system}
 
-  Generic term for software that facilitates the building of software by automating the invocation of compilers, linkers, and other tools.
+  构建系统（build system）是对一类软件的统称：它们通过自动化地调用编译器、链接器等工具来辅助软件的构建。
 
-  Nix can be used as a generic build system.
-  It has no knowledge of any particular programming language or toolchain.
-  These details are specified in [derivation expressions](#gloss-derivation-expression).
+  Nix 可以作为一个通用的构建系统使用。
+  它不了解任何特定的编程语言或工具链。
+  这些细节在 [derivation 表达式](#gloss-derivation-expression)中指定。
 
-- [closure]{#gloss-closure}
+- [closure（闭包）]{#gloss-closure}
 
-  The closure of a store path is the set of store paths that are
-  directly or indirectly “reachable” from that store path; that is,
-  it’s the closure of the path under the *references* relation. For
-  a package, the closure of its derivation is equivalent to the
-  build-time dependencies, while the closure of its [output path] is
-  equivalent to its runtime dependencies. For correct deployment it
-  is necessary to deploy whole closures, since otherwise at runtime
-  files could be missing. The command `nix-store --query --requisites ` prints out
-  closures of store paths.
+  一个存储路径（store path）的闭包是指从该存储路径直接或间接「可达」的存储路径的集合；也就是说，它是该路径在*引用*关系下的闭包。对于一个软件包而言，其 derivation 的闭包等价于构建期依赖，而其[输出路径][output path]的闭包等价于运行期依赖。要正确部署，就必须部署完整的闭包，否则运行时可能出现文件缺失。命令 `nix-store --query --requisites ` 可以打印出存储路径的闭包。
 
-  As an example, if the [store object] at path `P` contains a [reference]
-  to a store object at path `Q`, then `Q` is in the closure of `P`. Further, if `Q`
-  references `R` then `R` is also in the closure of `P`.
+  举例来说，如果路径 `P` 上的[存储对象][store object]包含一个指向路径 `Q` 上存储对象的[引用][reference]，那么 `Q` 就在 `P` 的闭包中。进一步，如果 `Q` 引用了 `R`，那么 `R` 也在 `P` 的闭包中。
 
-  See [References](@docroot@/store/store-object.md#references) for details.
+  详情参见[引用](@docroot@/store/store-object.md#references)。
 
   [closure]: #gloss-closure
 
-- [content address]{#gloss-content-address}
+- [content address（内容寻址）]{#gloss-content-address}
 
-  A
-  [*content address*](https://en.wikipedia.org/wiki/Content-addressable_storage)
-  is a secure way to reference immutable data.
-  The reference is calculated directly from the content of the data being referenced, which means the reference is
-  [*tamper proof*](https://en.wikipedia.org/wiki/Tamperproofing)
-  --- variations of the data should always calculate to distinct content addresses.
+  [*content address*（内容地址）](https://en.wikipedia.org/wiki/Content-addressable_storage)是一种引用不可变数据的安全方式。
+  该引用直接从被引用数据的内容计算得出，这意味着引用是
+  [*tamper proof*（防篡改）的](https://en.wikipedia.org/wiki/Tamperproofing)
+  ——数据的任何变化都必然计算出不同的内容地址。
 
-  For how Nix uses content addresses, see:
+  关于 Nix 如何使用内容地址，参见：
 
-    - [Content-Addressing File System Objects](@docroot@/store/file-system-object/content-address.md)
-    - [Content-Addressing Store Objects](@docroot@/store/store-object/content-address.md)
-    - [content-addressing derivation](#gloss-content-addressing-derivation)
+    - [对文件系统对象进行内容寻址](@docroot@/store/file-system-object/content-address.md)
+    - [对存储对象进行内容寻址](@docroot@/store/store-object/content-address.md)
+    - [内容寻址 derivation](#gloss-content-addressing-derivation)
 
-  Software Heritage's writing on [*Intrinsic and Extrinsic identifiers*](https://www.softwareheritage.org/2020/07/09/intrinsic-vs-extrinsic-identifiers) is also a good introduction to the value of content-addressing over other referencing schemes.
+  Software Heritage 关于[*内在与外在标识符*](https://www.softwareheritage.org/2020/07/09/intrinsic-vs-extrinsic-identifiers)的文章，也是了解内容寻址相对于其他引用方案之价值的一篇很好的入门材料。
 
-  Besides content addressing, the Nix store also uses [input addressing](#gloss-input-addressed-store-object).
+  除了内容寻址之外，Nix store 还使用[按输入寻址](#gloss-input-addressed-store-object)。
 
-- [content-addressed storage]{#gloss-content-addressed-store}
+- [content-addressed storage（内容寻址存储）]{#gloss-content-addressed-store}
 
-  The industry term for storage and retrieval systems using [content addressing](#gloss-content-address). A Nix store also has [input addressing](#gloss-input-addressed-store-object), and metadata.
+  这是业界对采用[内容寻址](#gloss-content-address)的存储与检索系统的称呼。Nix store 还具有[按输入寻址](#gloss-input-addressed-store-object)和元数据。
 
-- [content-addressed store object]{#gloss-content-addressed-store-object}
+- [content-addressed store object（内容寻址存储对象）]{#gloss-content-addressed-store-object}
 
-  A [store object] which is [content-addressed](#gloss-content-address),
-  i.e. whose [store path] is determined by its contents.
-  This includes derivations, the outputs of [content-addressing derivations](#gloss-content-addressing-derivation), and the outputs of [fixed-output derivations](#gloss-fixed-output-derivation).
+  一种[存储对象][store object]，它是[内容寻址](#gloss-content-address)的，即其[存储路径][store path]由其内容决定。
+  这包括 derivation 本身、[内容寻址 derivation](#gloss-content-addressing-derivation)的输出，以及[固定输出 derivation](#gloss-fixed-output-derivation)的输出。
 
-  See [Content-Addressing Store Objects](@docroot@/store/store-object/content-address.md) for details.
+  详情参见[对存储对象进行内容寻址](@docroot@/store/store-object/content-address.md)。
 
-- [content-addressing derivation]{#gloss-content-addressing-derivation}
+- [content-addressing derivation（内容寻址 derivation）]{#gloss-content-addressing-derivation}
 
-  A derivation which has the
+  将
   [`__contentAddressed`](./language/advanced-attributes.md#adv-attr-__contentAddressed)
-  attribute set to `true`.
+  属性设置为 `true` 的 derivation。
 
-- [derivation]{#gloss-derivation}
+- [derivation（派生）]{#gloss-derivation}
 
-  A derivation can be thought of as a [pure function](https://en.wikipedia.org/wiki/Pure_function) that produces new [store objects][store object] from existing store objects.
+  derivation 可以被看作一个[纯函数](https://en.wikipedia.org/wiki/Pure_function)，它从已有的存储对象产生新的[存储对象][store object]。
 
-  Derivations are implemented as [operating system processes that run in a sandbox](@docroot@/store/building.md).
-  This sandbox by default only allows reading from store objects specified as inputs, and only allows writing to designated [outputs][output] to be [captured as store objects](@docroot@/store/building.md#processing-outputs).
+  derivation 的实现方式是[在沙箱中运行的操作系统进程](@docroot@/store/building.md)。
+  该沙箱默认只允许读取被指定为输入的存储对象，并且只允许写入指定的[输出][output]，这些输出随后会[被捕获为存储对象](@docroot@/store/building.md#processing-outputs)。
 
-  A derivation is typically specified as a [derivation expression] in the [Nix language], and [instantiated][instantiate] to a [store derivation].
-  There are multiple ways of obtaining store objects from store derivations, collectively called [realisation][realise].
+  derivation 通常以 [derivation 表达式][derivation expression]的形式在 [Nix 语言][Nix language]中指定，并被[实例化][instantiate]为一个 [store derivation]。
+  从 store derivation 获得存储对象有多种方式，统称为[实现（realisation）][realise]。
 
   [derivation]: #gloss-derivation
 
-- [derivation expression]{#gloss-derivation-expression}
+- [derivation expression（derivation 表达式）]{#gloss-derivation-expression}
 
-  A description of a [store derivation] using the [`derivation` primitive](./language/derivations.md) in the [Nix language].
+  使用 [Nix 语言][Nix language]中的 [`derivation` 原语](./language/derivations.md)对 [store derivation] 的描述。
 
   [derivation expression]: #gloss-derivation-expression
 
-- [derivation path]{#gloss-derivation-path}
+- [derivation path（derivation 路径）]{#gloss-derivation-path}
 
-  A [store path] which uniquely identifies a [store derivation].
+  唯一标识一个 [store derivation] 的[存储路径][store path]。
 
-  See [Referencing Store Derivations](@docroot@/store/derivation/index.md#derivation-path) for details.
+  详情参见[引用 store derivation](@docroot@/store/derivation/index.md#derivation-path)。
 
-  Not to be confused with [deriving path].
+  不要与 [deriving path] 混淆。
 
   [derivation path]: #gloss-derivation-path
 
 - [deriver]{#gloss-deriver}
 
-  The [store derivation] that produced an [output path].
+  产生某个[输出路径][output path]的 [store derivation]。
 
-  The deriver for an output path can be queried with the `--deriver` option to
-  [`nix-store --query`](@docroot@/command-ref/nix-store/query.md).
+  输出路径的 deriver 可以通过 [`nix-store --query`](@docroot@/command-ref/nix-store/query.md) 的 `--deriver` 选项查询。
 
 - [deriving path]{#gloss-deriving-path}
 
-  Deriving paths are a way to refer to [store objects][store object] that might not yet be [realised][realise].
+  Deriving path 是一种引用[存储对象][store object]的方式，所指的存储对象可能尚未被[实现][realise]。
 
-  See [Deriving Path](./store/derivation/index.md#deriving-path) for details.
+  详情参见 [deriving path](./store/derivation/index.md#deriving-path)。
 
-  Not to be confused with [derivation path].
+  不要与 [derivation path] 混淆。
 
-- [directed acyclic graph]{#gloss-directed-acyclic-graph}
+- [directed acyclic graph（有向无环图）]{#gloss-directed-acyclic-graph}
 
-  A [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) (DAG) is graph whose edges are given a direction ("a to b" is not the same edge as "b to a"), and for which no possible path (created by joining together edges) forms a cycle.
+  [有向无环图](https://en.wikipedia.org/wiki/Directed_acyclic_graph)（DAG）是一种边被赋予方向的图（「a 到 b」与「b 到 a」是不同的边），并且任何由边连接而成的路径都不会构成环。
 
-  DAGs are very important to Nix.
-  In particular, the non-self-[references][reference] of [store object][store object] form a cycle.
+  DAG 对 Nix 而言非常重要。
+  特别是，[存储对象][store object]之间的非自身[引用][reference]构成一个环。
 
-- [experimental feature]{#gloss-experimental-feature}
+- [experimental feature（实验性特性）]{#gloss-experimental-feature}
 
-  Not yet stabilized functionality guarded by named experimental feature flags.
-  These flags are enabled or disabled with the [`experimental-features`](./command-ref/conf-file.html#conf-experimental-features) setting.
+  尚未稳定的功能，由具名的实验性特性开关保护。
+  这些开关通过 [`experimental-features`](./command-ref/conf-file.html#conf-experimental-features) 设置来启用或禁用。
 
-  See the contribution guide on the [purpose and lifecycle of experimental features](@docroot@/development/experimental-features.md).
+  关于实验性特性的目的与生命周期，参见贡献指南中的[相关章节](@docroot@/development/experimental-features.md)。
 
-- [file system object]{#gloss-file-system-object}
+- [file system object（文件系统对象）]{#gloss-file-system-object}
 
-  The Nix data model for representing simplified file system data.
+  Nix 用于表示简化文件系统数据的数据模型。
 
-  See [File System Object](@docroot@/store/file-system-object.md) for details.
+  详情参见[文件系统对象](@docroot@/store/file-system-object.md)。
 
   [file system object]: #gloss-file-system-object
 
-- [fixed-output derivation]{#gloss-fixed-output-derivation} (FOD)
+- [fixed-output derivation（固定输出 derivation）]{#gloss-fixed-output-derivation}（FOD）
 
-  A [store derivation] where a cryptographic hash of the [output] is determined in advance using the [`outputHash`](./language/advanced-attributes.md#adv-attr-outputHash) attribute, and where the [`builder`](@docroot@/language/derivations.md#attr-builder) executable has access to the network.
+  一种 [store derivation]，其[输出][output]的密码学哈希通过 [`outputHash`](./language/advanced-attributes.md#adv-attr-outputHash) 属性预先确定，并且其 [`builder`](@docroot@/language/derivations.md#attr-builder) 可执行文件可以访问网络。
 
-- [hermetic]{#gloss-hermetic}
+- [hermetic（密封性）]{#gloss-hermetic}
 
-  An evaluation or build process is hermetic when one can mechanically identify the set of all inputs that may affect it.
-  At the build level this is achieved by sandboxing; at the evaluation level by restricting impure access (as in [pure evaluation](@docroot@/command-ref/conf-file.md#conf-pure-eval)) together with [locking](#gloss-locking) or [pinning](#gloss-pinning) of the fetched inputs, taken transitively over [pure fetches](@docroot@/command-ref/conf-file.md#pure-fetch).
+  当一个求值或构建过程的所有可能影响它的输入可以被机械地确定下来时，该过程就是密封的（hermetic）。
+  在构建层面，这通过沙箱实现；在求值层面，则通过限制非纯访问（如[纯求值](@docroot@/command-ref/conf-file.md#conf-pure-eval)）并结合对所获取输入的[锁定](#gloss-locking)或[固定](#gloss-pinning)来实现，并在[纯获取](@docroot@/command-ref/conf-file.md#pure-fetch)上传递地应用。
 
 - [IFD]{#gloss-ifd}
 
-  [Import From Derivation](./language/import-from-derivation.md)
+  [从 derivation 导入（Import From Derivation）](./language/import-from-derivation.md)
 
-- [impure derivation]{#gloss-impure-derivation}
+- [impure derivation（非纯 derivation）]{#gloss-impure-derivation}
 
-  [An experimental feature](@docroot@/development/experimental-features.md#xp-feature-impure-derivations) that allows derivations to be explicitly marked as impure,
-  so that they are always rebuilt, and their outputs not reused by subsequent calls to realise them.
+  [一项实验性特性](@docroot@/development/experimental-features.md#xp-feature-impure-derivations)，允许将 derivation 显式标记为非纯，
+  从而使其总是被重新构建，且其输出不会被后续的实现（realise）调用复用。
 
-- [input-addressed store object]{#gloss-input-addressed-store-object}
+- [input-addressed store object（按输入寻址的存储对象）]{#gloss-input-addressed-store-object}
 
-  A store object produced by building a
-  non-[content-addressed](#gloss-content-addressing-derivation),
-  non-[fixed-output](#gloss-fixed-output-derivation)
-  derivation.
+  通过构建一个非[内容寻址](#gloss-content-addressing-derivation)、
+  非[固定输出](#gloss-fixed-output-derivation)
+  的 derivation 而产生的存储对象。
 
-  See [input-addressing derivation outputs](store/derivation/outputs/input-address.md) for details.
+  详情参见 [derivation 输出的按输入寻址](store/derivation/outputs/input-address.md)。
 
-- [installable]{#gloss-installable}
+- [installable（可安装项）]{#gloss-installable}
 
-  Something that can be realised in the Nix store.
+  可以在 Nix store 中被实现（realise）的东西。
 
-  See [installables](./command-ref/new-cli/nix.md#installables) for [`nix` commands](./command-ref/new-cli/nix.md) (experimental) for details.
+  详情参见 [`nix` 命令](./command-ref/new-cli/nix.md)（实验性）的 [installables](./command-ref/new-cli/nix.md#installables)。
 
-- [instantiate]{#gloss-instantiate}, instantiation
+- [instantiate（实例化）]{#gloss-instantiate}，instantiation（实例化过程）
 
-  Translate a [derivation expression] into a [store derivation].
+  将 [derivation 表达式][derivation expression]翻译为一个 [store derivation]。
 
-  See [`nix-instantiate`](./command-ref/nix-instantiate.md), which produces a store derivation from a Nix expression that evaluates to a derivation.
+  参见 [`nix-instantiate`](./command-ref/nix-instantiate.md)，它从一个求值结果为 derivation 的 Nix 表达式生成 store derivation。
 
   [instantiate]: #gloss-instantiate
 
-- [locking]{#gloss-locking}
+- [locking（锁定）]{#gloss-locking}
 
-  In package management, *locking* is the concept or process of creating a lock file, which maps each mutable evaluation input to an immutable reference, so that future evaluations resolve to the same immutable versions rather than whatever the mutable references currently point to.
+  在软件包管理中，*锁定*（locking）是创建锁文件的概念或过程。锁文件将每个可变的求值输入映射到一个不可变的引用，使未来的求值解析到相同的不可变版本，而不是可变引用当前指向的内容。
 
-- [Nix Archive (NAR)]{#gloss-nar}
+- [Nix Archive（NAR）]{#gloss-nar}
 
-  A *N*ix *AR*chive. This is a serialisation of a path in the Nix
-  store. It can contain regular files, directories and symbolic
-  links.  NARs are generated and unpacked using `nix-store --dump`
-  and `nix-store --restore`.
+  *N*ix *AR*chive（Nix 归档）。这是对 Nix store 中路径的一种序列化表示。它可以包含普通文件、目录和符号链接。NAR 使用 `nix-store --dump` 和 `nix-store --restore` 来生成和解包。
 
-  See [Nix Archive](store/file-system-object/content-address.html#serial-nix-archive) for details.
+  详情参见 [Nix Archive](store/file-system-object/content-address.html#serial-nix-archive)。
 
-- [Nix database]{#gloss-nix-database}
+- [Nix database（Nix 数据库）]{#gloss-nix-database}
 
-  An SQlite database to track [reference]s between [store object]s.
-  This is an implementation detail of the [local store].
+  一个 SQlite 数据库，用于追踪[存储对象][store object]之间的[引用][reference]关系。
+  这是[本地存储][local store]的一个实现细节。
 
-  Default location: `/nix/var/nix/db`.
+  默认位置：`/nix/var/nix/db`。
 
   [Nix database]: #gloss-nix-database
 
-- [Nix expression]{#gloss-nix-expression}
+- [Nix expression（Nix 表达式）]{#gloss-nix-expression}
 
-  A syntactically valid use of the [Nix language].
+  [Nix 语言][Nix language]的一次语法上合法的使用。
 
-  > **Example**
+  > **示例**
   >
-  > The contents of a `.nix` file form a Nix expression.
+  > 一个 `.nix` 文件的内容构成一个 Nix 表达式。
 
-  Nix expressions specify [derivation expressions][derivation expression], which are [instantiated][instantiate] into the Nix store as [store derivations][store derivation].
-  These derivations can then be [realised][realise] to produce [outputs][output].
+  Nix 表达式指定 [derivation 表达式][derivation expression]，后者被[实例化][instantiate]到 Nix store 中成为 [store derivation]。
+  这些 derivation 随后可以被[实现][realise]以产生[输出][output]。
 
-  > **Example**
+  > **示例**
   >
-  > Building and deploying software using Nix entails writing Nix expressions to describe [packages][package] and compositions thereof.
+  > 使用 Nix 构建和部署软件，需要编写 Nix 表达式来描述[软件包][package]及其组合。
 
-- [Nix instance]{#gloss-nix-instance}
+- [Nix instance（Nix 实例）]{#gloss-nix-instance}
   <!-- ambiguous -->
-  1. An installation of Nix, which includes the presence of a [store], and the Nix package manager which operates on that store.
-     A local Nix installation and a [remote builder](@docroot@/advanced-topics/distributed-builds.md) are two examples of Nix instances.
-  2. A running Nix process, such as the `nix` command.
+  1. 一套 Nix 的安装，包括一个[存储][store]的存在，以及在该存储之上运作的 Nix 软件包管理器。
+     本地 Nix 安装和[远程构建机](@docroot@/advanced-topics/distributed-builds.md)是 Nix 实例的两个例子。
+  2. 一个正在运行的 Nix 进程，例如 `nix` 命令。
 
-- [output]{#gloss-output}
+- [output（输出）]{#gloss-output}
 
-  A [store object] produced by a [store derivation].
-  See [the `outputs` argument to the `derivation` function](@docroot@/language/derivations.md#attr-outputs) for details.
+  由 [store derivation] 产生的一个[存储对象][store object]。
+  详情参见 [`derivation` 函数的 `outputs` 参数](@docroot@/language/derivations.md#attr-outputs)。
 
   [output]: #gloss-output
 
-- [output closure]{#gloss-output-closure}\
-  The [closure] of an [output path]. It only contains what is [reachable] from the output.
+- [output closure（输出闭包）]{#gloss-output-closure}\
+  某个[输出路径][output path]的[闭包][closure]。它只包含从该输出[可达][reachable]的内容。
 
-- [output path]{#gloss-output-path}
+- [output path（输出路径）]{#gloss-output-path}
 
-  The [store path] to the [output] of a [store derivation].
+  指向某个 [store derivation] 的[输出][output]的[存储路径][store path]。
 
   [output path]: #gloss-output-path
 
-- [package]{#package}
+- [package（软件包）]{#package}
 
-  A software package; files that belong together for a particular purpose, and metadata.
+  软件包（package）；为特定目的而归在一起的一组文件，以及元数据。
 
-  Nix represents files as [file system objects][file system object], and how they belong together is encoded as [references][reference] between [store objects][store object] that contain these file system objects.
+  Nix 将文件表示为[文件系统对象][file system object]，而文件之间的归属关系则被编码为包含这些文件系统对象的[存储对象][store object]之间的[引用][reference]。
 
-  The [Nix language] allows denoting packages in terms of [attribute sets](@docroot@/language/types.md#type-attrs) containing:
-  - attributes that refer to the files of a package, typically in the form of [derivation outputs](#gloss-output),
-  - attributes with metadata, such as information about how the package is supposed to be used.
+  [Nix 语言][Nix language]允许用包含以下内容的[属性集](@docroot@/language/types.md#type-attrs)来表示软件包：
+  - 指向软件包文件的属性，通常以 [derivation 输出](#gloss-output)的形式出现，
+  - 带有元数据的属性，例如关于该软件包应如何使用的信息。
 
-  The exact shape of these attribute sets is up to convention.
+  这些属性集的具体形态取决于约定。
 
   [package]: #package
 
-- [pinning]{#gloss-pinning}
+- [pinning（固定）]{#gloss-pinning}
 
-  Like [locking](#gloss-locking), but a pin only locks a single input.
-  A pinning solution may manage a collection of pins,
-  but serves the bottom-up purpose of fixing an input's reference on demand,
-  whereas locking implies a top down approach where all pins are "coerced" into a single place.
-  This "coercion" is generally achieved by means of high-level mechanisms such as programming language module systems.
-  Nix does not have such a restrictive module system, as even a flake can use expressions that pin or lock on their own.
-  It does not rely on the lock being total, but on a transitive fetching property; see [hermeticity](#gloss-hermetic).
+  与[锁定](#gloss-locking)类似，但一个 pin 只锁定单个输入。
+  一个 pinning 方案可以管理一组 pin，
+  但其服务于自下而上的目的，即按需固定某个输入的引用，
+  而锁定则意味着一种自上而下的方式，所有 pin 都被「强制」收敛到一处。
+  这种「强制收敛」通常通过编程语言模块系统等高层机制实现。
+  Nix 没有如此严格的模块系统，因为即使是一个 Flakes 也可以自行使用固定或锁定的表达式。
+  它并不依赖锁定是完备的，而是依赖一种传递性的获取性质；参见[密封性](#gloss-hermetic)。
 
 - [profile]{#gloss-profile}
 
-  A symlink to the current *user environment* of a user, e.g.,
-  `/nix/var/nix/profiles/default`.
+  指向用户当前*用户环境*（user environment）的符号链接，例如
+  `/nix/var/nix/profiles/default`。
 
-- [purity]{#gloss-purity}
+- [purity（纯度）]{#gloss-purity}
 
-  The assumption that equal Nix derivations when run always produce
-  the same output. This cannot be guaranteed in general (e.g., a
-  builder can rely on external inputs such as the network or the
-  system time) but the Nix model assumes it.
+  即「相同的 Nix derivation 在运行时总是产生相同的输出」这一假设。一般来说这一点无法保证（例如，构建器可能依赖网络或系统时间等外部输入），但 Nix 模型假定了这一点。
 
-- [reachable]{#gloss-reachable}
+- [reachable（可达）]{#gloss-reachable}
 
-  A store path `Q` is reachable from another store path `P` if `Q`
-  is in the *closure* of the *references* relation.
+  如果存储路径 `Q` 位于*引用*关系的*闭包*之中，则称 `Q` 从另一个存储路径 `P` 可达。
 
-  See [References](@docroot@/store/store-object.md#references) for details.
+  详情参见[引用](@docroot@/store/store-object.md#references)。
 
-- [realise]{#gloss-realise}, realisation
+- [realise（实现）]{#gloss-realise}，realisation（实现过程）
 
-  Ensure a [store path] is [valid][validity].
+  确保某个[存储路径][store path]是[有效][validity]的。
 
-  This can be achieved by:
-  - Fetching a pre-built [store object] from a [substituter]
-  - [Building](@docroot@/store/building.md) the corresponding [store derivation]
-  - Delegating to a [remote machine](@docroot@/command-ref/conf-file.md#conf-builders) and retrieving the outputs
+  可以通过以下方式实现：
+  - 从 [substituter][substituter] 获取预构建的[存储对象][store object]
+  - [构建](@docroot@/store/building.md)相应的 [store derivation]
+  - 委托给[远程机器](@docroot@/command-ref/conf-file.md#conf-builders)并取回输出
 
-  See [`nix-store --realise`](@docroot@/command-ref/nix-store/realise.md) for a detailed description of the algorithm.
+  关于该算法的详细描述，参见 [`nix-store --realise`](@docroot@/command-ref/nix-store/realise.md)。
 
-  See also [`nix-build`](./command-ref/nix-build.md) and [`nix build`](./command-ref/new-cli/nix3-build.md) (experimental).
+  另见 [`nix-build`](./command-ref/nix-build.md) 与 [`nix build`](./command-ref/new-cli/nix3-build.md)（实验性）。
 
   [realise]: #gloss-realise
 
-- [reference]{#gloss-reference}
+- [reference（引用）]{#gloss-reference}
 
-  An edge from one [store object] to another.
+  从一个[存储对象][store object]指向另一个存储对象的边。
 
-  See [References](@docroot@/store/store-object.md#references) for details.
+  详情参见[引用](@docroot@/store/store-object.md#references)。
 
   [reference]: #gloss-reference
 
-  See [References](@docroot@/store/store-object.md#references) for details.
+  详情参见[引用](@docroot@/store/store-object.md#references)。
 
-- [referrer]{#gloss-referrer}
+- [referrer（引用者）]{#gloss-referrer}
 
-  A reversed edge from one [store object] to another.
+  从一个[存储对象][store object]指向另一个存储对象的反向边。
 
-- [requisite]{#gloss-requisite}
+- [requisite（必需项）]{#gloss-requisite}
 
-  A store object [reachable] by a path (chain of references) from a given [store object].
-  The [closure] is the set of requisites.
+  从某个给定的[存储对象][store object]出发，经由路径（引用链）而[可达][reachable]的存储对象。
+  [闭包][closure]就是所有必需项的集合。
 
-  See [References](@docroot@/store/store-object.md#references) for details.
+  详情参见[引用](@docroot@/store/store-object.md#references)。
 
-- [store]{#gloss-store}
+- [store（存储）]{#gloss-store}
 
-  A collection of [store objects][store object], with operations to manipulate that collection.
-  See [Nix Store](./store/index.md) for details.
+  [存储对象][store object]的集合，以及操作该集合的各种运算。
+  详情参见 [Nix Store](./store/index.md)。
 
-  There are many types of stores, see [Store Types](./store/types/index.md) for details.
+  存储有多种类型，详情参见 [Store Types](./store/types/index.md)。
 
   [store]: #gloss-store
 
 - [store derivation]{#gloss-store-derivation}
 
-  A [derivation] represented as a [store object].
+  以[存储对象][store object]形式表示的 [derivation][derivation]。
 
-  See [Store Derivation](@docroot@/store/derivation/index.md#store-derivation) for details.
+  详情参见 [Store Derivation](@docroot@/store/derivation/index.md#store-derivation)。
 
   [store derivation]: #gloss-store-derivation
 
-- [store object]{#gloss-store-object}
+- [store object（存储对象）]{#gloss-store-object}
 
-  Part of the contents of a [store].
+  [存储][store]内容的一部分。
 
-  A store object consists of a [file system object], [references][reference] to other store objects, and other metadata.
-  It can be referred to by a [store path].
+  一个存储对象由一个[文件系统对象][file system object]、指向其他存储对象的[引用][reference]，以及其他元数据组成。
+  它可以通过一个[存储路径][store path]来引用。
 
-  See [Store Object](@docroot@/store/store-object.md) for details.
+  详情参见 [Store Object](@docroot@/store/store-object.md)。
 
   [store object]: #gloss-store-object
 
-- [store path]{#gloss-store-path}
+- [store path（存储路径）]{#gloss-store-path}
 
-  The location of a [store object] in the file system, i.e., an immediate child of the Nix store directory.
+  某个[存储对象][store object]在文件系统中的位置，即 Nix store 目录的直接子路径。
 
-  > **Example**
+  > **示例**
   >
   > `/nix/store/jf6gn2dzna4nmsfbdxsd7kwhsk6gnnlr-git-2.38.1`
 
-  See [Store Path](@docroot@/store/store-path.md) for details.
+  详情参见 [Store Path](@docroot@/store/store-path.md)。
 
   [store path]: #gloss-store-path
 
-- [string interpolation]{#gloss-string-interpolation}
+- [string interpolation（字符串插值）]{#gloss-string-interpolation}
 
-  Expanding expressions enclosed in `${ }` within a [string], [path], or [attribute name].
+  在[字符串][string]、[路径][path]或[属性名][attribute name]中展开被 `${ }` 包围的表达式。
 
-  See [String interpolation](./language/string-interpolation.md) for details.
+  详情参见[字符串插值](./language/string-interpolation.md)。
 
   [string]: ./language/types.md#type-string
   [path]: ./language/types.md#type-path
@@ -396,43 +370,36 @@
 
 - [SRI]{#gloss-sri}
 
-  [Subresource Integrity](https://www.w3.org/TR/SRI/) (SRI) is a [W3C specification](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) for integrity metadata.
-  Nix uses the SRI hash format (`<algorithm>-<Base64 hash>`) to specify content hashes in a way that is self-describing, since the hash algorithm is part of the format.
+  [子资源完整性（Subresource Integrity）](https://www.w3.org/TR/SRI/)（SRI）是一项关于完整性元数据的 [W3C 规范](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity)。
+  Nix 使用 SRI 哈希格式（`<algorithm>-<Base64 hash>`）来指定内容哈希，这种方式是自描述的，因为哈希算法本身就是格式的一部分。
 
   [SRI]: #gloss-sri
 
-- [substitute]{#gloss-substitute}
+- [substitute（替代）]{#gloss-substitute}
 
-  A substitute is a command invocation stored in the [Nix database] that
-  describes how to build a store object, bypassing the normal build
-  mechanism (i.e., derivations). Typically, the substitute builds the
-  store object by downloading a pre-built version of the store object
-  from some server.
+  substitute（替代）是保存在 [Nix 数据库][Nix database]中的一条命令调用，它描述了如何绕过正常的构建机制（即 derivation）来获得一个存储对象。通常，substitute 通过从某个服务器下载存储对象的预构建版本来获得该存储对象。
 
 - [substituter]{#gloss-substituter}
 
-  An additional [store]{#gloss-store} from which Nix can obtain store objects instead of building them.
-  Often the substituter is a [binary cache](#gloss-binary-cache), but any store can serve as substituter.
+  一个额外的[存储][store]{#gloss-store}，Nix 可以从它获取存储对象，而不必自行构建。
+  substituter 通常是一个[二进制缓存](#gloss-binary-cache)，但任何存储都可以充当 substituter。
 
-  See the [`substituters` configuration option](./command-ref/conf-file.md#conf-substituters) for details.
+  详情参见 [`substituters` 配置选项](./command-ref/conf-file.md#conf-substituters)。
 
   [substituter]: #gloss-substituter
 
-- [user environment]{#gloss-user-env}
+- [user environment（用户环境）]{#gloss-user-env}
 
-  An automatically generated store object that consists of a set of
-  symlinks to “active” applications, i.e., other store paths. These
-  are generated automatically by
-  [`nix-env`](./command-ref/nix-env.md). See *profiles*.
+  一个自动生成的存储对象，由一组指向「活跃」应用程序（即其他存储路径）的符号链接组成。这些由 [`nix-env`](./command-ref/nix-env.md) 自动生成。参见 *profile*。
 
-- [validity]{#gloss-validity}
+- [validity（有效性）]{#gloss-validity}
 
-  A store path is valid if all [store object]s in its [closure] can be read from the [store].
+  如果一个存储路径的[闭包][closure]中的所有[存储对象][store object]都可以从[存储][store]中读取，则该存储路径是有效的。
 
-  For a [local store], this means:
-  - The store path leads to an existing [store object] in that [store].
-  - The store path is listed in the [Nix database] as being valid.
-  - All paths in the store path's [closure] are valid.
+  对于[本地存储][local store]，这意味着：
+  - 该存储路径指向该[存储][store]中一个实际存在的[存储对象][store object]。
+  - 该存储路径在 [Nix 数据库][Nix database]中被列为有效。
+  - 该存储路径的[闭包][closure]中的所有路径都是有效的。
 
   [validity]: #gloss-validity
   [local store]: @docroot@/store/types/local-store.md

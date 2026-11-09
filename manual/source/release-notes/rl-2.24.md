@@ -1,42 +1,42 @@
 # Release 2.24.0 (2024-07-31)
 
-### Significant changes
+### 显著变更
 
-- Harden user sandboxing
+- 加强用户沙箱
 
-  The build directory has been hardened against interference with the outside world by nesting it inside another directory owned by (and only readable by) the daemon user.
+  构建目录现在嵌套在另一个由 daemon（守护进程）用户拥有（且仅该用户可读）的目录之内，从而得到加固，以免受到外部世界的干扰。
 
-  This is a low severity security fix, [CVE-2024-38531](https://www.cve.org/CVERecord?id=CVE-2024-38531).
+  这是一处低严重性的安全修复，[CVE-2024-38531](https://www.cve.org/CVERecord?id=CVE-2024-38531)。
 
-  Credit: [**@alois31**](https://github.com/alois31), [**Linus Heckemann (@lheckemann)**](https://github.com/lheckemann)
-  Co-authors: [**@edolstra**](https://github.com/edolstra)
+  鸣谢：[**@alois31**](https://github.com/alois31)、[**Linus Heckemann (@lheckemann)**](https://github.com/lheckemann)
+  共同作者：[**@edolstra**](https://github.com/edolstra)
 
-- `nix-shell <directory>` looks for `shell.nix` [#496](https://github.com/NixOS/nix/issues/496) [#2279](https://github.com/NixOS/nix/issues/2279) [#4529](https://github.com/NixOS/nix/issues/4529) [#5431](https://github.com/NixOS/nix/issues/5431) [#11053](https://github.com/NixOS/nix/issues/11053) [#11057](https://github.com/NixOS/nix/pull/11057)
+- `nix-shell <directory>` 查找 `shell.nix` [#496](https://github.com/NixOS/nix/issues/496) [#2279](https://github.com/NixOS/nix/issues/2279) [#4529](https://github.com/NixOS/nix/issues/4529) [#5431](https://github.com/NixOS/nix/issues/5431) [#11053](https://github.com/NixOS/nix/issues/11053) [#11057](https://github.com/NixOS/nix/pull/11057)
 
-  `nix-shell $x` now looks for `$x/shell.nix` when `$x` resolves to a directory.
+  当 `$x` 解析为一个目录时，`nix-shell $x` 现在会查找 `$x/shell.nix`。
 
-  Although this might be seen as a breaking change, its primarily interactive usage makes it a minor issue.
-  This adjustment addresses a commonly reported problem.
+  虽然这可能被视为破坏性变更，但其主要用途是交互式的，因此只是一个次要问题。
+  这一调整解决了一个被大量报告的常见问题。
 
-  This also applies to `nix-shell` shebang scripts. Consider the following example:
+  这同样适用于 `nix-shell` shebang 脚本。考虑以下示例：
 
   ```shell
   #!/usr/bin/env nix-shell
   #!nix-shell -i bash
   ```
 
-  This will now load `shell.nix` from the script's directory, if it exists; `default.nix` otherwise.
+  现在，如果脚本所在目录中存在 `shell.nix`，则加载该文件；否则加载 `default.nix`。
 
-  The old behavior can be opted into by setting the option [`nix-shell-always-looks-for-shell-nix`](@docroot@/command-ref/conf-file.md#conf-nix-shell-always-looks-for-shell-nix) to `false`.
+  可以通过将选项 [`nix-shell-always-looks-for-shell-nix`](@docroot@/command-ref/conf-file.md#conf-nix-shell-always-looks-for-shell-nix) 设为 `false` 来选择沿用旧行为。
 
-  Author: [**Robert Hensing (@roberth)**](https://github.com/roberth)
+  作者：[**Robert Hensing (@roberth)**](https://github.com/roberth)
 
-- `nix-repl`'s `:doc` shows documentation comments [#3904](https://github.com/NixOS/nix/issues/3904) [#10771](https://github.com/NixOS/nix/issues/10771) [#1652](https://github.com/NixOS/nix/pull/1652) [#9054](https://github.com/NixOS/nix/pull/9054) [#11072](https://github.com/NixOS/nix/pull/11072)
+- `nix-repl` 的 `:doc` 显示文档注释 [#3904](https://github.com/NixOS/nix/issues/3904) [#10771](https://github.com/NixOS/nix/issues/10771) [#1652](https://github.com/NixOS/nix/pull/1652) [#9054](https://github.com/NixOS/nix/pull/9054) [#11072](https://github.com/NixOS/nix/pull/11072)
 
-  `nix repl` has a `:doc` command that previously only rendered documentation for internally defined functions.
-  This feature has been extended to also render function documentation comments, in accordance with [RFC 145].
+  `nix repl` 有一个 `:doc` 命令，此前只能为内部定义的函数渲染文档。
+  该功能现已扩展，可以按照 [RFC 145] 渲染函数的文档注释。
 
-  Example:
+  示例：
 
   ```
   nix-repl> :doc lib.toFunction
@@ -67,78 +67,77 @@
       :::
   ```
 
-  Known limitations:
-  - It does not render documentation for "formals", such as `{ /** the value to return */ x, ... }: x`.
-  - Some extensions to markdown are not yet supported, as you can see in the example above.
+  已知限制：
+  - 它不会为“形参”（formals）渲染文档，例如 `{ /** the value to return */ x, ... }: x`。
+  - 某些 markdown 扩展尚不支持，如上例所示。
 
-  We'd like to acknowledge [Yingchi Long (@inclyc)](https://github.com/inclyc) for proposing a proof of concept for this functionality in [#9054](https://github.com/NixOS/nix/pull/9054), as well as [@sternenseemann](https://github.com/sternenseemann) and [Johannes Kirschbauer (@hsjobeki)](https://github.com/hsjobeki) for their contributions, proposals, and their work on [RFC 145].
+  我们要感谢 [Yingchi Long (@inclyc)](https://github.com/inclyc) 在 [#9054](https://github.com/NixOS/nix/pull/9054) 中为此功能提出了概念验证，同时感谢 [@sternenseemann](https://github.com/sternenseemann) 和 [Johannes Kirschbauer (@hsjobeki)](https://github.com/hsjobeki) 的贡献、提案以及他们在 [RFC 145] 上所做的工作。
 
-  Author: [**Robert Hensing (@roberth)**](https://github.com/roberth)
+  作者：[**Robert Hensing (@roberth)**](https://github.com/roberth)
 
   [RFC 145]: https://github.com/NixOS/rfcs/pull/145
 
-### Other changes
+### 其他变更
 
-- Solve `cached failure of attribute X` [#9165](https://github.com/NixOS/nix/issues/9165) [#10513](https://github.com/NixOS/nix/issues/10513) [#10564](https://github.com/NixOS/nix/pull/10564)
+- 解决 `cached failure of attribute X` 问题 [#9165](https://github.com/NixOS/nix/issues/9165) [#10513](https://github.com/NixOS/nix/issues/10513) [#10564](https://github.com/NixOS/nix/pull/10564)
 
-  This eliminates all "cached failure of attribute X" messages by forcing evaluation of the original value when needed to show the exception to the user. This enhancement improves error reporting by providing the underlying message and stack trace.
+  此更改通过在需要向用户展示异常时强制求值原始值，消除了所有 “cached failure of attribute X” 消息。这一增强通过提供底层消息和堆栈跟踪，改进了错误报告。
 
-  Author: [**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
+  作者：[**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
 
-- Run the flake regressions test suite [#10603](https://github.com/NixOS/nix/pull/10603)
+- 运行 flake 回归测试套件 [#10603](https://github.com/NixOS/nix/pull/10603)
 
-  This update introduces a GitHub action to run a subset of the [flake regressions test suite](https://github.com/NixOS/flake-regressions), which includes 259 flakes with their expected evaluation results. Currently, the action runs the first 25 flakes due to the full test suite's extensive runtime. A manually triggered action may be implemented later to run the entire test suite.
+  本次更新引入了一个 GitHub action，用于运行 [flake 回归测试套件](https://github.com/NixOS/flake-regressions)的一个子集，其中包含 259 个 flake 及其预期的求值结果。由于完整测试套件运行时间过长，该 action 目前只运行前 25 个 flake。后续可能会实现一个手动触发的 action 来运行整个测试套件。
 
-  Author: [**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
+  作者：[**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
 
-- Support unit prefixes in configuration settings [#10668](https://github.com/NixOS/nix/pull/10668)
+- 配置设置支持单位前缀 [#10668](https://github.com/NixOS/nix/pull/10668)
 
-  Configuration settings in Nix now support unit prefixes, allowing for more intuitive and readable configurations. For example, you can now specify [`--min-free 1G`](@docroot@/command-ref/conf-file.md#conf-min-free) to set the minimum free space to 1 gigabyte.
+  Nix 的配置设置现在支持单位前缀，使配置更加直观易读。例如，现在可以指定 [`--min-free 1G`](@docroot@/command-ref/conf-file.md#conf-min-free) 将最小可用空间设为 1 GB。
 
-  This enhancement was extracted from [#7851](https://github.com/NixOS/nix/pull/7851) and is also useful for PR [#10661](https://github.com/NixOS/nix/pull/10661).
+  此增强从 [#7851](https://github.com/NixOS/nix/pull/7851) 中提取而来，对 PR [#10661](https://github.com/NixOS/nix/pull/10661) 同样有用。
 
-  Author: [**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
+  作者：[**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
 
-- `nix build`: show all FOD errors with `--keep-going` [#10734](https://github.com/NixOS/nix/pull/10734)
+- `nix build`：使用 `--keep-going` 显示所有 FOD 错误 [#10734](https://github.com/NixOS/nix/pull/10734)
 
-  The [`nix build`](@docroot@/command-ref/new-cli/nix3-build.md) command has been updated to improve the behavior of the [`--keep-going`] flag. Now, when `--keep-going` is used, all hash-mismatch errors of failing fixed-output derivations (FODs) are displayed, similar to the behavior for other build failures. This enhancement ensures that all relevant build errors are shown, making it easier for users to update multiple derivations at once or to diagnose and fix issues.
+  [`nix build`](@docroot@/command-ref/new-cli/nix3-build.md) 命令已更新，改进了 [`--keep-going`] 标志的行为。现在，使用 `--keep-going` 时，所有构建失败的 fixed-output derivation（派生）（FOD，固定输出 derivation）的哈希不匹配错误都会被显示出来，与其他构建失败时的行为类似。这一增强确保显示所有相关的构建错误，让用户更容易一次更新多个 derivation，或诊断并修复问题。
 
-  Author: [**Jörg Thalheim (@Mic92)**](https://github.com/Mic92), [**Maximilian Bosch (@Ma27)**](https://github.com/Ma27)
+  作者：[**Jörg Thalheim (@Mic92)**](https://github.com/Mic92)、[**Maximilian Bosch (@Ma27)**](https://github.com/Ma27)
 
   [`--keep-going`](@docroot@/command-ref/opt-common.md#opt-keep-going)
 
-- Build with Meson [#2503](https://github.com/NixOS/nix/issues/2503) [#10378](https://github.com/NixOS/nix/pull/10378) [#10855](https://github.com/NixOS/nix/pull/10855) [#10904](https://github.com/NixOS/nix/pull/10904) [#10908](https://github.com/NixOS/nix/pull/10908) [#10914](https://github.com/NixOS/nix/pull/10914) [#10933](https://github.com/NixOS/nix/pull/10933) [#10936](https://github.com/NixOS/nix/pull/10936) [#10954](https://github.com/NixOS/nix/pull/10954) [#10955](https://github.com/NixOS/nix/pull/10955) [#10963](https://github.com/NixOS/nix/pull/10963) [#10967](https://github.com/NixOS/nix/pull/10967) [#10973](https://github.com/NixOS/nix/pull/10973) [#11034](https://github.com/NixOS/nix/pull/11034) [#11054](https://github.com/NixOS/nix/pull/11054) [#11055](https://github.com/NixOS/nix/pull/11055) [#11060](https://github.com/NixOS/nix/pull/11060) [#11064](https://github.com/NixOS/nix/pull/11064) [#11155](https://github.com/NixOS/nix/pull/11155)
+- 使用 Meson 构建 [#2503](https://github.com/NixOS/nix/issues/2503) [#10378](https://github.com/NixOS/nix/pull/10378) [#10855](https://github.com/NixOS/nix/pull/10855) [#10904](https://github.com/NixOS/nix/pull/10904) [#10908](https://github.com/NixOS/nix/pull/10908) [#10914](https://github.com/NixOS/nix/pull/10914) [#10933](https://github.com/NixOS/nix/pull/10933) [#10936](https://github.com/NixOS/nix/pull/10936) [#10954](https://github.com/NixOS/nix/pull/10954) [#10955](https://github.com/NixOS/nix/pull/10955) [#10963](https://github.com/NixOS/nix/pull/10963) [#10967](https://github.com/NixOS/nix/pull/10967) [#10973](https://github.com/NixOS/nix/pull/10973) [#11034](https://github.com/NixOS/nix/pull/11034) [#11054](https://github.com/NixOS/nix/pull/11054) [#11055](https://github.com/NixOS/nix/pull/11055) [#11060](https://github.com/NixOS/nix/pull/11060) [#11064](https://github.com/NixOS/nix/pull/11064) [#11155](https://github.com/NixOS/nix/pull/11155)
 
-  These changes aim to replace the use of autotools and `make` with Meson for building various components of Nix. Additionally, each library is built in its own derivation, leveraging Meson's "subprojects" feature to allow a single development shell for building all libraries while also supporting separate builds. This approach aims to improve productivity and build modularity, compared to both make and a monolithic Meson-based derivation.
+  这些变更旨在用 Meson 取代 autotools 和 `make` 来构建 Nix 的各个组件。此外，每个库都在各自的 derivation 中构建，并利用 Meson 的 “subprojects” 特性，既允许用一个开发 shell 构建所有库，也支持各自单独构建。与 make 以及单一的整体式基于 Meson 的 derivation 相比，这种方式旨在提升生产力和构建的模块化程度。
 
-  Special thanks to everyone who has contributed to the Meson port, particularly [**@p01arst0rm**](https://github.com/p01arst0rm) and [**@Qyriad**](https://github.com/Qyriad).
+  特别感谢所有为 Meson 移植做出贡献的人，尤其是 [**@p01arst0rm**](https://github.com/p01arst0rm) 和 [**@Qyriad**](https://github.com/Qyriad)。
 
-  Authors: [**John Ericson (@Ericson2314)**](https://github.com/Ericson2314), [**Tom Bereknyei**](https://github.com/tomberek), [**Théophane Hufschmitt (@thufschmitt)**](https://github.com/thufschmitt), [**Valentin Gagarin (@fricklerhandwerk)**](https://github.com/fricklerhandwerk), [**Robert Hensing (@roberth)**](https://github.com/roberth)
-  Co-authors: [**@p01arst0rm**](https://github.com/p01arst0rm), [**@Qyriad**](https://github.com/Qyriad)
+  作者：[**John Ericson (@Ericson2314)**](https://github.com/Ericson2314)、[**Tom Bereknyei**](https://github.com/tomberek)、[**Théophane Hufschmitt (@thufschmitt)**](https://github.com/thufschmitt)、[**Valentin Gagarin (@fricklerhandwerk)**](https://github.com/fricklerhandwerk)、[**Robert Hensing (@roberth)**](https://github.com/roberth)
+  共同作者：[**@p01arst0rm**](https://github.com/p01arst0rm)、[**@Qyriad**](https://github.com/Qyriad)
 
-- Evaluation cache: fix cache regressions [#10570](https://github.com/NixOS/nix/issues/10570) [#11086](https://github.com/NixOS/nix/pull/11086)
+- 求值缓存：修复缓存回归 [#10570](https://github.com/NixOS/nix/issues/10570) [#11086](https://github.com/NixOS/nix/pull/11086)
 
-  This update addresses two bugs in the evaluation cache system:
+  此更新修复了求值缓存系统中的两个缺陷：
 
-  1. Regression in #10570: The evaluation cache was not being persisted in `nix develop`.
-  2. Nix could sometimes try to commit the evaluation cache SQLite transaction without there being an active transaction, resulting in non-error errors being printed.
+  1. #10570 引入的回归：求值缓存未在 `nix develop` 中持久化。
+  2. Nix 有时会在没有活动事务的情况下尝试提交求值缓存的 SQLite 事务，导致打印出非错误性质的错误信息。
 
-  Author: [**Lexi Mattick (@kognise)**](https://github.com/kognise)
+  作者：[**Lexi Mattick (@kognise)**](https://github.com/kognise)
 
-- Introduce `libnixflake` [#9063](https://github.com/NixOS/nix/pull/9063)
+- 引入 `libnixflake` [#9063](https://github.com/NixOS/nix/pull/9063)
 
-  A new library, `libnixflake`, has been introduced to better separate the Flakes layer within Nix. This change refactors the codebase to encapsulate Flakes-specific functionality within its own library.
+  引入了一个新库 `libnixflake`，以便更好地在 Nix 内部分离 Flakes 层。此变更重构了代码库，将 Flakes 特有的功能封装到其独立的库中。
 
-  See the commits in the pull request for detailed changes, with the only significant code modifications happening in the initial commit.
+  详细变更请参见该拉取请求中的提交，其中唯一重要的代码修改发生在初始提交里。
 
-  This change was alluded to in [RFC 134](https://github.com/nixos/rfcs/blob/master/rfcs/0134-nix-store-layer.md) and is a step towards a more modular and maintainable codebase.
+  此变更在 [RFC 134](https://github.com/nixos/rfcs/blob/master/rfcs/0134-nix-store-layer.md) 中已被提及，是迈向更加模块化、更易维护的代码库的一步。
 
-  Author: [**John Ericson (@Ericson2314)**](https://github.com/Ericson2314)
+  作者：[**John Ericson (@Ericson2314)**](https://github.com/Ericson2314)
 
-- CLI options `--arg-from-file` and `--arg-from-stdin` [#9913](https://github.com/NixOS/nix/pull/9913)
+- CLI 选项 `--arg-from-file` 与 `--arg-from-stdin` [#9913](https://github.com/NixOS/nix/pull/9913)
 
-- The `--debugger` now prints source location information, instead of the
-  pointers of source location information. Before:
+- `--debugger` 现在打印源码位置信息，而不是源码位置信息的指针。修改前：
 
   ```
   nix-repl> :bt
@@ -146,7 +145,7 @@
   0x600001522598
   ```
 
-  After:
+  修改后：
 
   ```
   0: while evaluating the attribute 'python311.pythonForBuild.pkgs'
@@ -154,47 +153,43 @@
 
      131|
      132|       bootstrappingBase = pkgs.${self.python.pythonAttr}.pythonForBuild.pkgs;
-        |                           ^
+       |                           ^
      133|     in
   ```
 
-- Stop vendoring `toml11`
+- 停止内置（vendor）`toml11`
 
-  We don't apply any patches to it, and vendoring it locks users into
-  bugs (it hasn't been updated since its introduction in late 2021).
+  我们不对其应用任何补丁，而将它内置在源码树中会把用户锁定在缺陷之上（自 2021 年底引入以来它从未更新过）。
 
-  Author: [**Winter (@winterqt)**](https://github.com/winterqt)
+  作者：[**Winter (@winterqt)**](https://github.com/winterqt)
 
-- Rename hash format `base32` to `nix32` [#8678](https://github.com/NixOS/nix/pull/8678)
+- 将哈希格式 `base32` 重命名为 `nix32` [#8678](https://github.com/NixOS/nix/pull/8678)
 
-  Hash format `base32` was renamed to `nix32` since it used a special nix-specific character set for
-  [Base32](https://en.wikipedia.org/wiki/Base32).
+  哈希格式 `base32` 被重命名为 `nix32`，因为它为 [Base32](https://en.wikipedia.org/wiki/Base32) 使用了一个特殊的 Nix 专属字符集。
 
-  **Deprecation**: Use `nix32` instead of `base32` as `toHashFormat`
+  **弃用**：在 `toHashFormat` 中请使用 `nix32` 而不是 `base32`
 
-  For the builtin `convertHash`, the `toHashFormat` parameter now accepts the same hash formats as the `--to`/`--from`
-  parameters of the `nix hash convert` command: `"base16"`, `"nix32"`, `"base64"`, and `"sri"`. The former `"base32"` value
-  remains as a deprecated alias for `"nix32"`. Please convert your code from:
+  对于内建函数 `convertHash`，`toHashFormat` 参数现在接受与 `nix hash convert` 命令的 `--to`/`--from` 参数相同的哈希格式：`"base16"`、`"nix32"`、`"base64"` 和 `"sri"`。原先的 `"base32"` 值仍作为 `"nix32"` 的弃用别名保留。请将代码从：
 
   ```nix
   builtins.convertHash { inherit hash hashAlgo; toHashFormat = "base32";}
   ```
 
-  to
+  改为
 
   ```nix
   builtins.convertHash { inherit hash hashAlgo; toHashFormat = "nix32";}
   ```
 
-- Add `pipe-operators` experimental feature [#11131](https://github.com/NixOS/nix/pull/11131)
+- 添加 `pipe-operators` 实验性特性 [#11131](https://github.com/NixOS/nix/pull/11131)
 
-  This is a draft implementation of [RFC 0148](https://github.com/NixOS/rfcs/pull/148).
+  这是 [RFC 0148](https://github.com/NixOS/rfcs/pull/148) 的草案实现。
 
-  The `pipe-operators` experimental feature adds [`<|` and `|>` operators][pipe operators] to the Nix language.
-  *a* `|>` *b* is equivalent to the function application *b* *a*, and
-  *a* `<|` *b* is equivalent to the function application *a* *b*.
+  `pipe-operators` 实验性特性为 Nix 语言添加了 [`<|` 与 `|>` 运算符][pipe operators]。
+  *a* `|>` *b* 等价于函数应用 *b* *a*，而
+  *a* `<|` *b* 等价于函数应用 *a* *b*。
 
-  For example:
+  例如：
 
   ```
   nix-repl> 1 |> builtins.add 2 |> builtins.mul 3
@@ -204,20 +199,20 @@
   7
   ```
 
-  `<|` and `|>` are right and left associative, respectively, and have lower precedence than any other operator.
-  These properties may change in future releases.
+  `<|` 与 `|>` 分别为右结合和左结合，且优先级低于任何其他运算符。
+  这些性质在未来的版本中可能会改变。
 
-  See [the RFC](https://github.com/NixOS/rfcs/pull/148) for more examples and rationale.
+  更多示例和设计理由请参见[该 RFC](https://github.com/NixOS/rfcs/pull/148)。
 
   [pipe operators]: @docroot@/language/operators.md#pipe-operators
 
-- `nix-shell` shebang uses relative path [#4232](https://github.com/NixOS/nix/issues/4232) [#5088](https://github.com/NixOS/nix/pull/5088) [#11058](https://github.com/NixOS/nix/pull/11058)
+- `nix-shell` shebang 使用相对路径 [#4232](https://github.com/NixOS/nix/issues/4232) [#5088](https://github.com/NixOS/nix/pull/5088) [#11058](https://github.com/NixOS/nix/pull/11058)
 
   <!-- unfortunately no link target for the specific syntax -->
-  Relative [path](@docroot@/language/types.md#type-path) literals in `nix-shell` shebang scripts' options are now resolved relative to the [script's location](@docroot@/glossary.md?highlight=base%20directory#gloss-base-directory).
-  Previously they were resolved relative to the current working directory.
+  `nix-shell` shebang 脚本选项中的相对 [path](@docroot@/language/types.md#type-path) 字面量现在相对于[脚本所在位置](@docroot@/glossary.md?highlight=base%20directory#gloss-base-directory)解析。
+  此前它们相对于当前工作目录解析。
 
-  For example, consider the following script in `~/myproject/say-hi`:
+  例如，考虑 `~/myproject/say-hi` 中的以下脚本：
 
   ```shell
   #!/usr/bin/env nix-shell
@@ -227,7 +222,7 @@
   hello
   ```
 
-  Older versions of `nix-shell` would resolve `shell.nix` relative to the current working directory, such as the user's home directory in this example:
+  旧版本的 `nix-shell` 会相对当前工作目录解析 `shell.nix`，例如本例中的用户主目录：
 
   ```console
   [hostname:~]$ ./myproject/say-hi
@@ -240,38 +235,35 @@
          error: path '/home/user/shell.nix' does not exist
   ```
 
-  Since this release, `nix-shell` resolves `shell.nix` relative to the script's location, and `~/myproject/shell.nix` is used.
+  自本版本起，`nix-shell` 相对脚本所在位置解析 `shell.nix`，因此会使用 `~/myproject/shell.nix`。
 
   ```console
   $ ./myproject/say-hi
   Hello, world!
   ```
 
-  **Opt-out**
+  **选择退出**
 
-  This is technically a breaking change, so we have added an option so you can adapt independently of your Nix update.
-  The old behavior can be opted into by setting the option [`nix-shell-shebang-arguments-relative-to-script`](@docroot@/command-ref/conf-file.md#conf-nix-shell-shebang-arguments-relative-to-script) to `false`.
-  This option will be removed in a future release.
+  这在技术上是一次破坏性变更，因此我们添加了一个选项，使你可以在不依赖 Nix 更新节奏的情况下自行调整。
+  可以通过将选项 [`nix-shell-shebang-arguments-relative-to-script`](@docroot@/command-ref/conf-file.md#conf-nix-shell-shebang-arguments-relative-to-script) 设为 `false` 来选择沿用旧行为。
+  该选项将在未来的版本中被移除。
 
-  Author: [**Robert Hensing (@roberth)**](https://github.com/roberth)
+  作者：[**Robert Hensing (@roberth)**](https://github.com/roberth)
 
-- Improve handling of tarballs that don't consist of a single top-level directory [#11195](https://github.com/NixOS/nix/pull/11195)
+- 改进对不含单一顶层目录的 tarball 的处理 [#11195](https://github.com/NixOS/nix/pull/11195)
 
-  In previous Nix releases, the tarball fetcher (used by `builtins.fetchTarball`) erroneously merged top-level directories into a single directory, and silently discarded top-level files that are not directories. This is no longer the case. The new behaviour is that *only* if the tarball consists of a single directory, the top-level path component of the files in the tarball is removed (similar to `tar`'s `--strip-components=1`).
+  在之前的 Nix 版本中，tarball 抓取器（由 `builtins.fetchTarball` 使用）会错误地把多个顶层目录合并成一个目录，并静默丢弃不属于目录的顶层文件。现在不再如此。新行为是：*仅当* tarball 由单一目录组成时，才会移除其中文件的顶层路径组件（类似于 `tar` 的 `--strip-components=1`）。
 
-  Author: [**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
+  作者：[**Eelco Dolstra (@edolstra)**](https://github.com/edolstra)
 
-- Setting to warn about large paths [#10778](https://github.com/NixOS/nix/pull/10778)
+- 添加针对大路径发出警告的设置 [#10778](https://github.com/NixOS/nix/pull/10778)
 
-  Nix can now warn when evaluation of a Nix expression causes a large
-  path to be copied to the Nix store. The threshold for this warning can
-  be configured using the `warn-large-path-threshold` setting,
-  e.g. `--warn-large-path-threshold 100M`.
+  现在，当对 Nix 表达式的求值导致一个大路径被复制到 Nix store 时，Nix 可以发出警告。该警告的阈值可通过 `warn-large-path-threshold` 设置进行配置，例如 `--warn-large-path-threshold 100M`。
 
 
-## Contributors
+## 贡献者
 
-This release was made possible by the following 43 contributors:
+本发布版本得益于以下 43 位贡献者：
 
 - Andreas Rammhold [**(@andir)**](https://github.com/andir)
 - Andrew Marshall [**(@amarshall)**](https://github.com/amarshall)

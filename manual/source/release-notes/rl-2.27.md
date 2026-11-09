@@ -1,55 +1,55 @@
 # Release 2.27.0 (2025-03-03)
 
-- `inputs.self.submodules` flake attribute [#12421](https://github.com/NixOS/nix/pull/12421)
+- `inputs.self.submodules` flake 属性 [#12421](https://github.com/NixOS/nix/pull/12421)
 
-  Flakes in Git repositories can now declare that they need Git submodules to be enabled:
+  Git 仓库中的 Flakes 现在可以声明需要启用 Git 子模块：
   ```
   {
     inputs.self.submodules = true;
   }
   ```
-  Thus, it's no longer needed for the caller of the flake to pass `submodules = true`.
+  这样一来，flake 的调用者不再需要传递 `submodules = true`。
 
-- Git LFS support [#10153](https://github.com/NixOS/nix/pull/10153) [#12468](https://github.com/NixOS/nix/pull/12468)
+- Git LFS 支持 [#10153](https://github.com/NixOS/nix/pull/10153) [#12468](https://github.com/NixOS/nix/pull/12468)
 
-  The Git fetcher now supports Large File Storage (LFS). This can be enabled by passing the attribute `lfs = true` to the fetcher, e.g.
+  Git 抓取器现在支持大文件存储（Large File Storage，LFS）。可以通过向抓取器传递属性 `lfs = true` 来启用，例如
   ```console
   nix flake prefetch 'git+ssh://git@github.com/Apress/repo-with-large-file-storage.git?lfs=1'
   ```
 
-  A flake can also declare that it requires LFS to be enabled:
+  一个 flake 也可以声明它需要启用 LFS：
   ```
   {
     inputs.self.lfs = true;
   }
   ```
 
-  Author: [**@b-camacho**](https://github.com/b-camacho), [**@kip93**](https://github.com/kip93)
+  作者：[**@b-camacho**](https://github.com/b-camacho)、[**@kip93**](https://github.com/kip93)
 
-- Handle the case where a chroot store is used and some inputs are in the "host" `/nix/store` [#12512](https://github.com/NixOS/nix/pull/12512)
+- 处理使用 chroot store 且某些输入位于“宿主” `/nix/store` 中的情况 [#12512](https://github.com/NixOS/nix/pull/12512)
 
-  The evaluator now presents a "union" filesystem view of the `/nix/store` in the host and the chroot.
+  求值器现在会呈现宿主与 chroot 中 `/nix/store` 的“联合”（union）文件系统视图。
 
-  This change also removes some hacks that broke `builtins.{path,filterSource}` in chroot stores [#11503](https://github.com/NixOS/nix/issues/11503).
+  此变更还移除了一些会在 chroot store 中破坏 `builtins.{path,filterSource}` 的临时处理（hack）[#11503](https://github.com/NixOS/nix/issues/11503)。
 
-- `nix flake prefetch` now has a `--out-link` option [#12443](https://github.com/NixOS/nix/pull/12443)
+- `nix flake prefetch` 现在有了 `--out-link` 选项 [#12443](https://github.com/NixOS/nix/pull/12443)
 
-- Set `FD_CLOEXEC` on sockets created by curl [#12439](https://github.com/NixOS/nix/pull/12439)
+- 为 curl 创建的套接字设置 `FD_CLOEXEC` [#12439](https://github.com/NixOS/nix/pull/12439)
 
-  Curl created sockets without setting `FD_CLOEXEC`/`SOCK_CLOEXEC`. This could previously cause connections to remain open forever when using commands like `nix shell`. This change sets the `FD_CLOEXEC` flag using a `CURLOPT_SOCKOPTFUNCTION` callback.
+  curl 创建套接字时没有设置 `FD_CLOEXEC`/`SOCK_CLOEXEC`。此前这可能导致使用 `nix shell` 等命令时连接永远保持打开。此变更通过 `CURLOPT_SOCKOPTFUNCTION` 回调来设置 `FD_CLOEXEC` 标志。
 
-- Add BLAKE3 hash algorithm [#12379](https://github.com/NixOS/nix/pull/12379)
+- 添加 BLAKE3 哈希算法 [#12379](https://github.com/NixOS/nix/pull/12379)
 
-  Nix now supports the BLAKE3 hash algorithm as an experimental feature (`blake3-hashes`):
+  Nix 现在以实验性特性（`blake3-hashes`）的形式支持 BLAKE3 哈希算法：
 
   ```console
   # nix hash file ./file --type blake3 --extra-experimental-features blake3-hashes
   blake3-34P4p+iZXcbbyB1i4uoF7eWCGcZHjmaRn6Y7QdynLwU=
   ```
 
-## Contributors
+## 贡献者
 
-This release was made possible by the following 21 contributors:
+本发布版本得益于以下 21 位贡献者：
 
 - Aiden Fox Ivey [**(@aidenfoxivey)**](https://github.com/aidenfoxivey)
 - Ben Millwood [**(@bmillwood)**](https://github.com/bmillwood)

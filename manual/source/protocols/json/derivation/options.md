@@ -1,42 +1,42 @@
 {{#include ../derivation-options-v1-fixed.md}}
 
-## Examples
+## 示例
 
-### Input-addressed derivations
+### 输入寻址的 derivation
 
-#### Default options
+#### 默认选项
 
 ```json
 {{#include ../schema/derivation-options-v1/ia/derivation-options/defaults.json}}
 ```
 
-#### All options set
+#### 设置了所有选项
 
 ```json
 {{#include ../schema/derivation-options-v1/ia/derivation-options/all_set.json}}
 ```
 
-#### Default options (structured attributes)
+#### 默认选项（结构化属性）
 
 ```json
 {{#include ../schema/derivation-options-v1/ia/derivation-options/structuredAttrs_defaults.json}}
 ```
 
-#### All options set (structured attributes)
+#### 设置了所有选项（结构化属性）
 
 ```json
 {{#include ../schema/derivation-options-v1/ia/derivation-options/structuredAttrs_all_set.json}}
 ```
 
-### Content-addressed derivations
+### 内容寻址的 derivation
 
-#### All options set
+#### 设置了所有选项
 
 ```json
 {{#include ../schema/derivation-options-v1/ca/derivation-options/all_set.json}}
 ```
 
-#### All options set (structured attributes)
+#### 设置了所有选项（结构化属性）
 
 ```json
 {{#include ../schema/derivation-options-v1/ca/derivation-options/structuredAttrs_all_set.json}}

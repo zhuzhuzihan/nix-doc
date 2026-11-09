@@ -1,4 +1,3 @@
 # Release 1.5.1 (2013-02-28)
 
-The bug fix to the bug fix had a bug itself, of course. But this time it
-will work for sure\!
+当然，针对缺陷修复的修复本身又带有缺陷。但这次它肯定能正常工作了\!

@@ -1,102 +1,95 @@
 # Release 2.30.0 (2025-07-07)
 
-## Backward-incompatible changes and deprecations
+## 破坏性变更与弃用
 
-- [`build-dir`] no longer defaults to `$TMPDIR`
+- [`build-dir`] 不再默认为 `$TMPDIR`
 
-  The directory in which temporary build directories are created no longer defaults
-  to `TMPDIR` or `/tmp`, to avoid builders making their directories
-  world-accessible. This behavior allowed escaping the build sandbox and can
-  cause build impurities even when not used maliciously. We now default to `builds`
-  in `NIX_STATE_DIR` (which is `/nix/var/nix/builds` in the default configuration).
+  临时构建目录的创建位置不再默认为 `TMPDIR` 或 `/tmp`，以避免构建器将自己的目录设为全局可访问。这一行为允许逃逸出构建沙箱，而且即使没有被恶意利用，也可能造成构建的不纯净。现在我们默认使用 `NIX_STATE_DIR` 中的 `builds`（在默认配置下即 `/nix/var/nix/builds`）。
 
-- Deprecate manually making structured attrs using the `__json` attribute [#13220](https://github.com/NixOS/nix/pull/13220)
+- 弃用通过 `__json` 属性手动构造结构化属性（structured attrs）的做法 [#13220](https://github.com/NixOS/nix/pull/13220)
 
-  The proper way to create a derivation using [structured attrs] in the Nix language is by using `__structuredAttrs = true` with [`builtins.derivation`].
-  However, by exploiting how structured attrs are implemented, it has also been possible to create them by setting the `__json` environment variable to a serialized JSON string.
-  This sneaky alternative method is now deprecated, and may be disallowed in future versions of Nix.
+  在 Nix 语言中，使用 [结构化属性（structured attrs）] 创建 derivation（派生）的正确方式是配合 [`builtins.derivation`] 使用 `__structuredAttrs = true`。
+  然而，利用结构化属性的实现方式，此前也可以通过将 `__json` 环境变量设为一个序列化的 JSON 字符串来创建它们。
+  这种取巧的替代做法现在已被弃用，并且在未来的 Nix 版本中可能会被禁止。
 
-  [structured attrs]: @docroot@/language/advanced-attributes.md#adv-attr-structuredAttrs
+  [结构化属性（structured attrs）]: @docroot@/language/advanced-attributes.md#adv-attr-structuredAttrs
   [`builtins.derivation`]: @docroot@/language/builtins.html#builtins-derivation
 
-- Rename `nix profile install` to [`nix profile add`] [#13224](https://github.com/NixOS/nix/pull/13224)
+- 将 `nix profile install` 更名为 [`nix profile add`] [#13224](https://github.com/NixOS/nix/pull/13224)
 
-  The command `nix profile install` has been renamed to [`nix profile add`] (though the former is still available as an alias). This is because the verb "add" is a better antonym for the verb "remove" (i.e. `nix profile remove`). Nix also does not have install hooks or general behavior often associated with "installing".
+  命令 `nix profile install` 已更名为 [`nix profile add`]（前者仍作为别名可用）。这是因为动词 "add" 与动词 "remove"（即 `nix profile remove`）是一对更贴切的反义词。此外，Nix 也没有与"安装"（install）通常相关联的 install hook 或通用行为。
 
-## Performance improvements
+## 性能改进
 
-This release has a number performance improvements, in particular:
+本次发布包含多项性能改进，尤其是：
 
-- Reduce the size of value from 24 to 16 bytes [#13407](https://github.com/NixOS/nix/pull/13407)
+- 将 value 的大小从 24 字节缩减到 16 字节 [#13407](https://github.com/NixOS/nix/pull/13407)
 
-  This shaves off a very significant amount of memory used for evaluation (~20% percent reduction in maximum heap size and ~17% in total bytes).
+  这显著减少了求值所占用的内存（最大堆大小约减少 20%，总字节数约减少 17%）。
 
-## Features
+## 新特性
 
-- Add [stack sampling evaluation profiler] [#13220](https://github.com/NixOS/nix/pull/13220)
+- 新增[栈采样求值分析器（stack sampling evaluation profiler）] [#13220](https://github.com/NixOS/nix/pull/13220)
 
-  The Nix evaluator now supports [stack sampling evaluation profiling](@docroot@/advanced-topics/eval-profiler.md) via the [`--eval-profiler flamegraph`] setting.
-  It outputs collapsed call stack information to the file specified by
-  [`--eval-profile-file`] (`nix.profile` by default) in a format directly consumable
-  by `flamegraph.pl` and compatible tools like [speedscope](https://speedscope.app/).
-  Sampling frequency can be configured via [`--eval-profiler-frequency`] (99 Hz by default).
+  Nix 求值器现在支持通过 [`--eval-profiler flamegraph`] 设置进行[栈采样求值分析](@docroot@/advanced-topics/eval-profiler.md)。
+  它将折叠后的调用栈信息输出到 [`--eval-profile-file`]（默认为 `nix.profile`）所指定的文件中，其格式可被 `flamegraph.pl` 及 [speedscope](https://speedscope.app/) 等兼容工具直接使用。
+  采样频率可通过 [`--eval-profiler-frequency`] 配置（默认为 99 Hz）。
 
-  Unlike the existing [`--trace-function-calls`], this profiler includes the name of the function
-  being called when it's available.
+  与现有的 [`--trace-function-calls`] 不同，该分析器在可获得函数名时会包含被调用函数的名称。
 
-- [`nix repl`] prints which variables were loaded [#11406](https://github.com/NixOS/nix/pull/11406)
+- [`nix repl`] 会打印加载了哪些变量 [#11406](https://github.com/NixOS/nix/pull/11406)
 
-  Instead of `Added <n> variables` it now prints the first 10 variables that were added to the global scope.
+  它现在不再打印 `Added <n> variables`，而是打印前 10 个被加入全局作用域的变量。
 
-- `nix flake archive`: Add [`--no-check-sigs`] option [#13277](https://github.com/NixOS/nix/pull/13277)
+- `nix flake archive`：新增 [`--no-check-sigs`] 选项 [#13277](https://github.com/NixOS/nix/pull/13277)
 
-  This is useful when using [`nix flake archive`] with the destination set to a remote store.
+  在使用 [`nix flake archive`] 且目标为远程 store 时，这个选项很有用。
 
-- Emit warnings for IFDs with [`trace-import-from-derivation`] option [#13279](https://github.com/NixOS/nix/pull/13279)
+- 通过 [`trace-import-from-derivation`] 选项为 IFD 发出警告 [#13279](https://github.com/NixOS/nix/pull/13279)
 
-  While we have the setting [`allow-import-from-derivation`] to deny import-from-derivation (IFD), sometimes users would like to observe IFDs during CI processes to gradually phase out the idiom. The new setting `trace-import-from-derivation`, when set, logs a simple warning to the console.
+  虽然我们有 [`allow-import-from-derivation`] 设置来禁止 import-from-derivation（IFD），但有时用户希望在 CI 流程中观察 IFD 的发生，以便逐步淘汰这一惯用法。新增的 `trace-import-from-derivation` 设置在启用时会向控制台记录一条简单的警告。
 
-- `json-log-path` setting [#13003](https://github.com/NixOS/nix/pull/13003)
+- `json-log-path` 设置 [#13003](https://github.com/NixOS/nix/pull/13003)
 
-  New setting [`json-log-path`] that sends a copy of all Nix log messages (in JSON format) to a file or Unix domain socket.
+  新增设置 [`json-log-path`]，它会将所有 Nix 日志消息（JSON 格式）的一份副本发送到某个文件或 Unix 域套接字。
 
-- Non-flake inputs now contain a `sourceInfo` attribute [#13164](https://github.com/NixOS/nix/issues/13164) [#13170](https://github.com/NixOS/nix/pull/13170)
+- 非 Flakes 输入现在包含 `sourceInfo` 属性 [#13164](https://github.com/NixOS/nix/issues/13164) [#13170](https://github.com/NixOS/nix/pull/13170)
 
-  Flakes have always had a `sourceInfo` attribute which describes the source of the flake.
-  The `sourceInfo.outPath` is often identical to the flake's `outPath`. However, it can differ when the flake is located in a subdirectory of its source.
+  Flakes 一直有一个 `sourceInfo` 属性，用于描述该 Flakes 的来源。
+  `sourceInfo.outPath` 通常与该 Flakes 的 `outPath` 相同。但当 Flakes 位于其来源的某个子目录中时，两者可能不同。
 
-  Non-flake inputs (i.e. inputs with [`flake = false`]) can also be located at some path _within_ a wider source.
-  This usually happens when defining a relative path input within the same source as the parent flake, e.g. `inputs.foo.url = ./some-file.nix`.
-  Such relative inputs will now inherit their parent's `sourceInfo`.
+  非 Flakes 输入（即设置了 [`flake = false`] 的输入）也可能位于一个更大的来源内的某个路径上。
+  这通常发生在把相对路径输入定义在与父级 Flakes 相同的来源中时，例如 `inputs.foo.url = ./some-file.nix`。
+  这类相对输入现在会继承其父级的 `sourceInfo`。
 
-  This also means it is now possible to use `?dir=subdir` on non-flake inputs.
+  这也意味着现在可以对非 Flakes 输入使用 `?dir=subdir`。
 
-  This iterates on the work done in 2.26 to improve relative path support ([#10089](https://github.com/NixOS/nix/pull/10089)),
-  and resolves a regression introduced in 2.28 relating to nested relative path inputs ([#13164](https://github.com/NixOS/nix/issues/13164)).
+  这是建立在 2.26 中改进相对路径支持的工作（[#10089](https://github.com/NixOS/nix/pull/10089)）之上的，
+  并修复了 2.28 中引入的关于嵌套相对路径输入的回归（[#13164](https://github.com/NixOS/nix/issues/13164)）。
 
-## Miscellaneous changes
+## 杂项变更
 
-- [`builtins.sort`] uses PeekSort [#12623](https://github.com/NixOS/nix/pull/12623)
+- [`builtins.sort`] 改用 PeekSort [#12623](https://github.com/NixOS/nix/pull/12623)
 
-  Previously it used libstdc++'s `std::stable_sort()`. However, that implementation is not reliable if the user-supplied comparison function is not a strict weak ordering.
+  以前它使用 libstdc++ 的 `std::stable_sort()`。然而，当用户提供的比较函数不是一个严格的弱序时，该实现并不可靠。
 
-- Revert incomplete closure mixed download and build feature [#77](https://github.com/NixOS/nix/issues/77) [#12628](https://github.com/NixOS/nix/issues/12628) [#13176](https://github.com/NixOS/nix/pull/13176)
+- 回退"不完整闭包"混合下载与构建特性 [#77](https://github.com/NixOS/nix/issues/77) [#12628](https://github.com/NixOS/nix/issues/12628) [#13176](https://github.com/NixOS/nix/pull/13176)
 
-  Since Nix 1.3 ([commit `299141e`] in 2013) Nix has attempted to mix together upstream fresh builds and downstream substitutions when remote substuters contain an "incomplete closure" (have some store objects, but not the store objects they reference).
-  This feature is now removed.
+  自 Nix 1.3（2013 年的[提交 `299141e`]）以来，当远程替代器（substituter）包含"不完整闭包"（拥有某些 store 对象，但没有它们所引用的 store 对象）时，Nix 一直尝试将上游的新鲜构建与下游的 substitute（替代下载）混合进行。
+  该特性现已被移除。
 
-  In the worst case, removing this feature could cause more building downstream, but it should not cause outright failures, since this is not happening for opaque store objects that we don't know how to build if we decide not to substitute.
-  In practice, however, we doubt even more building is very likely to happen.
-  Remote stores that are missing dependencies in arbitrary ways (e.g. corruption) don't seem to be very common.
+  在最坏的情况下，移除该特性可能导致下游进行更多构建，但不应该造成彻底失败，因为对于我们不透明、不知如何构建的 store 对象，如果我们决定不进行替代下载，这种情况并不会发生。
+  不过在实践中，我们认为额外构建增多的可能性也不大。
+  远程 store 以任意方式缺失依赖（例如损坏）的情形似乎并不常见。
 
-  On the contrary, when remote stores fail to implement the [closure property](@docroot@/store/store-object.md#closure-property), it is usually an *intentional* choice on the part of the remote store, because it wishes to serve as an "overlay" store over another store, such as `https://cache.nixos.org`.
-  If an "incomplete closure" is encountered in that situation, the right fix is not to do some sort of "franken-building" as this feature implemented, but instead to make sure both substituters are enabled in the settings.
+  相反，当远程 store 未能实现[闭包性质](@docroot@/store/store-object.md#closure-property)时，这通常是远程 store 一方的*有意*选择，因为它希望充当另一个 store（例如 `https://cache.nixos.org`）之上的"覆盖层"（overlay）store。
+  在这种情况下遇到"不完整闭包"时，正确的做法不是像该特性所实现的那样进行某种"拼接式构建"（franken-building），而是确保两个替代器（substituter）都在设置中被启用。
 
-  (In the future, we should make it easier for remote stores to indicate this to clients, to catch settings that won't work in general before a missing dependency is actually encountered.)
+  （将来，我们应当让远程 store 更容易向客户端表明这一点，以便在真正遇到缺失的依赖之前，就能发现那些在一般情况下行不通的设置。）
 
-## Contributors
+## 贡献者
 
-This release was made possible by the following 32 contributors:
+本次发布由以下 32 位贡献者共同促成：
 
 - Cole Helbling [**(@cole-h)**](https://github.com/cole-h)
 - Eelco Dolstra [**(@edolstra)**](https://github.com/edolstra)
@@ -134,7 +127,7 @@ This release was made possible by the following 32 contributors:
 - Wolfgang Walther [**(@wolfgangwalther)**](https://github.com/wolfgangwalther)
 
 <!-- markdown links -->
-[stack sampling evaluation profiler]: @docroot@/advanced-topics/eval-profiler.md
+[栈采样求值分析器（stack sampling evaluation profiler）]: @docroot@/advanced-topics/eval-profiler.md
 [`--eval-profiler`]: @docroot@/command-ref/conf-file.md#conf-eval-profiler
 [`--eval-profiler flamegraph`]: @docroot@/command-ref/conf-file.md#conf-eval-profiler
 [`--trace-function-calls`]: @docroot@/command-ref/conf-file.md#conf-trace-function-calls
@@ -150,4 +143,4 @@ This release was made possible by the following 32 contributors:
 [`builtins.sort`]: @docroot@/language/builtins.md#builtins-sort
 [`flake = false`]: @docroot@/command-ref/new-cli/nix3-flake.md?highlight=false#flake-inputs
 [`--no-check-sigs`]: @docroot@/command-ref/new-cli/nix3-flake-archive.md#opt-no-check-sigs
-[commit `299141e`]: https://github.com/NixOS/nix/commit/299141ecbd08bae17013226dbeae71e842b4fdd7
+[提交 `299141e`]: https://github.com/NixOS/nix/commit/299141ecbd08bae17013226dbeae71e842b4fdd7

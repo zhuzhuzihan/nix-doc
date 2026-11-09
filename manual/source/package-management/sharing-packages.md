@@ -1,6 +1,3 @@
-# Sharing Packages Between Machines
+# 在机器之间共享软件包
 
-Sometimes you want to copy a package from one machine to another. Or,
-you want to install some packages and you know that another machine
-already has some or all of those packages or their dependencies. In that
-case there are mechanisms to quickly copy packages between machines.
+有时你想把一个软件包从一台机器复制到另一台机器。或者，你想安装一些软件包，并且知道另一台机器上已经存在其中部分或全部软件包及其依赖。在这种情况下，有一些机制可以在机器之间快速复制软件包。

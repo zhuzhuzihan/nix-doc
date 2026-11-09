@@ -1,31 +1,17 @@
 # Release 1.10 (2015-09-03)
 
-This is primarily a bug fix release. It also has a number of new
-features:
+这主要是一个缺陷修复版本，同时也包含一些新特性：
 
-  - A number of builtin functions have been added to reduce
-    Nixpkgs/NixOS evaluation time and memory consumption: `all`, `any`,
-    `concatStringsSep`, `foldl’`, `genList`, `replaceStrings`, `sort`.
+  - 新增了多个内建函数，以减少 Nixpkgs/NixOS 的求值时间和内存消耗：`all`、`any`、`concatStringsSep`、`foldl’`、`genList`、`replaceStrings`、`sort`。
 
-  - The garbage collector is more robust when the disk is full.
+  - 垃圾回收器在磁盘满时更加健壮。
 
-  - Nix supports a new API for building derivations that doesn’t require
-    a `.drv` file to be present on disk; it only requires an in-memory
-    representation of the derivation. This is used by the Hydra
-    continuous build system to make remote builds more efficient.
+  - Nix 支持一个新的构建 derivation（派生）的 API，它不要求磁盘上存在 `.drv` 文件；只需要 derivation 的内存表示。Hydra 持续构建系统用它来提高远程构建的效率。
 
-  - The function `<nix/fetchurl.nix>` now uses a *builtin* builder (i.e.
-    it doesn’t require starting an external process; the download is
-    performed by Nix itself). This ensures that derivation paths don’t
-    change when Nix is upgraded, and obviates the need for ugly hacks to
-    support chroot execution.
+  - 函数 `<nix/fetchurl.nix>` 现在使用*内建* builder（也就是说，它无需启动外部进程；下载由 Nix 自身完成）。这确保了 derivation 路径在 Nix 升级时不会改变，并且免除了为支持 chroot 执行而采用的丑陋 hack。
 
-  - `--version -v` now prints some configuration information, in
-    particular what compile-time optional features are enabled, and the
-    paths of various directories.
+  - `--version -v` 现在会打印一些配置信息，特别是启用了哪些编译期可选特性，以及各个目录的路径。
 
-  - Build users have their supplementary groups set correctly.
+  - 构建用户的补充组现在被正确设置。
 
-This release has contributions from Eelco Dolstra, Guillaume Maudoux,
-Iwan Aucamp, Jaka Hudoklin, Kirill Elagin, Ludovic Courtès, Manolis
-Ragkousis, Nicolas B. Pierron and Shea Levy.
+本版本包含来自 Eelco Dolstra、Guillaume Maudoux、Iwan Aucamp、Jaka Hudoklin、Kirill Elagin、Ludovic Courtès、Manolis Ragkousis、Nicolas B. Pierron 和 Shea Levy 的贡献。

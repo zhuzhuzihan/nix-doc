@@ -1,28 +1,28 @@
-# C++ style guide
+# C++ 风格指南
 
-Some miscellaneous notes on how we write C++.
-Formatting we hope to eventually normalize automatically, so this section is free to just discuss higher-level concerns.
+一些关于我们如何编写 C++ 的零散笔记。
+我们希望最终能将格式规范化为自动化的，因此本节可以只讨论更宏观的问题。
 
-## The `*-impl.hh` pattern
+## `*-impl.hh` 模式
 
-Let's start with some background info first.
-Headers, are supposed to contain declarations, not definitions.
-This allows us to change a definition without changing the declaration, and have a very small rebuild during development.
-Templates, however, need to be specialized to use-sites.
-Absent fancier techniques, templates require that the definition, not just mere declaration, must be available at use-sites in order to make that specialization on the fly as part of compiling those use-sites.
-Making definitions available like that means putting them in headers, but that is unfortunately means we get all the extra rebuilds we want to avoid by just putting declarations there as described above.
+先从一些背景信息说起。
+头文件应当只包含声明，而不是定义。
+这使我们可以在不改变声明的情况下修改定义，并在开发过程中获得非常小的增量重建。
+然而，模板需要在使用点被具化（specialize）。
+在没有更高级技巧的情况下，模板要求在使用点不仅能有声明，还必须能拿到定义，以便在编译这些使用点时即时完成具化。
+以这种方式提供定义意味着要把它们放进头文件，但不幸的是，这会带来我们原本想通过只放声明来避免的所有额外重建。
 
-The `*-impl.hh` pattern is a ham-fisted partial solution to this problem.
-It constitutes:
+`*-impl.hh` 模式是对这一问题的一种笨拙的局部解决方案。
+它包括：
 
-- Declaring items only in the main `foo.hh`, including templates.
+- 只在主头文件 `foo.hh` 中声明各个条目，包括模板。
 
-- Putting template definitions in a companion `foo-impl.hh` header.
+- 将模板定义放入配套的 `foo-impl.hh` 头文件。
 
-Most C++ developers would accompany this by having `foo.hh` include `foo-impl.hh`, to ensure any file getting the template declarations also got the template definitions.
-But we've found not doing this has some benefits and fewer than imagined downsides.
-The fact remains that headers are rarely as minimal as they could be;
-there is often code that needs declarations from the headers but not the templates within them.
-With our pattern where `foo.hh` doesn't include `foo-impl.hh`, that means they can just include `foo.hh`
-Code that needs both just includes `foo.hh` and `foo-impl.hh`.
-This does make linking error possible where something forgets to include `foo-impl.hh` that needs it, but those are build-time only as easy to fix.
+大多数 C++ 开发者会在此之外让 `foo.hh` 包含 `foo-impl.hh`，以确保任何拿到模板声明的文件也同时拿到模板定义。
+但我们发现不这样做有一些好处，而且缺点比想象中少。
+事实上，头文件很少能真正做到最小化；
+经常有一些代码只需要头文件中的声明，而不需要其中的模板。
+在我们的模式中，`foo.hh` 并不包含 `foo-impl.hh`，这意味着这些代码只需包含 `foo.hh` 即可。
+同时需要两者的代码则包含 `foo.hh` 和 `foo-impl.hh`。
+这确实可能引发链接错误——某个地方需要 `foo-impl.hh` 却忘记包含它——但这只发生在构建期，而且很容易修复。

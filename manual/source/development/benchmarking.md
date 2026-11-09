@@ -1,113 +1,113 @@
-# Running Benchmarks
+# 运行基准测试
 
-This guide explains how to build and run performance benchmarks in the Nix codebase.
+本指南介绍如何在 Nix 代码库中构建和运行性能基准测试。
 
-## Overview
+## 概述
 
-Nix uses the [Google Benchmark](https://github.com/google/benchmark) framework for performance testing. Benchmarks help measure and track the performance of critical operations like derivation parsing.
+Nix 使用 [Google Benchmark](https://github.com/google/benchmark) 框架进行性能测试。基准测试有助于度量和跟踪关键操作（如 derivation（派生）解析）的性能。
 
-## Building Benchmarks
+## 构建基准测试
 
-Benchmarks are disabled by default and must be explicitly enabled during the build configuration. For accurate results, use a debug-optimized release build.
+基准测试默认是禁用的，必须在构建配置阶段显式启用。为获得准确的结果，请使用调试优化的 release 构建。
 
-### Development Environment Setup
+### 搭建开发环境
 
-First, enter the development shell which includes the necessary dependencies:
+首先，进入包含必要依赖的开发 shell：
 
 ```bash
 nix develop .#native-ccacheStdenv
 ```
 
-### Configure Build with Benchmarks
+### 配置启用基准测试的构建
 
-From the project root, configure the build with benchmarks enabled and optimization:
+在项目根目录下，配置启用基准测试和优化的构建：
 
 ```bash
 cd build
 meson configure -Dbenchmarks=true -Dbuildtype=debugoptimized
 ```
 
-The `debugoptimized` build type provides:
-- Compiler optimizations for realistic performance measurements
-- Debug symbols for profiling and analysis
-- Balance between performance and debuggability
+`debugoptimized` 构建类型提供：
+- 编译器优化，用于真实的性能测量
+- 调试符号，用于性能剖析和分析
+- 性能与可调试性之间的平衡
 
-### Build the Benchmarks
+### 构建基准测试
 
-Build the project including benchmarks:
+构建包含基准测试的项目：
 
 ```bash
 ninja
 ```
 
-This will create benchmark executables in the build directory. Currently available:
-- `build/src/libstore-tests/nix-store-benchmarks` - Store-related performance benchmarks
+这会在构建目录中创建基准测试可执行文件。当前可用的有：
+- `build/src/libstore-tests/nix-store-benchmarks` - store 相关的性能基准测试
 
-Additional benchmark executables will be created as more benchmarks are added to the codebase.
+随着更多基准测试被加入代码库，还会创建更多的基准测试可执行文件。
 
-## Running Benchmarks
+## 运行基准测试
 
-### Basic Usage
+### 基本用法
 
-Run benchmark executables directly. For example, to run store benchmarks:
+直接运行基准测试可执行文件。例如，运行 store 基准测试：
 
 ```bash
 ./build/src/libstore-tests/nix-store-benchmarks
 ```
 
-As more benchmark executables are added, run them similarly from their respective build directories.
+随着更多基准测试可执行文件的加入，可以用同样的方式在各自对应的构建目录中运行它们。
 
-### Filtering Benchmarks
+### 过滤基准测试
 
-Run specific benchmarks using regex patterns:
+使用正则表达式模式运行特定的基准测试：
 
 ```bash
-# Run only derivation parser benchmarks
+# 只运行 derivation 解析器基准测试
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_filter="derivation.*"
 
-# Run only benchmarks for hello.drv
+# 只运行 hello.drv 相关的基准测试
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_filter=".*hello.*"
 ```
 
-### Output Formats
+### 输出格式
 
-Generate benchmark results in different formats:
+以不同格式生成基准测试结果：
 
 ```bash
-# JSON output
+# JSON 输出
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_format=json > results.json
 
-# CSV output
+# CSV 输出
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_format=csv > results.csv
 ```
 
-### Advanced Options
+### 高级选项
 
 ```bash
-# Run benchmarks multiple times for better statistics
+# 多次运行基准测试以获得更好的统计数据
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_repetitions=10
 
-# Set minimum benchmark time (useful for micro-benchmarks)
+# 设置最短基准测试时间（对微基准测试很有用）
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_min_time=2
 
-# Compare against baseline
+# 与基线进行比较
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_baseline=baseline.json
 
-# Display time in custom units
+# 以自定义单位显示时间
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_time_unit=ms
 ```
 
-## Writing New Benchmarks
+## 编写新的基准测试
 
-To add new benchmarks:
+要添加新的基准测试：
 
-1. Create a new `.cc` file in the appropriate `*-tests` directory
-2. Include the benchmark header:
+1. 在相应的 `*-tests` 目录中创建一个新的 `.cc` 文件
+2. 包含基准测试头文件：
    ```cpp
    #include <benchmark/benchmark.h>
    ```
 
-3. Write benchmark functions:
+3. 编写基准测试函数：
    ```cpp
    static void BM_YourBenchmark(benchmark::State & state)
    {
@@ -120,7 +120,7 @@ To add new benchmarks:
    BENCHMARK(BM_YourBenchmark);
    ```
 
-4. Add the file to the corresponding `meson.build`:
+4. 将该文件添加到对应的 `meson.build` 中：
    ```meson
    benchmarks_sources = files(
        'your-benchmark.cc',
@@ -128,60 +128,60 @@ To add new benchmarks:
    )
    ```
 
-## Profiling with Benchmarks
+## 使用基准测试进行性能剖析
 
-For deeper performance analysis, combine benchmarks with profiling tools:
+要进行更深入的性能分析，可以将基准测试与剖析工具结合使用：
 
 ```bash
-# Using Linux perf
+# 使用 Linux perf
 perf record ./build/src/libstore-tests/nix-store-benchmarks
 perf report
 ```
 
-### Using Valgrind Callgrind
+### 使用 Valgrind Callgrind
 
-Valgrind's callgrind tool provides detailed profiling information that can be visualized with kcachegrind:
+Valgrind 的 callgrind 工具提供详细的剖析信息，可以用 kcachegrind 进行可视化：
 
 ```bash
-# Profile with callgrind
+# 使用 callgrind 进行剖析
 valgrind --tool=callgrind ./build/src/libstore-tests/nix-store-benchmarks
 
-# Visualize the results with kcachegrind
+# 用 kcachegrind 可视化结果
 kcachegrind callgrind.out.*
 ```
 
-This provides:
-- Function call graphs
-- Instruction-level profiling
-- Source code annotation
-- Interactive visualization of performance bottlenecks
+这可以提供：
+- 函数调用图
+- 指令级别的剖析
+- 源代码标注
+- 性能瓶颈的交互式可视化
 
-## Continuous Performance Testing
+## 持续性能测试
 
 ```bash
-# Save baseline results
+# 保存基线结果
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_format=json > baseline.json
 
-# Compare against baseline in CI
+# 在 CI 中与基线进行比较
 ./build/src/libstore-tests/nix-store-benchmarks --benchmark_baseline=baseline.json
 ```
 
-## Troubleshooting
+## 故障排除
 
-### Benchmarks not building
+### 基准测试未构建
 
-Ensure benchmarks are enabled:
+确保基准测试已启用：
 ```bash
 meson configure build | grep benchmarks
 # Should show: benchmarks true
 ```
 
-### Inconsistent results
+### 结果不一致
 
-- Ensure your system is not under heavy load
-- Disable CPU frequency scaling for consistent results
-- Run benchmarks multiple times with `--benchmark_repetitions`
+- 确保你的系统没有处于高负载状态
+- 禁用 CPU 频率调节以获得一致的结果
+- 使用 `--benchmark_repetitions` 多次运行基准测试
 
-## See Also
+## 另请参阅
 
-- [Google Benchmark documentation](https://github.com/google/benchmark/blob/main/docs/user_guide.md)
+- [Google Benchmark 文档](https://github.com/google/benchmark/blob/main/docs/user_guide.md)

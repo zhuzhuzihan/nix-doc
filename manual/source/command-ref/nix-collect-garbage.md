@@ -1,84 +1,79 @@
 # Name
 
-`nix-collect-garbage` - delete unreachable [store objects]
+`nix-collect-garbage` - 删除不可达的 [store objects]
 
-# Synopsis
+# 概要
 
 `nix-collect-garbage` [`--delete-old`] [`-d`] [`--delete-older-than` *period*] [`--max-freed` *bytes*] [`--dry-run`]
 
-# Description
+# 描述
 
-The command `nix-collect-garbage` is mostly an alias of [`nix-store --gc`](@docroot@/command-ref/nix-store/gc.md).
-That is, it deletes all unreachable [store objects] in the Nix store to clean up your system.
+命令 `nix-collect-garbage` 在很大程度上是 [`nix-store --gc`](@docroot@/command-ref/nix-store/gc.md) 的别名。也就是说，它会删除 Nix store 中所有不可达的 [store objects] 来清理你的系统。
 
-However, it provides two additional options,
-[`--delete-old`](#opt-delete-old) and [`--delete-older-than`](#opt-delete-older-than),
-which also delete old [profiles], allowing potentially more [store objects] to be deleted because profiles are also garbage collection roots.
-These options are the equivalent of running
-[`nix-env --delete-generations`](@docroot@/command-ref/nix-env/delete-generations.md)
-with various augments on multiple profiles,
-prior to running `nix-collect-garbage` (or just `nix-store --gc`) without any flags.
+不过，它额外提供了两个选项，
+[`--delete-old`](#opt-delete-old) 和 [`--delete-older-than`](#opt-delete-older-than)，
+它们还会删除旧的 [profiles]，从而可能删除更多 [store objects]，因为 profile 也是垃圾回收器的根（garbage collection root）。
+这两个选项相当于先对多个 profile 以各种参数运行
+[`nix-env --delete-generations`](@docroot@/command-ref/nix-env/delete-generations.md)，
+然后再不带任何标志运行 `nix-collect-garbage`（或直接 `nix-store --gc`）。
 
-> **Note**
+> **注意**
 >
-> Deleting previous configurations makes rollbacks to them impossible.
+> 删除先前的配置会使回滚到这些配置成为不可能。
 
-These flags should be used with care, because they potentially delete generations of profiles used by other users on the system.
+这些标志应谨慎使用，因为它们可能删除系统上其他用户使用的 profile 的 generation（世代）。
 
-## Locations searched for profiles
+## 搜索 profile 的位置
 
-`nix-collect-garbage` cannot know about all profiles; that information doesn't exist.
-Instead, it looks in a few locations, and acts on all profiles it finds there:
+`nix-collect-garbage` 无法知晓所有 profile；这类信息并不存在。它只会查看少数几个位置，并对在那里找到的所有 profile 执行操作：
 
-1. The default profile locations as specified in the [profiles] section of the manual.
+1. 手册 [profiles] 一节中指定的默认 profile 位置。
 
-2. > **NOTE**
+2. > **注意**
    >
-   > Not stable; subject to change
+   > 不稳定；可能变更
    >
-   > Do not rely on this functionality; it just exists for migration purposes and may change in the future.
-   > These deprecated paths remain a private implementation detail of Nix.
+   > 不要依赖此功能；它只是为迁移目的而存在，将来可能会变更。
+   > 这些已弃用的路径仍然是 Nix 的私有实现细节。
 
-   `$NIX_STATE_DIR/profiles` and `$NIX_STATE_DIR/profiles/per-user`.
+   `$NIX_STATE_DIR/profiles` 和 `$NIX_STATE_DIR/profiles/per-user`。
 
-   With the exception of `$NIX_STATE_DIR/profiles/per-user/root` and `$NIX_STATE_DIR/profiles/default`, these directories are no longer used by other commands.
-   `nix-collect-garbage` looks there anyways in order to clean up profiles from older versions of Nix.
+   除了 `$NIX_STATE_DIR/profiles/per-user/root` 和 `$NIX_STATE_DIR/profiles/default` 之外，这些目录已不再被其他命令使用。`nix-collect-garbage` 仍会查看这些目录，以便清理旧版本 Nix 遗留的 profile。
 
-# Options
+# 选项
 
-These options are for deleting old [profiles] prior to deleting unreachable [store objects].
+这些选项用于在删除不可达 [store objects] 之前删除旧的 [profiles]。
 
 - <span id="opt-delete-old">[`--delete-old`](#opt-delete-old)</span> / `-d`
 
-  Delete all old generations of profiles.
+  删除所有 profile 的旧 generation。
 
-  This is the equivalent of invoking [`nix-env --delete-generations old`](@docroot@/command-ref/nix-env/delete-generations.md#generations-old) on each found profile.
+  这相当于对每个找到的 profile 调用 [`nix-env --delete-generations old`](@docroot@/command-ref/nix-env/delete-generations.md#generations-old)。
 
 - <span id="opt-delete-older-than">[`--delete-older-than`](#opt-delete-older-than)</span> *period*
 
-  Delete all generations of profiles older than the specified amount (except for the generations that were active at that point in time).
-  *period* is a value such as `30d`, which would mean 30 days.
+  删除所有早于指定时长的 profile generation（除了当时处于活动状态的 generation）。
+  *period* 是一个类似 `30d` 的值，表示 30 天。
 
-  This is the equivalent of invoking [`nix-env --delete-generations <period>`](@docroot@/command-ref/nix-env/delete-generations.md#generations-time) on each found profile.
-  See the documentation of that command for additional information about the *period* argument.
+  这相当于对每个找到的 profile 调用 [`nix-env --delete-generations <period>`](@docroot@/command-ref/nix-env/delete-generations.md#generations-time)。
+  关于 *period* 参数的更多信息，请参见该命令的文档。
 
 - <span id="opt-max-freed">[`--max-freed`](#opt-max-freed)</span> *bytes*
 
    <!-- duplication from https://github.com/NixOS/nix/blob/442a2623e48357ff72c77bb11cf2cf06d94d2f90/doc/manual/source/command-ref/nix-store/gc.md?plain=1#L39-L44 -->
 
-  Keep deleting paths until at least *bytes* bytes have been deleted,
-  then stop. The argument *bytes* can be followed by the
-  multiplicative suffix `K`, `M`, `G` or `T`, denoting KiB, MiB, GiB
-  or TiB units.
+  持续删除路径，直到至少删除了 *bytes* 字节，
+  然后停止。参数 *bytes* 后可以跟乘数后缀
+  `K`、`M`、`G` 或 `T`，分别表示 KiB、MiB、GiB
+  或 TiB 单位。
   
 {{#include ./opt-common.md}}
 
 {{#include ./env-common.md}}
 
-# Example
+# 示例
 
-To delete from the Nix store everything that is not used by the current
-generations of each profile, do
+要删除 Nix store 中所有未被每个 profile 当前 generation 使用的内容，执行：
 
 ```console
 $ nix-collect-garbage -d

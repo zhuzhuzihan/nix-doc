@@ -1,15 +1,14 @@
 # Name
 
-`nix-store --load-db` - import Nix database
+`nix-store --load-db` - 导入 Nix 数据库
 
-# Synopsis
+# 概要
 
 `nix-store` `--load-db`
 
-# Description
+# 描述
 
-The operation `--load-db` reads a dump of the Nix database created by
-`--dump-db` from standard input and loads it into the Nix database.
+`--load-db` 操作从标准输入读取由 `--dump-db` 创建的 Nix 数据库转储，并将其加载到 Nix 数据库中。
 
 {{#include ./opt-common.md}}
 

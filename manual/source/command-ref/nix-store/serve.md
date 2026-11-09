@@ -1,24 +1,20 @@
 # Name
 
-`nix-store --serve` - serve local Nix store over SSH
+`nix-store --serve` - 通过 SSH 提供 Nix store 服务
 
-# Synopsis
+# 概要
 
 `nix-store` `--serve` [`--write`]
 
-# Description
+# 描述
 
-The operation `--serve` provides access to the Nix store over stdin and
-stdout, and is intended to be used as a means of providing Nix store
-access to a restricted ssh user.
+`--serve` 操作通过标准输入和标准输出提供对 Nix store 的访问，旨在用于向受限的 ssh 用户授予 Nix store 访问权限。
 
-The following flags are available:
+可以使用以下标志：
 
 - `--write`
 
-  Allow the connected client to request the realization of
-  derivations. In effect, this can be used to make the host act as a
-  remote builder.
+  允许连接的客户端请求实化 derivation。实际上，这可以用来让主机充当远程构建器（remote builder）。
 
 {{#include ./opt-common.md}}
 
@@ -26,14 +22,12 @@ The following flags are available:
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
-To turn a host into a build server, the `authorized_keys` file can be
-used to provide build access to a given SSH public key:
+要将一台主机变成构建服务器，可以使用 `authorized_keys` 文件为给定的 SSH 公钥授予构建权限：
 
 ```console
 $ cat <<EOF >>/root/.ssh/authorized_keys
 command="nice -n20 nix-store --serve --write" ssh-rsa AAAAB3NzaC1yc2EAAAA...
 EOF
 ```
-

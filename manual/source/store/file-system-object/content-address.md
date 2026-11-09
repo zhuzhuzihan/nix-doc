@@ -1,84 +1,82 @@
-# Content-Addressing File System Objects
+# 文件系统对象的内容寻址
 
-For many operations, Nix needs to calculate [a content addresses](@docroot@/glossary.md#gloss-content-address) of [a file system object][file system object] (FSO).
-Usually this is needed as part of
-[content addressing store objects](../store-object/content-address.md),
-since store objects always have a root file system object.
-But some command-line utilities also just work on "raw" file system objects, not part of any store object.
+在许多操作中，Nix 需要计算[文件系统对象][file system object]（FSO）的[内容寻址](@docroot@/glossary.md#gloss-content-address)。
+这通常作为[存储对象内容寻址](../store-object/content-address.md)的一部分，因为存储对象总是有一个根文件系统对象。
+但也有一些命令行工具直接处理"裸"文件系统对象，不隶属于任何存储对象。
 
-Every content addressing scheme Nix uses ultimately involves feeding data into a [hash function](https://en.wikipedia.org/wiki/Hash_function), and getting back an opaque fixed-size digest which is deemed a content address.
-The various *methods* of content addressing thus differ in how abstract data (in this case, a file system object and its descendants) are fed into the hash function.
+Nix 使用的每种内容寻址方案，最终都是把数据喂给一个[哈希函数](https://en.wikipedia.org/wiki/Hash_function)，并得到一个不透明的固定大小摘要，该摘要即被视为内容地址。
+各种内容寻址*方法*的区别在于抽象数据（此处即一个文件系统对象及其后代）如何被喂给哈希函数。
 
-## Serialising File System Objects { #serial }
+## 序列化文件系统对象 { #serial }
 
-The simplest method is to serialise the entire file system object tree into a single binary string, and then hash that binary string, yielding the content address.
-In this section we describe the currently-supported methods of serialising file system objects.
+最简单的方法是把整个文件系统对象树序列化为一个二进制字符串，然后对那个二进制字符串做哈希，得到内容地址。
+本节将描述当前受支持的文件系统对象序列化方法。
 
-### Flat { #serial-flat }
+### Flat（扁平） { #serial-flat }
 
-A single file object can just be hashed by its contents.
-This is not enough information to encode the fact that the file system object is a file,
-but if we *already* know that the FSO is a single non-executable file by other means, it is sufficient.
+单个文件对象可以直接按其内容做哈希。
+这不足以编码"该文件系统对象是一个文件"这一事实，
+但如果我们通过其他方式*已经*知道该 FSO 是单个不可执行文件，这就足够了。
 
-Because the hashed data is just the raw file, as is, this choice is good for compatibility with other systems.
-For example, Unix commands like `sha256sum` or `sha1sum` will produce hashes for single files that match this.
+因为被哈希的数据就是原样的裸文件，所以这种选择有利于与其他系统兼容。
+例如，`sha256sum` 或 `sha1sum` 等 Unix 命令对单个文件产出的哈希就与此一致。
 
-### Nix Archive (NAR) { #serial-nix-archive }
+### Nix Archive（NAR，Nix 归档） { #serial-nix-archive }
 
-For the other cases of [file system objects][file system object], especially directories with arbitrary descendants, we need a more complex serialisation format.
-Examples of such serialisations are the ZIP and TAR file formats.
-However, for our purposes these formats have two problems:
+对于[文件系统对象][file system object]的其他情形，尤其是带有任意后代的目录，我们需要更复杂的序列化格式。
+这类序列化的例子有 ZIP 和 TAR 文件格式。
+然而，对我们的目的而言，这些格式有两个问题：
 
-- They do not have a canonical serialisation, meaning that given an FSO, there can
-be many different serialisations.
-  For instance, TAR files can have variable amounts of padding between archive members;
-  and some archive formats leave the order of directory entries undefined.
-  This would be bad because we use serialisation to compute cryptographic hashes over file system objects, and for those hashes to be useful as a content address or for integrity checking, uniqueness is crucial.
-  Otherwise, correct hashes would report false mismatches, and the store would fail to find the content.
+- 它们没有规范化的序列化形式，也就是说给定一个 FSO，可能存在
+多种不同的序列化结果。
+  例如，TAR 文件在归档成员之间可以有不同数量的填充；
+  某些归档格式对目录条目的顺序也未作定义。
+  这会很糟糕，因为我们用序列化来计算文件系统对象之上的密码学哈希，而要使这些哈希能用作内容地址或完整性校验，唯一性至关重要。
+  否则，正确的哈希会误报不匹配，store 也将无法找到内容。
 
-- They store more information than we have in our notion of FSOs, such as time stamps.
-  This can cause FSOs that Nix should consider equal to hash to different values on different machines, just because the dates differ.
+- 它们存储的信息比我们 FSO 概念中的更多，例如时间戳。
+  这会导致 Nix 本应视为相等的 FSO 在不同机器上哈希出不同的值，仅仅因为日期不同。
 
-- As a practical consideration, the TAR format is the only truly universal format in the Unix environment.
-  It has many problems, such as an inability to deal with long file names and files larger than 2^33 bytes.
-  Current implementations such as GNU Tar work around these limitations in various ways.
+- 出于实际考虑，TAR 格式是 Unix 环境中唯一真正通用的格式。
+  它有许多问题，例如无法处理长文件名和大于 2^33 字节的文件。
+  诸如 GNU Tar 之类的现行实现以各种方式绕过了这些限制。
 
-For these reasons, Nix has its very own archive format—the Nix Archive (NAR) format,
-which is carefully designed to avoid the problems described above.
+基于这些原因，Nix 拥有自己的归档格式——Nix Archive（NAR）格式，
+它的设计经过精心考量，以避免上述问题。
 
-The exact specification of the Nix Archive format is in [specified here](../../protocols/nix-archive/index.md).
+Nix Archive 格式的确切规范[在此处说明](../../protocols/nix-archive/index.md)。
 
-## Content addressing File System Objects beyond a single serialisation pass
+## 超越单次序列化的文件系统对象内容寻址
 
-Serialising the entire tree and then hashing that binary string is not the only option for content addressing, however.
-Another technique is that of a [Merkle graph](https://en.wikipedia.org/wiki/Merkle_tree), where previously computed hashes are included in subsequent byte strings to be hashed.
+然而，先序列化整棵树再对二进制字符串做哈希，并不是内容寻址的唯一选择。
+另一种技术是 [Merkle 图（Merkle graph）](https://en.wikipedia.org/wiki/Merkle_tree)：先前计算出的哈希被包含进后续待哈希的字节串中。
 
-In particular, the Merkle graphs can match the original graph structure of file system objects:
-we can first hash (serialised) child file system objects, and then hash parent objects using the hashes of their children in the serialisation (to be hashed) of the parent file system objects.
+特别地，Merkle 图可以与文件系统对象原本的图结构相匹配：
+我们可以先对（序列化后的）子文件系统对象做哈希，然后在父文件系统对象的序列化（待哈希）结果中使用其子对象的哈希，再对父对象做哈希。
 
-Currently, there is one such Merkle DAG content addressing method supported.
+目前，支持一种这样的 Merkle DAG 内容寻址方法。
 
-### Git ([experimental][xp-feature-git-hashing]) { #git }
+### Git（[实验性][xp-feature-git-hashing]） { #git }
 
-> **Warning**
+> **警告**
 >
-> This method is part of the [`git-hashing`][xp-feature-git-hashing] experimental feature.
+> 该方法属于 [`git-hashing`][xp-feature-git-hashing] 实验性特性。
 
-Git's file system model is very close to Nix's, and so Git's content addressing method is a pretty good fit.
-Just as with regular Git, files and symlinks are hashed as git "blobs", and directories are hashed as git "trees".
+Git 的文件系统模型与 Nix 的非常接近，因此 Git 的内容寻址方法相当契合。
+与常规 Git 一样，文件和符号链接按 git "blob" 做哈希，目录按 git "tree" 做哈希。
 
-However, one difference between Nix's and Git's file system model needs special treatment.
-Plain files, executable files, and symlinks are not differentiated as distinctly addressable objects, but by their context: by the directory entry that refers to them.
-That means so long as the root object is a directory, there is no problem:
-every non-directory object is owned by a parent directory, and the entry that refers to it provides the missing information.
-However, if the root object is not a directory, then we have no way of knowing which one of an executable file, non-executable file, or symlink it is supposed to be.
+然而，Nix 与 Git 文件系统模型之间的一个差异需要特殊处理。
+普通文件、可执行文件和符号链接并不作为可独立寻址的对象加以区分，而是通过其上下文（即指向它们的目录条目）来区分。
+这意味着只要根对象是目录，就没有问题：
+每个非目录对象都隶属于一个父目录，指向它的条目提供了缺失的信息。
+然而，如果根对象不是目录，我们就无从知道它应当是可执行文件、不可执行文件还是符号链接中的哪一种。
 
-In response to this, we have decided to treat a bare file as non-executable file.
-This is similar to do what we do with [flat serialisation](#serial-flat), which also lacks this information.
-To avoid an address collision, attempts to hash a bare executable file or symlink will result in an error (just as would happen for flat serialisation also).
-Thus, Git can encode some, but not all of Nix's "File System Objects", and this sort of content-addressing is likewise partial.
+针对这一点，我们决定把孤立文件视为不可执行文件。
+这与我们对[扁平序列化](#serial-flat)的处理类似，后者同样缺少这一信息。
+为避免地址冲突，对孤立的可执行文件或符号链接做哈希的尝试将导致错误（扁平序列化也是如此）。
+因此，Git 能编码 Nix"文件系统对象"中的一部分，但不是全部，这种内容寻址方式同样是部分的。
 
-In the future, we may support a Git-like hash for such file system objects, or we may adopt another Merkle DAG format which is capable of representing all Nix file system objects.
+未来，我们可能为这类文件系统对象支持一种类 Git 的哈希，或者采用另一种能够表示所有 Nix 文件系统对象的 Merkle DAG 格式。
 
 
 [file system object]: ../file-system-object.md

@@ -1,272 +1,270 @@
-# Building
+# 构建（Building）
 
-As discussed in the [main page on derivations](./derivation/index.md):
+正如 [derivation 主页面](./derivation/index.md)所讨论的：
 
-> A derivation is a specification for running an executable on precisely defined input to produce one or more [store objects][store object].
+> derivation（派生）是一种规格说明，用于在精确定义的输入上运行一个可执行文件，以产出一个或多个[存储对象][store object]。
 
-This page describes *building* a derivation, which is to say following the instructions in the derivation to actually run the executable.
-Some elements of derivations are self-explanatory.
-For example, the arguments specified in the derivation really are the arguments passed to the executable.
-In other cases, however, there is additional common steps performed by Nix for all derivations --- mostly for setting up the build environment and collecting the built outputs.
+本页描述的是*构建*一个 derivation，即按照 derivation 中的指令实际运行该可执行文件。
+derivation 的某些要素是不言自明的。
+例如，derivation 中指定的参数确实就是传给可执行文件的参数。
+然而在其他情况下，Nix 还会对所有 derivation 执行一些额外的公共步骤——主要是为了搭建构建环境和收集构建出的输出。
 
-The chief design consideration for the building process is *determinism*.
-Conventional operating systems are typically not designed with determinism in mind.
-But determinism is needed to make Nix's build caching a transparent abstraction.
+构建过程的首要设计考量是*确定性*。
+常规操作系统在设计时通常没有考虑确定性。
+但要让 Nix 的构建缓存成为一个透明的抽象，确定性是必需的。
 
-> **Explanation**
+> **说明**
 >
-> For example, no one wants to slightly modify a derivation, and then find that it no longer builds for an unrelated reason, because the original derivation *also* doesn't build anymore, but the cache hit on the original derivation was hiding this.
-> We want builds that succeed once to continue succeeding, to encourage fearless modification of old build recipes.
-> Determinism is what enables things that once worked to keep working.
+> 例如，没有人希望稍微修改一个 derivation 之后，却发现它因为一个毫不相关的原因而无法构建了，原因是原始 derivation *也*已经无法构建，只是对原始 derivation 的缓存命中把这一点掩盖了。
+> 我们希望构建成功一次之后能持续成功，以鼓励人们无畏地修改旧的构建配方。
+> 确定性正是让曾经可用的东西继续可用的关键。
 
-The life cycle of a build can be broken down into 3 parts:
+构建的生命周期可以分解为 3 个部分：
 
-1. Spawn the builder process with the proper environment, including the correct process arguments, environment variables, and file system state.
+1. 以适当的环境启动构建器进程，包括正确的进程参数、环境变量和文件系统状态。
 
-2. Wait for the builder process to exit and collect its exit status.
-   Exit code 0 means success; anything else is a build failure.
-   (Strictly speaking, Nix detects process exit by waiting for the standard output and error streams to close.
-   If a builder explicitly closes these streams without exiting, Nix will kill it, and deem the build a failure.
-   Processes should therefore exit *without* explicitly closing those standard streams, and let the exiting of the process close them implicitly.)
+2. 等待构建器进程退出并收集其退出状态。
+   退出码 0 表示成功；其他任何情况都是构建失败。
+   （严格来说，Nix 是通过等待标准输出和标准错误流关闭来检测进程退出的。
+   如果构建器显式关闭了这些流却不退出，Nix 会将其杀死，并判定构建失败。
+   因此进程应当*不*显式关闭这些标准流而直接退出，让进程的退出隐式关闭它们。）
 
-   Nix also logs the standard output and error of the process, but this is just for human convenience and does not influence the behavior of the system.
-   (Builder processes have no idea what the consumer of their standard output and error does with the pseudo-terminal master, only that they are indeed consumed so buffers do not fill up etc. and writes to each output standard stream will continue to succeed.
-   In practice, Nix will store the log in `/nix/var/log/nix`)
+   Nix 还会记录进程的标准输出和标准错误，但这只是为了方便人类阅读，并不影响系统的行为。
+   （构建器进程并不知道其标准输出和标准错误的消费者对伪终端主端做了什么，只知道这些流确实被消费了，因此缓冲区不会填满等，对每个标准输出流的写入也会持续成功。
+   实践中，Nix 会把日志存放在 `/nix/var/log/nix`）
 
-3. Processing the outputs.
+3. 处理输出。
 
-   Traditionally, this happens only after the builder has exited: the builder process should have left behind files for each output the derivation is supposed to produce, and those files are processed to turn them into bona fide store objects.
-   Alternatively, the builder may send messages to Nix while it's running, creating filesystem objects and linking them to an output name.
-   This allows outputs to be processed concurrently during the build, allows outputs to depend on other newly created store objects, and also resolves some tricky issues with content-addressing and output-to-output references.
-   If the processing succeeds, the resulting store objects are associated with the derivation as (the results of) a successful build.
+   传统上，这发生在构建器退出之后：构建器进程应当为 derivation 应产出的每个输出留下文件，然后处理这些文件，把它们变成真正的存储对象。
+   或者，构建器也可以在运行期间向 Nix 发送消息，创建文件系统对象并将它们与输出名称关联。
+   这使得输出可以在构建过程中并发处理，使输出可以依赖于其他新创建的存储对象，还解决了内容寻址以及输出间引用中的一些棘手问题。
+   如果处理成功，得到的存储对象就作为一次成功构建的（结果）与该 derivation 关联。
 
-Step (3) is done by Nix, either externally to the build (in the traditional case, operating on the inert data left behind after the builder has exited or been killed) or concurrently with it (in the IPC case).
-Step (1) however is best described not from Nix's perspective, but from the build process's perspective.
+步骤 (3) 由 Nix 完成，或者在构建之外进行（传统情形下，对构建器退出或被杀后留下的惰性数据进行操作），或者与构建并发进行（IPC 情形）。
+然而步骤 (1) 最好不从 Nix 的视角、而从构建进程的视角来描述。
 
-> **Explanation**
+> **说明**
 >
-> Ultimately, what matters for determinism is what the build process can observe: what resources (files, networking, etc.) it can see, what syscalls succeed or fail, etc.
-> Nix can achieve this through many different sandboxing strategies (namespaces, VMs, chroots, ...), but the process shouldn't be able to tell them apart.
-> We therefore specify building from the process's perspective, not Nix's perspective, to focus on *what*, not *how*.
+> 归根结底，对确定性而言重要的是构建进程能够观察到什么：它能看见哪些资源（文件、网络等），哪些系统调用成功或失败，等等。
+> Nix 可以通过许多不同的沙箱策略（命名空间、虚拟机、chroot 等）来实现这一点，但进程不应能分辨它们之间的区别。
+> 因此我们从进程的视角、而不是 Nix 的视角来规定构建，着眼于*做什么*，而非*怎么做*。
 
-## What derivations can be built
+## 哪些 derivation 可以被构建
 
-Actually only some derivations are ready to be built.
-In particular, only [*resolved*](./resolution.md) derivations can be built.
-That is to say, a derivation that depends on other derivations is not ready yet to be built, because some of those other derivations might not have yet been built.
-If the other derivations are indeed all built, we can witness this fact by resolving the derivation, and converting all the derivation's input references into plain store paths.
+实际上只有一部分 derivation 处于可构建状态。
+特别地，只有[*resolved*（已解析）](./resolution.md)的 derivation 才能被构建。
+也就是说，依赖其他 derivation 的 derivation 尚不能构建，因为那些其他 derivation 可能还没有被构建。
+如果那些其他 derivation 确实都已构建，我们可以通过解析（resolve）该 derivation 来见证这一事实，把该 derivation 的全部输入引用转换为普通的存储路径。
 
-> **Note**
+> **注意**
 >
-> Note that [input-addressing](derivation/outputs/input-address.md) derivations are improperly resolved.
-> As discussed on the linked page, the current input-addressing algorithm does not respect resolution-equivalence of derivations (\\(\\sim_\mathrm{Drv}\\)).
-> That means that if Nix properly resolved an input-addressed derivation, the resolved derivation would have different input addresses, violating expectations.
-> Nix therefore improperly resolves the derivation, keeping its original input-addressed output paths, creating an invalid derivation that is both resolved and instructed to create the outputs at the originally expected paths.
+> 注意 [input-addressing](derivation/outputs/input-address.md) 的 derivation 是以 improper 方式解析的。
+> 如链接页面所讨论的，当前的 input-addressing 算法不遵守 derivation 的解析等价关系（\\(\\sim_\mathrm{Drv}\\))。
+> 这意味着如果 Nix 以 proper 方式解析一个输入寻址的 derivation，解析后的 derivation 将具有不同的输入地址，违背预期。
+> 因此 Nix 对该 derivation 进行 improper 解析，保留其原始的输入寻址输出路径，创建一个既是 resolved 的、又被指示在原本预期路径创建输出的无效 derivation。
 
-## Environment of the builder process
+## 构建器进程的环境
 
-This section describes how the [`builder`](./derivation/index.md#builder) is executed.
+本节描述 [`builder`](./derivation/index.md#builder) 是如何被执行的。
 
-> **Implementation detail**
+> **实现细节**
 >
-> Nix prevents multiple [Nix instances][Nix instance] from performing the same build at the same time, for example by acquiring exclusive file locks.
+> Nix 会阻止多个 [Nix 实例][Nix instance]同时执行同一个构建，例如通过获取独占的文件锁。
 
-### File system
+### 文件系统
 
-The builder should have access to a limited file system where only certain objects are available.
-The most important exposed files are the inputs (other store objects) of the (resolved) derivation.
-Additionally, some other files are exposed.
+构建器应当能访问一个受限的文件系统，其中只有特定的对象可用。
+被呈现出来的最重要的文件是该（已解析）derivation 的输入（其他存储对象）。
+此外，还会呈现一些其他文件。
 
-#### Store inputs
+#### Store 输入
 
-The builder will be run against a file system in which the [store directory][store directory path] contains the [closure] of the inputs.
-In particular, consider a store that just contains this closure.
-That store is exposed to the file system according to the rules specified in the [Exposing Store Objects in OS File Systems](./store-path.md#exposing) documentation.
-This precisely defines the file system layout of the store that should be visible to the builder process.
+构建器将面对这样一个文件系统：其中的 [store 目录][store directory path]包含输入的[闭包]。
+特别地，考虑一个恰好只包含这个闭包的 store。
+按照[在操作系统文件系统中呈现存储对象](./store-path.md#exposing)文档中规定的规则，这个 store 被呈现到文件系统。
+这精确定义了构建器进程应当可见的 store 的文件系统布局。
 
-> **Note**
+> **注意**
 >
-> Historically, Nix exposed *at least* the following store contents to the builder, but also arbitrarily other store objects, due to limitations around operating systems' file system virtualization capabilities, and wanting to avoid copying or moving files.
-> It still can do this in so-called *unsandboxed* builds.
+> 历史上，由于操作系统文件系统虚拟化能力的限制，以及希望避免复制或移动文件，Nix 向构建器呈现了*至少*以下 store 内容，此外还可能呈现任意其他存储对象。
+> 在所谓的*无沙箱*（unsandboxed）构建中，它至今仍可以这样做。
 >
-> Such builds should be considered discouraged, but one that works less badly against non-mischievous derivations than might be expected.
-> This is because store paths are relatively unpredictable, so a well-behaved program is unlikely to stumble upon a store object it wasn't supposed to know about.
+> 这类构建应当被视为不推荐的，但对于非捣乱的 derivation，其效果比想象中没那么糟。
+> 这是因为存储路径相当不可预测，所以行为良好的程序不太可能偶然撞见一个它本不该知道的存储对象。
 >
-> As operating systems developed better file system primitives, the need for disabling sandboxing has lessened greatly over the years, and this trend should continue into the future.
+> 随着操作系统发展出更好的文件系统原语，多年来对禁用沙箱的需求已大大减少，这一趋势未来仍将继续。
 
-The outputs are expected to be created in that store directory as if they were valid store objects.
-(They are just files during builder execution, but during [processing outputs](#processing-outputs) they will be turned into proper store objects.)
-The [environment variables](#env-vars) for each output indicate where the builder should write them;
-Nix ensures that those paths do not yet exist when the builder is run.
+输出被期望在该 store 目录中创建，就好像它们是有效的存储对象一样。
+（在构建器执行期间它们只是文件，但在[处理输出](#processing-outputs)期间它们会被变成正式的存储对象。）
+每个输出的[环境变量](#env-vars)指明了构建器应当把它们写到哪里；
+Nix 确保在构建器运行时这些路径尚不存在。
 
-> **Note**
+> **注意**
 >
-> In sandboxed builds, ensuring that the outputs do not exist in the store directory is trivial.
-> In unsandboxed builds, it is harder in general.
-> In the worst case, the derivation is in fact rewritten so different output paths are used instead, and then the outputs are rewritten back to the intended output paths after.
-> In the content-addressing case rewriting would be needed either way, but in the input-addressing case, this is a significant degradation, as the point of input addressing is to avoid rewrites by knowing output paths in advance.
+> 在沙箱构建中，确保输出在 store 目录中不存在是轻而易举的。
+> 在无沙箱构建中，总的来说这更难。
+> 最坏的情况下，derivation 会被实际重写以改用不同的输出路径，之后再把这些输出重写回预期的输出路径。
+> 在内容寻址的情形下，无论如何都需要重写；但在输入寻址的情形下，这是显著的退化，因为输入寻址的意义就在于通过预先知道输出路径来避免重写。
 
 [realised]: @docroot@/glossary.md#gloss-realise
 [closure]: @docroot@/glossary.md#gloss-closure
 [store directory path]: ./store-path.md#store-directory-path
 
-### Other file system state
+### 其他文件系统状态
 
-- The current working directory of the builder process will be a fresh temporary directory.
-  It is initially empty when the process starts except for a few input files:
+- 构建器进程的当前工作目录将是一个全新的临时目录。
+  进程启动时它最初是空的，只有少量输入文件例外：
 
-  - If [`__structuredAttrs`](@docroot@/language/advanced-attributes.md#adv-attr-structuredAttrs) is enabled: `.attrs.json` (the derivation attributes as JSON) and `.attrs.sh` (a Bash-compatible rendering of the same).
-    The environment variables `NIX_ATTRS_JSON_FILE` and `NIX_ATTRS_SH_FILE` point to these files, respectively.
+  - 如果启用了 [`__structuredAttrs`](@docroot@/language/advanced-attributes.md#adv-attr-structuredAttrs)：会有 `.attrs.json`（以 JSON 表示的 derivation 属性）和 `.attrs.sh`（同一内容的 Bash 兼容渲染）。
+    环境变量 `NIX_ATTRS_JSON_FILE` 和 `NIX_ATTRS_SH_FILE` 分别指向这两个文件。
 
-  - If [`passAsFile`](@docroot@/language/advanced-attributes.md#adv-attr-passAsFile) is used (only without `__structuredAttrs`): for each attribute name listed, a file `.attr-<hash>` where `<hash>` is the [Nix32](@docroot@/protocols/nix32.md)-encoded SHA-256 hash of the attribute name.
-    The environment variable `<name>Path` points to the file containing the attribute's value.
+  - 如果使用了 [`passAsFile`](@docroot@/language/advanced-attributes.md#adv-attr-passAsFile)（仅在不使用 `__structuredAttrs` 时）：对每个列出的属性名，会有一个文件 `.attr-<hash>`，其中 `<hash>` 是属性名的 [Nix32](@docroot@/protocols/nix32.md) 编码 SHA-256 哈希。
+    环境变量 `<name>Path` 指向包含该属性值的文件。
 
-  In sandboxed builds, this directory is at a deterministic path inside the sandbox (controlled by the [`sandbox-build-dir`](@docroot@/command-ref/conf-file.md#conf-sandbox-build-dir) setting, default `/build`).
-  See also the per-store [`build-dir`](@docroot@/store/types/local-store.md#store-local-store-build-dir) setting for the host-side location.
+  在沙箱构建中，该目录位于沙箱内一个确定性的路径（由 [`sandbox-build-dir`](@docroot@/command-ref/conf-file.md#conf-sandbox-build-dir) 设置控制，默认为 `/build`）。
+  另请参见面向宿主侧位置的各 store 的 [`build-dir`](@docroot@/store/types/local-store.md#store-local-store-build-dir) 设置。
 
-- Basic device nodes for essential operations (null device, random number generation, standard streams as a pseudo terminal)
+- 用于基本操作的基础设备节点（null 设备、随机数生成、作为伪终端的标准流）
 
-  (A pseudo terminal would not be strictly necessary since the standard streams are passively logging, not there to facilitate interaction.
-  But it is still useful to entice programs to do nicer logging with e.g. colors etc.)
+  （伪终端严格来说并非必需，因为标准流只是被动记录日志，并不是为了交互。
+  但它仍然有助于诱导程序输出更友好的日志，例如带颜色等。）
 
-- On Linux: Process information via `/proc`
+- 在 Linux 上：通过 `/proc` 提供的进程信息
 
-- Minimal user and group identity information
+- 最小的用户和组身份信息
 
-- A loopback-only network configuration with hostname set to `localhost`
+- 仅限环回的网络配置，主机名设为 `localhost`
 
-> **Note**
+> **注意**
 >
-> Fixed-output derivations have access to additional operating system state to facilitate communication with the outside world, such as network name resolution and TLS certificate verification.
-> This is necessary because these derivations are allowed to access the network, unlike regular derivations which are fully sandboxed.
+> 固定输出 derivation（fixed-output derivation）可以访问额外的操作系统状态，以便与外部世界通信，例如域名解析和 TLS 证书校验。
+> 这是必需的，因为允许这些 derivation 访问网络，而常规 derivation 则被完全沙箱化。
 
-### Environment variables {#env-vars}
+### 环境变量 {#env-vars}
 
-The environment is cleared and set to the derivation attributes, as
-specified above.
+环境会被清空并设置为 derivation 属性，如上所述。
 
-For most derivations types this must contain at least:
+对大多数 derivation 类型而言，其中至少必须包含：
 
-- For each output declared in `outputs`, the corresponding environment variable is set to point to the intended path in the Nix store for that output.
-  Each output path is a concatenation of the cryptographic hash of all build inputs, the `name` attribute and the output name.
-  (The output name is omitted if it's `out`.)
+- 对 `outputs` 中声明的每个输出，设置相应的环境变量，指向该输出在 Nix store 中的预期路径。
+  每个输出路径由所有构建输入的密码学哈希、`name` 属性和输出名拼接而成。
+  （如果输出名是 `out`，则省略。）
 
-In addition, the following variables are set:
+此外，还设置了以下变量：
 
-- `NIX_BUILD_TOP` contains the path of the temporary directory for this build.
+- `NIX_BUILD_TOP` 包含本次构建的临时目录路径。
 
-- Also, `TMPDIR`, `TEMPDIR`, `TMP`, `TEMP` are set to point to the temporary directory.
-  This is to prevent the builder from accidentally writing temporary files anywhere else.
-  Doing so might cause interference by other processes.
+- 同时，`TMPDIR`、`TEMPDIR`、`TMP`、`TEMP` 也被设为指向该临时目录。
+  这是为了防止构建器不小心把临时文件写到其他任何地方。
+  那样做可能被其他进程干扰。
 
-- `PATH` is set to `/path-not-set` to prevent shells from initialising it to their built-in default value.
+- `PATH` 被设为 `/path-not-set`，以防止 shell 将其初始化为内置默认值。
 
-- `HOME` is set to `/homeless-shelter`.
-   (Without sandboxing, this discourages programs from using `/etc/passwd` or the like to find the user's home directory, which could cause impurity.)
-   Usually, when `HOME` is set, it is used as the location of the home directory, even if it points to a non-existent path.
+- `HOME` 被设为 `/homeless-shelter`。
+   （在没有沙箱的情况下，这会阻止程序用 `/etc/passwd` 之类的途径寻找用户的家目录，从而避免引入不纯性。）
+   通常，当设置了 `HOME` 时，它就会被用作家目录的位置，即使它指向一个不存在的路径。
 
-- `NIX_STORE` is set to the path of the top-level Nix [store directory path] (typically, `/nix/store`).
+- `NIX_STORE` 被设为顶层 Nix [store 目录路径]（通常是 `/nix/store`）。
 
-- `NIX_ATTRS_JSON_FILE` & `NIX_ATTRS_SH_FILE` if `__structuredAttrs` is set to `true` for the derivation.
-  A detailed explanation of this behavior can be found in the [section about structured attrs](@docroot@/language/advanced-attributes.md#adv-attr-structuredAttrs).
+- 如果 derivation 的 `__structuredAttrs` 设为 `true`，则设置 `NIX_ATTRS_JSON_FILE` 与 `NIX_ATTRS_SH_FILE`。
+  该行为的详细说明见[关于 structured attrs 的小节](@docroot@/language/advanced-attributes.md#adv-attr-structuredAttrs)。
 
-### Arguments
+### 参数
 
-The builder is passed the arguments specified by the derivation attribute `args`.
+构建器会被传入 derivation 属性 `args` 所指定的参数。
 
-## Processing outputs
+## 处理输出
 
-There are two methods for processing outputs.
-But first, let us cover the requirements common to both methods.
+处理输出有两种方法。但首先，让我们介绍两种方法共同的要求。
 
-Regardless of which method is used, each output must be turned into a valid store object.
-This involves two steps:
+无论使用哪种方法，每个输出都必须变成一个有效的存储对象。
+这包括两个步骤：
 
-- **Normalize the file permissions**
+- **规范化文件权限**
 
-  The files must conform to the model described in the [Exposing in OS file systems](./file-system-object/os-file-system.md) section.
-  For example, timestamps and permissions are canonicalised.
+  文件必须符合[在操作系统文件系统中呈现](./file-system-object/os-file-system.md)一节所述的模型。
+  例如，时间戳和权限会被规范化。
 
-- [**Calculate the references**]{#scanning-for-references}
+- [**计算引用**]{#scanning-for-references}
 
-  Nix scans each output path for [references] to input store objects by looking for the [digest][store path digest] of each input.
-  (The name part and the [store directory path] are ignored when scanning; an input's hash part that is neither followed by a `-` nor proceeded by a `/` still scans as a reference.)
-  Since these are potential runtime dependencies, Nix will register them as references of the output store object they occur in.
+  Nix 通过查找每个输入的[摘要][store path digest]，扫描每个输出路径中对输入存储对象的[引用]。
+  （扫描时忽略名称部分和 [store 目录路径]；一个输入的哈希部分，只要其后既不跟 `-`、其前也不接 `/`，仍然会被扫描为引用。）
+  由于这些是潜在的运行时依赖，Nix 会把它们登记为出现它们的输出存储对象的引用。
 
-  This scanning can be disabled per output with the [*unsafe discard references*](derivation/outputs/index.md#unsafe-discard-references) setting.
+  可以用 [*unsafe discard references*](derivation/outputs/index.md#unsafe-discard-references) 设置按输出禁用这种扫描。
 
-### Traditional (post-build) processing
+### 传统（构建后）处理
 
-With the traditional method, the builder process on exit should have left behind files for each output the derivation is supposed to produce.
-The files must be processed to turn them into bona fide store objects.
-If the processing succeeds, those store objects are associated with the derivation as (the results of) a successful build.
+在传统方法中，构建器进程退出时应当已为 derivation 应产出的每个输出留下文件。
+这些文件必须经过处理，以变成真正的存储对象。
+如果处理成功，这些存储对象就作为一次成功构建的（结果）与该 derivation 关联。
 
-Nix also scans for references from one output to another in the same way, because outputs are allowed to refer to each other.
-The outputs' references must form a [directed acyclic graph](@docroot@/glossary.md#gloss-directed-acyclic-graph).
-(This is not a special restriction for outputs; it is true for the references of all store objects in general.)
+Nix 也会以同样的方式扫描输出之间的引用，因为输出之间允许互相引用。
+各输出的引用必须构成一个[有向无环图](@docroot@/glossary.md#gloss-directed-acyclic-graph)。
+（这不是针对输出的特殊限制；对所有存储对象的引用来说普遍如此。）
 
-In the case of derivations with output paths that are fixed in advance (i.e. [input-addressing] derivations, or [fixed content-addressing] derivations), the actual final store path to each output is used during the build if possible.
-For [floating content-addressing] derivations, however, the final store path is not known in advance by definition.
-Scratch store paths must therefore be used instead.
-Scanning will use those scratch paths, but then any output-to-be that contains such a scanned scratch path must be rewritten to instead use the final (content-addressed) path of the output in question.
+对于输出路径预先固定的 derivation（即 [input-addressing] derivation 或 [fixed content-addressing] derivation），构建期间会尽可能使用每个输出的实际最终存储路径。
+而对于 [floating content-addressing] derivation，最终存储路径按定义无法预先得知。
+因此必须改用草稿存储路径。
+扫描会使用这些草稿路径，但随后任何包含此类扫描到的草稿路径的待成输出，都必须被重写为改用所论输出的最终（内容寻址的）路径。
 
-In addition to output-to-output references, rewriting is also needed to support self-references in the content-addressing case.
-An output may contain its own store path digest, which is a self-reference.
-Hash functions which are secure cannot allow the easy calculation of the quasi-fixed points needed to support self-references "natively", so instead we replace all would-be self-references with a sentinel value, and then rewrite the sentinel value to be the final store path digest.
-Superficially, this post-hashing rewriting breaks the content address, but as the self-references are easily identified, the rewriting can be inverted to yield the original hashed data, allowing verifying the content address after all.
+除输出间引用外，在内容寻址的情形下，为支持自引用也需要重写。
+一个输出可能包含其自身存储路径的摘要，这就是自引用。
+安全的哈希函数不允许轻易计算支持"原生"自引用所需的准不动点，因此我们改用哨兵值替换所有本应作为自引用的地方，然后重写哨兵值为最终的存储路径摘要。
+表面上，这种哈希后的重写破坏了内容地址，但由于自引用很容易识别，该重写可以被逆转以还原原始的被哈希数据，从而最终仍能校验内容地址。
 
-At this point, the file system data is in the proper form, and the valid acyclic reference data for each output is also calculated, so the outputs are added to the store as proper store objects.
-Additionally, those store objects (at least in the case that they are [content-addressed][content-addressing]) can be associated with the derivation in the [build trace] in the record for a successful build.
+此时，文件系统数据已处于规范形式，每个输出的有效无环引用数据也已计算完毕，于是这些输出作为正式的存储对象被加入 store。
+此外，这些存储对象（至少在它们是[内容寻址][content-addressing]的情况下）可以在 [build trace] 中以成功构建记录的形式与该 derivation 关联。
 
-> **Implementation detail**
+> **实现细节**
 >
-> Nix will normally clean up and remove the temporary build directory after every build, successful or unsuccessful.
-> The builder doesn't know whether Nix does or not, however, as it will have exited before the build directory is cleaned up, and it will not see any old build directory if (after a failed build) it is run again.
-> The [`--keep-failed`](@docroot@/command-ref/opt-common.md#opt-keep-failed) option can be specified to keep the build directory in the case of a failing build.
+> Nix 通常会在每次构建（无论成败）之后清理并删除临时构建目录。
+> 然而构建器并不知道 Nix 是否这样做，因为它会在构建目录被清理之前就已退出，而且（构建失败后）再次运行时它也不会看到任何旧的构建目录。
+> 可以指定 [`--keep-failed`](@docroot@/command-ref/opt-common.md#opt-keep-failed) 选项，在构建失败的情况下保留构建目录。
 
-### Concurrent processing via IPC
+### 通过 IPC 并发处理
 
-With this method, the builder communicates with Nix during the build using inter-process communication (IPC).
+在这种方法中，构建器在构建期间通过进程间通信（IPC）与 Nix 交流。
 
-> **Implementation detail**
+> **实现细节**
 >
-> The current implementation, `builder-rpc-v0`, exposes its interface over a limited form of the Nix daemon socket.
-> Builders may use it either with their own implementation of the Nix protocol, or with the `nix store add` and `nix store submit-output` commands.
+> 当前实现 `builder-rpc-v0` 通过 Nix daemon 套接字的一种受限形式暴露其接口。
+> 构建器既可以用自己对 Nix 协议的实现来使用它，也可以使用 `nix store add` 和 `nix store submit-output` 命令。
 >
-> Derivations with `builder-rpc-v0` in their set of [`requiredSystemFeatures`](@docroot@/language/advanced-attributes.md#adv-attr-requiredSystemFeatures)
-> will not receive output paths in their environment, and are expected to submit all outputs with the aforementioned commands or protocol.
+> 在其 [`requiredSystemFeatures`](@docroot@/language/advanced-attributes.md#adv-attr-requiredSystemFeatures) 集合中包含 `builder-rpc-v0` 的 derivation
+> 将不会在其环境中收到输出路径，而是被期望用上述命令或协议提交所有输出。
 
-Instead of leaving files behind for Nix to process after exit, the builder explicitly requests the daemon create store objects one at a time, then sends commands assigning output names to the just-created store objects.
+构建器不是留下文件等 Nix 在退出后处理，而是显式请求 daemon 逐个创建存储对象，然后发送命令把输出名称分配给刚创建的存储对象。
 
-Scanning for references proceeds as usual for each store object creation request, but the set of potential references to be scanned is greater: it includes both all inputs (as before) and also all previously-added store objects.
-This means, if output `bar` is supposed to reference output `foo`, `foo` should be created first, and `bar` second.
+对每个存储对象创建请求，引用扫描照常进行，但待扫描的潜在引用集合更大：既包括全部输入（和从前一样），也包括所有先前添加的存储对象。
+这意味着，如果输出 `bar` 应当引用输出 `foo`，则应先创建 `foo`，再创建 `bar`。
 
-All store objects being created are content-addressed (there is no support for input-addressed outputs with the IPC approach).
-When a store object is created, its content address store path will be calculated by Nix and then returned in the IPC response message.
-The builder then knows what store path to use in subsequent store objects in order for reference scanning to pick them up.
+所有被创建的存储对象都是内容寻址的（IPC 方式不支持输入寻址的输出）。
+存储对象创建时，其内容地址存储路径会由 Nix 计算，并通过 IPC 响应消息返回。
+随后构建器就知道在后续存储对象中应使用什么存储路径，才能让引用扫描捕获到它们。
 
-This overall approach has several advantages:
+这种总体做法有几个优点：
 
-- **No Nix-side rewriting**
+- **Nix 侧无需重写**
 
-  For content-addressed outputs, the builder is responsible for adding outputs in reference order, using the store paths from earlier adds in later ones.
-  This avoids the fragile rewriting that would otherwise be needed to fix up output-to-output references described above.
-  The builder, unlike Nix itself, is free to leverage domain-specific knowledge to do a better job. For example it can
+  对内容寻址的输出，构建器负责按引用顺序添加输出，在后添加的输出中使用先前添加时的存储路径。
+  这避免了上文所述修正输出间引用时本会需要的脆弱重写。
+  与 Nix 本身不同，构建器可以自由利用领域特定知识把事情做得更好。例如它可以
 
-  - uncompress, rewrite, and then recompress man pages, to not miss references hidden by compression.
+  - 解压、重写、再重新压缩 man 手册页，以免遗漏被压缩隐藏的引用。
 
-  - make sure to rewrite data that is to be signed, like Apple binaries, before signing that data, so as not to invalidate any signatures by mistake.
+  - 确保在为待签名数据（如 Apple 二进制文件）签名之前重写数据，以免误使任何签名失效。
 
-- **Pipelining**
+- **流水线化**
 
-  Downstream builds that only need some outputs (e.g., a "dev" or "headers" output) can start without waiting for all outputs to be ready.
-  Nix doesn't yet implement this, but it could and should.
+  只需要部分输出（例如 "dev" 或 "headers" 输出）的下游构建可以在所有输出就绪之前就开始。
+  Nix 尚未实现这一点，但它可以且应当实现。
 
-The major *disadvantage* of this approach is that it doesn't yet support self-references.
-Unlike acyclic output-to-output references, self-references fundamentally do require rewriting.
-The output-to-output case was only a challenge in the traditional case because all the outputs were submitted simultaneously, whereas the self-reference case is fundamentally challenging because of what it means for a hash function to be secure, as described above.
-Neither batched (traditional) nor serial (IPC) submission of outputs can avoid this fundamental property of secure hash functions.
-We could add support for such rewriting just for self-references, as is done for the traditional post-build processing, but we haven't yet done so as the very point of the IPC approach is to free Nix from any obligation to rewrite black-box data in unsound ways.
+这种方法的主要*缺点*是它尚不支持自引用。
+与无环的输出间引用不同，自引用从根本上需要重写。
+输出间引用的情形在传统方法中之所以是一个挑战，只是因为所有输出被同时提交；而自引用的情形则是根本性的挑战，原因在于哈希函数安全性的含义，如上所述。
+无论批量的（传统）还是串行的（IPC）输出提交，都无法回避安全哈希函数的这一根本性质。
+我们可以像传统构建后处理那样，仅为自引用添加这种重写支持，但我们尚未这样做，因为 IPC 方式的意义恰恰在于免除 Nix 以不健全的方式重写黑盒数据的任何义务。
 
 [references]: ./store-object.md#references
 [store path digest]: ./store-path.md#digest

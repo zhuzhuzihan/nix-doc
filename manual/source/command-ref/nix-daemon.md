@@ -1,13 +1,11 @@
 # Name
 
-`nix-daemon` - Nix multi-user support daemon
+`nix-daemon` - Nix 多用户支持 daemon（守护进程）
 
-# Synopsis
+# 概要
 
 `nix-daemon`
 
-# Description
+# 描述
 
-The Nix daemon is necessary in multi-user Nix installations. It runs
-build tasks and other operations on the Nix store on behalf of
-unprivileged users.
+在多用户 Nix 安装中，Nix daemon（守护进程）是必需的。它代表非特权用户在 Nix store 上执行构建任务及其他操作。

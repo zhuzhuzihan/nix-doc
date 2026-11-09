@@ -1,21 +1,9 @@
 # Release 0.7 (2005-01-12)
 
-  - Binary patching. When upgrading components using pre-built binaries
-    (through nix-pull / nix-channel), Nix can automatically download and
-    apply binary patches to already installed components instead of full
-    downloads. Patching is “smart”: if there is a *sequence* of patches
-    to an installed component, Nix will use it. Patches are currently
-    generated automatically between Nixpkgs (pre-)releases.
+  - 二进制补丁。在使用预构建二进制文件升级组件时（通过 nix-pull / nix-channel），Nix 可以自动下载并对已安装的组件应用二进制补丁，而不是完整下载。补丁应用是"智能"的：如果已安装组件存在一个补丁*序列*，Nix 会使用它。补丁目前会在 Nixpkgs 的（预）发布之间自动生成。
 
-  - Simplifications to the substitute mechanism.
+  - substitute 机制的简化。
 
-  - Nix-pull now stores downloaded manifests in
-    `/nix/var/nix/manifests`.
+  - nix-pull 现在将下载的 manifest 存储在 `/nix/var/nix/manifests` 中。
 
-  - Metadata on files in the Nix store is canonicalised after builds:
-    the last-modified timestamp is set to 0 (00:00:00 1/1/1970), the
-    mode is set to 0444 or 0555 (readable and possibly executable by
-    all; setuid/setgid bits are dropped), and the group is set to the
-    default. This ensures that the result of a build and an installation
-    through a substitute is the same; and that timestamp dependencies
-    are revealed.
+  - 构建完成后，Nix store 中文件的元数据会被规范化：最后修改时间戳被设为 0（00:00:00 1/1/1970），模式被设为 0444 或 0555（所有人可读、可能可执行；setuid/setgid 位会被去除），组被设为默认值。这确保了构建结果与通过 substitute 安装的结果一致，并使时间戳依赖得以暴露。

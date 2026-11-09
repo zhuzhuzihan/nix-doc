@@ -1,9 +1,8 @@
 # Release 2.13 (2023-01-17)
 
-* The `repeat` and `enforce-determinism` options have been removed
-  since they had been broken under many circumstances for a long time.
+* `repeat` 和 `enforce-determinism` 选项已被移除，因为它们在很多情况下早已失效。
 
-* You can now use [flake references] in the [old command line interface], e.g.
+* 你现在可以在[旧命令行界面]中使用 [flake references]，例如
 
    [flake references]: ../command-ref/new-cli/nix3-flake.md#flake-references
    [old command line interface]: ../command-ref/main-commands.md
@@ -15,30 +14,25 @@
   # NIX_PATH=nixpkgs=flake:nixpkgs nix-build '<nixpkgs>' -A hello
   ```
 
-* Instead of "antiquotation", the more common term [string interpolation](../language/string-interpolation.md) is now used consistently.
-  Historical release notes were not changed.
+* 现在一贯使用更常见的术语[string interpolation（字符串插值）](../language/string-interpolation.md)来代替 "antiquotation"（反引号插入）。
+  历史发布说明未做更改。
 
-* Error traces have been reworked to provide detailed explanations and more
-  accurate error locations. A short excerpt of the trace is now shown by
-  default when an error occurs.
+* 错误跟踪（error trace）经过重构，可提供详细的解释和更准确的错误位置。发生错误时，默认会显示跟踪的一段简短摘录。
 
-* Allow explicitly selecting outputs in a store derivation installable, just like we can do with other sorts of installables.
-  For example,
+* 允许在 store derivation installable 中显式选择输出，就像我们对其他类型的 installable 所能做的那样。
+  例如，
   ```shell-session
   # nix build /nix/store/fpq78s2h8ffh66v2iy0q1838mhff06y8-glibc-2.33-78.drv^dev
   ```
-  now works just as
+  现在可以像
   ```shell-session
   # nix build nixpkgs#glibc^dev
   ```
-  does already.
+  一样工作了。
 
-* On Linux, `nix develop` now sets the
-  [*personality*](https://man7.org/linux/man-pages/man2/personality.2.html)
-  for the development shell in the same way as the actual build of the
-  derivation. This makes shells for `i686-linux` derivations work
-  correctly on `x86_64-linux`.
+* 在 Linux 上，`nix develop` 现在会以与 derivation 实际构建相同的方式为开发 shell 设置
+  [*personality*](https://man7.org/linux/man-pages/man2/personality.2.html)。
+  这使得 `i686-linux` derivation 的 shell 能在 `x86_64-linux` 上正确工作。
 
-* You can now disable the global flake registry by setting the `flake-registry`
-  configuration option to an empty string. The same can be achieved at runtime with
-  `--flake-registry ""`.
+* 你现在可以通过把 `flake-registry` 配置选项设为空字符串来禁用全局 flake 注册表。在运行时也可以通过
+  `--flake-registry ""` 达到同样的效果。

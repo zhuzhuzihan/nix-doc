@@ -1,8 +1,8 @@
 # Name
 
-`nix-prefetch-url` - copy a file from a URL into the store and print its hash
+`nix-prefetch-url` - 将 URL 指向的文件复制进 store 并打印其哈希
 
-# Synopsis
+# 概要
 
 `nix-prefetch-url` *url* [*hash*]
   [`--type` *hashAlgo*]
@@ -10,63 +10,44 @@
   [`--unpack`]
   [`--name` *name*]
 
-# Description
+# 描述
 
-The command `nix-prefetch-url` downloads the file referenced by the URL
-*url*, prints its cryptographic hash, and copies it into the Nix store.
-The file name in the store is `hash-baseName`, where *baseName* is
-everything following the final slash in *url*.
+命令 `nix-prefetch-url` 下载 URL *url* 引用的文件，打印其密码学哈希，并将其复制进 Nix store。文件在 store 中的名称为 `hash-baseName`，其中 *baseName* 是 *url* 中最后一个斜杠之后的所有内容。
 
-This command is just a convenience for Nix expression writers. Often a
-Nix expression fetches some source distribution from the network using
-the `fetchurl` expression contained in Nixpkgs. However, `fetchurl`
-requires a cryptographic hash. If you don't know the hash, you would
-have to download the file first, and then `fetchurl` would download it
-again when you build your Nix expression. Since `fetchurl` uses the same
-name for the downloaded file as `nix-prefetch-url`, the redundant
-download can be avoided.
+这个命令只是为 Nix 表达式编写者提供的便利工具。通常，Nix 表达式会通过 Nixpkgs 中的 `fetchurl` 表达式从网络获取某个源代码发行包。然而，`fetchurl` 需要一个密码学哈希。如果你不知道哈希值，就得先下载该文件，然后 `fetchurl` 在你构建 Nix 表达式时会再下载一次。由于 `fetchurl` 为下载的文件使用与 `nix-prefetch-url` 相同的名称，因此可以避免这种冗余下载。
 
-If *hash* is specified, then a download is not performed if the Nix
-store already contains a file with the same hash and base name.
-Otherwise, the file is downloaded, and an error is signaled if the
-actual hash of the file does not match the specified hash.
+如果指定了 *hash*，那么当 Nix store 中已经存在具有相同哈希和基本名称的文件时，就不会执行下载。否则，文件会被下载，如果文件的实际哈希与指定的哈希不匹配，则报错。
 
-This command prints the hash on standard output.
-The hash is printed using [Nix32](@docroot@/protocols/nix32.md) unless `--type md5` is specified,
-in which case it's printed using base-16.
-Additionally, if the option `--print-path` is used,
-the path of the downloaded file in the Nix store is also printed.
+该命令将哈希打印到标准输出。除非指定 `--type md5`（此时以 base-16 打印），否则哈希使用 [Nix32](@docroot@/protocols/nix32.md) 打印。此外，如果使用了选项 `--print-path`，则还会打印下载文件在 Nix store 中的路径。
 
-# Options
+# 选项
 
 - `--type` *hashAlgo*
 
-  Use the specified cryptographic hash algorithm,
-  which can be one of `blake3`, `md5`, `sha1`, `sha256`, and `sha512`.
-  The default is `sha256`.
+  使用指定的密码学哈希算法，
+  可以是 `blake3`、`md5`、`sha1`、`sha256` 和 `sha512` 之一。
+  默认值为 `sha256`。
 
 - `--print-path`
 
-  Print the store path of the downloaded file on standard output.
+  将下载文件的存储路径打印到标准输出。
 
 - `--unpack`
 
-  Unpack the archive (which must be a tarball or zip file) and add the
-  result to the Nix store. The resulting hash can be used with
-  functions such as Nixpkgs’s `fetchzip` or `fetchFromGitHub`.
+  解压归档（必须是 tarball 或 zip 文件）并将结果添加到 Nix store。所得的哈希可以配合 Nixpkgs 的 `fetchzip` 或 `fetchFromGitHub` 等函数使用。
 
 - `--executable`
 
-  Set the executable bit on the downloaded file.
+  为下载的文件设置可执行位。
 
 - `--name` *name*
 
-  Override the name of the file in the Nix store. By default, this is
-  `hash-basename`, where *basename* is the last component of *url*.
-  Overriding the name is necessary when *basename* contains characters
-  that are not allowed in Nix store paths.
+  覆盖文件在 Nix store 中的名称。默认情况下，这是
+  `hash-basename`，其中 *basename* 是 *url* 的最后一个组成部分。
+  当 *basename* 包含 Nix store 路径中不允许的字符时，
+  需要覆盖该名称。
 
-# Examples
+# 示例
 
 ```console
 $ nix-prefetch-url ftp://ftp.gnu.org/pub/gnu/hello/hello-2.10.tar.gz

@@ -1,16 +1,14 @@
 # Name
 
-`nix-env --uninstall` - remove packages from user environment
+`nix-env --uninstall` - 从用户环境中移除软件包
 
-# Synopsis
+概要
 
 `nix-env` {`--uninstall` | `-e`} *drvnames…*
 
-# Description
+# 描述
 
-The uninstall operation creates a new user environment, based on the
-current generation of the active profile, from which the store paths
-designated by the symbolic names *drvnames* are removed.
+uninstall 操作基于当前激活 profile 的当前 generation 创建一个新的用户环境，并从中移除由符号名称 *drvnames* 指定的存储路径。
 
 {{#include ./opt-common.md}}
 
@@ -20,7 +18,7 @@ designated by the symbolic names *drvnames* are removed.
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
 ```console
 $ nix-env --uninstall gcc

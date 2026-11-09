@@ -1,13 +1,13 @@
-# Nix Release Notes
+# Nix 发布说明
 
-The Nix release cycle is calendar-based as follows:
+Nix 采用基于日历的发布周期，如下所述：
 
-Nix has a release cycle of roughly 6 weeks.
-Notable changes and additions are announced in the release notes for each version.
+Nix 的发布周期约为 6 周。
+每个版本的显著变更和新增内容都会在该版本的发布说明中公布。
 
-The supported Nix versions are:
-- The latest release
-- The version used in the stable NixOS release, which is announced in the [NixOS release notes](https://nixos.org/manual/nixos/stable/release-notes.html#ch-release-notes).
+受支持的 Nix 版本包括：
+- 最新发布版本
+- 稳定版 NixOS 所使用的版本，该版本会在 [NixOS 发布说明](https://nixos.org/manual/nixos/stable/release-notes.html#ch-release-notes)中公布。
 
-Bugfixes and security issues are backported to every supported version.
-Patch releases are published as needed.
+缺陷修复和安全问题会向后移植到所有受支持的版本。
+补丁版本按需发布。

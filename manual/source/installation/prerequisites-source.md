@@ -1,52 +1,52 @@
-# Prerequisites
+# 前提条件
 
-  This list and lower version bounds are maintained on best-effort basis. When in doubt, check the `meson.build` files.
+  此列表及其中的版本下限按“尽力维护”的原则更新。如有疑问，请查看 `meson.build` 文件。
 
-  - Meson build system (<https://github.com/mesonbuild/meson>).
+  - Meson 构建系统（<https://github.com/mesonbuild/meson>）。
 
-  - Ninja (<https://ninja-build.org/>).
+  - Ninja（<https://ninja-build.org/>）。
 
-  - A version of GCC or Clang that supports C++23 (anything newer than Clang 19 or GCC 14 is likely to work).
+  - 支持 C++23 的 GCC 或 Clang 版本（任何比 Clang 19 或 GCC 14 更新的版本都很可能可用）。
 
-  - `pkg-config` to locate dependencies.
-    If your distribution does not provide it, you can get it from <http://www.freedesktop.org/wiki/Software/pkg-config>.
+  - 用于定位依赖的 `pkg-config`。
+    如果你的发行版没有提供，可以从 <http://www.freedesktop.org/wiki/Software/pkg-config> 获取。
 
-  - The OpenSSL library to calculate cryptographic hashes.
-    If your distribution does not provide it, you can get it from <https://www.openssl.org>.
+  - 用于计算加密哈希的 OpenSSL 库。
+    如果你的发行版没有提供，可以从 <https://www.openssl.org> 获取。
 
-  - The `libbrotlienc` and `libbrotlidec` libraries to provide implementation of the Brotli compression algorithm.
-    They are available for download from the official repository <https://github.com/google/brotli>.
+  - 提供 Brotli 压缩算法实现的 `libbrotlienc` 和 `libbrotlidec` 库。
+    可以从官方仓库 <https://github.com/google/brotli> 下载。
 
-  - cURL library.
-    If your distribution does not provide it, you can get it from <https://curl.haxx.se/>.
+  - cURL 库。
+    如果你的发行版没有提供，可以从 <https://curl.haxx.se/> 获取。
 
-  - The SQLite embedded database library, version 3.6.19 or higher.
-    If your distribution does not provide it, please install it from <http://www.sqlite.org/>.
+  - SQLite 嵌入式数据库库，版本 3.6.19 或更高。
+    如果你的发行版没有提供，请从 <http://www.sqlite.org/> 安装。
 
-  - The [Boehm garbage collector (`bdw-gc`)](http://www.hboehm.info/gc/) to reduce the evaluator’s memory consumption (optional).
-    To enable it, install `pkgconfig` and the Boehm garbage collector, and pass the option `-Dlibexpr:gc=enabled` to `meson setup`.
+  - 用于减少求值器内存消耗的 [Boehm 垃圾收集器（`bdw-gc`）](http://www.hboehm.info/gc/)（可选）。
+    要启用它，请安装 `pkgconfig` 和 Boehm 垃圾收集器，并向 `meson setup` 传递选项 `-Dlibexpr:gc=enabled`。
 
-  - The `boost` library of version 1.87.0 or higher.
-    It can be obtained from the official web site <https://www.boost.org/>.
+  - `boost` 库，版本 1.87.0 或更高。
+    可以从官方网站 <https://www.boost.org/> 获取。
 
-  - The `editline` library of version 1.14.0 or higher.
-    It can be obtained from the its repository <https://github.com/troglobit/editline>.
+  - `editline` 库，版本 1.14.0 或更高。
+    可以从其仓库 <https://github.com/troglobit/editline> 获取。
 
-  - The `libsodium` library for verifying cryptographic signatures of contents fetched from binary caches.
-    It can be obtained from the official web site <https://libsodium.org>.
+  - 用于验证从二进制缓存获取内容的加密签名的 `libsodium` 库。
+    可以从官方网站 <https://libsodium.org> 获取。
 
-  - Recent versions of Bison and Flex to build the parser.
-    (This is because Nix needs C++ template support in Bison and reentrancy support in Flex.)
+  - 用于构建解析器的较新版本的 Bison 和 Flex。
+    （这是因为 Nix 需要 Bison 提供 C++ 模板支持、Flex 提供可重入支持。）
 
-  - The `libseccomp` is used to provide syscall filtering on Linux.
-    This is an optional dependency and can be disabled passing a `-Dlibstore:seccomp-sandboxing=disabled` option to the `meson setup` command
-    (Not recommended unless your system doesn't support `libseccomp`).
-    To get the library, visit <https://github.com/seccomp/libseccomp>.
+  - `libseccomp` 用于在 Linux 上提供系统调用过滤。
+    这是一个可选依赖，可以通过向 `meson setup` 命令传递 `-Dlibstore:seccomp-sandboxing=disabled` 选项来禁用
+    （除非你的系统不支持 `libseccomp`，否则不建议这样做）。
+    要获取该库，请访问 <https://github.com/seccomp/libseccomp>。
 
-  - On 64-bit x86 machines only, `libcpuid` library is used to determine which microarchitecture levels are supported
-    (e.g., as whether to have `x86_64-v2-linux` among additional system types).
-    The library is available from its homepage <http://libcpuid.sourceforge.net>.
-    This is an optional dependency and can be disabled by providing a `-Dlibutil:cpuid=disabled` option to `meson setup` script.
+  - 仅在 64 位 x86 机器上，使用 `libcpuid` 库来确定支持哪些微架构级别
+    （例如，判断是否应在附加系统类型中包含 `x86_64-v2-linux`）。
+    该库可从其主页 <http://libcpuid.sourceforge.net> 获取。
+    这是一个可选依赖，可以通过向 `meson setup` 脚本提供 `-Dlibutil:cpuid=disabled` 选项来禁用。
 
-  - Unless `meson setup build -Dunit-tests=false` is specified, GoogleTest (GTest) and RapidCheck are required, which are available at
-    <https://google.github.io/googletest/> and <https://github.com/emil-e/rapidcheck> respectively.
+  - 除非指定了 `meson setup build -Dunit-tests=false`，否则需要 GoogleTest（GTest）和 RapidCheck，它们分别可在
+    <https://google.github.io/googletest/> 和 <https://github.com/emil-e/rapidcheck> 获取。

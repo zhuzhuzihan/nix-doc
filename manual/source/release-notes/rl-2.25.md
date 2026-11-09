@@ -1,85 +1,83 @@
 # Release 2.25.0 (2024-11-07)
 
-- New environment variables to override XDG locations [#11351](https://github.com/NixOS/nix/pull/11351)
+- 新增用于覆盖 XDG 位置的环境变量 [#11351](https://github.com/NixOS/nix/pull/11351)
 
-  Added new environment variables:
+  新增了以下环境变量：
 
   - `NIX_CACHE_HOME`
   - `NIX_CONFIG_HOME`
   - `NIX_DATA_HOME`
   - `NIX_STATE_HOME`
 
-  Each, if defined, takes precedence over the corresponding [XDG environment variable](@docroot@/command-ref/env-common.md#xdg-base-directories).
-  This provides more fine-grained control over where Nix looks for files. It allows having a stand-alone Nix environment that only uses files in a specific directory and that doesn't interfere with the user environment.
+  其中每个变量若已定义，都将优先于对应的 [XDG 环境变量](@docroot@/command-ref/env-common.md#xdg-base-directories)。
+  这提供了对 Nix 查找文件位置的更细粒度控制。它允许构建一个仅使用特定目录中文件、且不干扰用户环境的独立 Nix 环境。
 
-- Define integer overflow in the Nix language as an error [#10968](https://github.com/NixOS/nix/issues/10968) [#11188](https://github.com/NixOS/nix/pull/11188)
+- 将 Nix 语言中的整数溢出定义为错误 [#10968](https://github.com/NixOS/nix/issues/10968) [#11188](https://github.com/NixOS/nix/pull/11188)
 
-  Previously, integer overflow in the Nix language invoked C++ level signed overflow, which manifested as wrapping around on overflow. It now looks like this:
+  此前，Nix 语言中的整数溢出会触发 C++ 层面的有符号溢出，表现为溢出时回绕。现在的表现如下：
 
   ```
   $ nix eval --expr '9223372036854775807 + 1'
   error: integer overflow in adding 9223372036854775807 + 1
   ```
 
-  Some other overflows were fixed:
-  - `builtins.fromJSON` of values greater than the maximum representable value in a signed 64-bit integer will generate an error.
-  - `nixConfig` in flakes will no longer accept negative values for configuration options.
+  还修复了一些其他溢出问题：
+  - `builtins.fromJSON` 解析大于有符号 64 位整数可表示最大值的值时将产生错误。
+  - Flakes 中的 `nixConfig` 将不再接受配置选项的负值。
 
-- The `build-hook` setting no longer has a useful default when using `libnixstore` as a library [#11178](https://github.com/NixOS/nix/pull/11178)
+- 当把 `libnixstore` 作为库使用时，`build-hook` 设置不再有有用的默认值 [#11178](https://github.com/NixOS/nix/pull/11178)
 
-  *This is an obscure issue that only affects usage of the `libnixstore` library outside of the Nix executable. It is unrelated to the `post-build-hook` settings, which is often used for pushing to a cache.*
+  *这是一个晦涩的问题，只影响在 Nix 可执行文件之外使用 `libnixstore` 库的场景。它与常用于向缓存推送内容的 `post-build-hook` 设置无关。*
 
-  As part the ongoing [rewrite of the build system](https://github.com/NixOS/nix/issues/2503) to use [Meson](https://mesonbuild.com/), we are also switching to packaging individual Nix components separately (and building them in separate derivations).
-  This means that when building `libnixstore` we do not know where the Nix binaries will be installed --- `libnixstore` doesn't know about downstream consumers like the Nix binaries at all.
+  作为[将构建系统改写](https://github.com/NixOS/nix/issues/2503)为使用 [Meson](https://mesonbuild.com/) 的持续工作的一部分，我们也在转为单独打包各个 Nix 组件（并在各自的 derivation（派生）中构建它们）。
+  这意味着在构建 `libnixstore` 时，我们并不知道 Nix 二进制文件会被安装到哪里 —— `libnixstore` 完全不了解 Nix 二进制文件这类下游使用者。
 
-  This has a small adverse affect on remote building --- the `build-remote` executable that is specified from the [`build-hook`](@docroot@/command-ref/conf-file.md#conf-build-hook) setting will not be gotten from the (presumed) installation location, but instead looked up on the `PATH`.
-  This means that other applications linking `libnixstore` that wish to use remote building must arrange for the `nix` command to be on the PATH (or manually overriding `build-hook`) in order for that to work.
+  这对远程构建有一处轻微的不利影响 —— 由 [`build-hook`](@docroot@/command-ref/conf-file.md#conf-build-hook) 设置指定的 `build-remote` 可执行文件将不再从（假定的）安装位置获取，而是会在 `PATH` 上查找。
+  这意味着其他链接了 `libnixstore`、希望使用远程构建的应用程序，必须安排 `nix` 命令位于 PATH 上（或手动覆盖 `build-hook`），才能使其正常工作。
 
-  Long term we don't envision this being a downside, because we plan to [get rid of `build-remote` and the build hook setting entirely](https://github.com/NixOS/nix/issues/1221).
-  There should simply be no need to have an extra, intermediate layer of remote-procedure-calling when we want to connect to a remote builder.
-  The build hook protocol did in principle support custom ways of remote building, but that can also be accomplished with a custom service for the ssh or daemon/ssh-ng protocols, or with a custom [store type](@docroot@/store/types/index.md) i.e. `Store` subclass. <!-- we normally don't mention classes, but consider that this release note is about a library use case -->
+  长期来看，我们不认为这会成为一个缺点，因为我们计划[彻底移除 `build-remote` 与 build hook 设置](https://github.com/NixOS/nix/issues/1221)。
+  当我们想要连接远程构建器时，根本无需再多一层中间的远程过程调用。
+  build hook 协议原则上确实支持自定义的远程构建方式，但这同样可以通过为 ssh 或 daemon/ssh-ng 协议提供自定义服务来实现，或者使用自定义的[存储类型](@docroot@/store/types/index.md)（即 `Store` 子类）。 <!-- we normally don't mention classes, but consider that this release note is about a library use case -->
 
-  The Perl bindings no longer expose `getBinDir` either, since the underlying C++ libraries those bindings wrap no longer know the location of installed binaries as described above.
+  Perl 绑定也不再暴露 `getBinDir`，因为这些绑定所封装的底层 C++ 库如上所述不再知晓已安装二进制文件的位置。
 
-- Wrap filesystem exceptions more correctly [#11378](https://github.com/NixOS/nix/pull/11378)
+- 更正确地包装文件系统异常 [#11378](https://github.com/NixOS/nix/pull/11378)
 
-  With the switch to `std::filesystem` in different places, Nix started to throw `std::filesystem::filesystem_error` in many places instead of its own exceptions.
-  As a result, Nix no longer generated error traces when (for example) listing a non-existing directory. It could also lead to crashes inside the Nix REPL.
+  随着在多处切换到 `std::filesystem`，Nix 开始在很多地方抛出 `std::filesystem::filesystem_error` 而不是自己的异常。
+  因此，Nix 在（例如）列出不存在的目录时不再生成错误跟踪，这也可能导致 Nix REPL 内部崩溃。
 
-  This version catches these types of exception correctly and wraps them into Nix's own exception type.
+  本版本会正确捕获这类异常，并将其包装为 Nix 自己的异常类型。
 
-  Author: [**@Mic92**](https://github.com/Mic92)
+  作者：[**@Mic92**](https://github.com/Mic92)
 
-- Add setting `fsync-store-paths` [#1218](https://github.com/NixOS/nix/issues/1218) [#7126](https://github.com/NixOS/nix/pull/7126)
+- 添加设置 `fsync-store-paths` [#1218](https://github.com/NixOS/nix/issues/1218) [#7126](https://github.com/NixOS/nix/pull/7126)
 
-  Nix now has a setting `fsync-store-paths` that ensures that new store paths are durably written to disk before they are registered as "valid" in Nix's database. This can prevent Nix store corruption if the system crashes or there is a power loss. This setting defaults to `false`.
+  Nix 现在有了设置 `fsync-store-paths`，它确保新的存储路径在 Nix 数据库中被注册为“有效”之前，已持久化写入磁盘。这可以在系统崩溃或断电时防止 Nix store 损坏。该设置默认为 `false`。
 
-  Author: [**@squalus**](https://github.com/squalus)
+  作者：[**@squalus**](https://github.com/squalus)
 
-- Removing the default argument passed to the `nix fmt` formatter [#11438](https://github.com/NixOS/nix/pull/11438)
+- 移除传递给 `nix fmt` 格式化器的默认参数 [#11438](https://github.com/NixOS/nix/pull/11438)
 
-  The underlying formatter no longer receives the "." default argument when `nix fmt` is called with no arguments.
+  当不带参数调用 `nix fmt` 时，底层格式化器不再接收默认参数 `.`。
 
-  This change was necessary as the formatter wasn't able to distinguish between
-  a user wanting to format the current folder with `nix fmt .` or the generic
-  `nix fmt`.
+  此变更很有必要，因为格式化器此前无法区分用户是想用 `nix fmt .` 格式化当前目录，还是想执行通用的
+  `nix fmt`。
 
-  The default behavior is now the responsibility of the formatter itself, and
-  allows tools such as `treefmt` to format the whole tree instead of only the
-  current directory and below.
+  默认行为现在由格式化器自身负责，这使得 `treefmt` 等工具可以格式化整个代码树，而不局限于
+  当前目录及其子目录。
 
-  Author: [**@zimbatm**](https://github.com/zimbatm)
+  作者：[**@zimbatm**](https://github.com/zimbatm)
 
-- `<nix/fetchurl.nix>` uses TLS verification [#11585](https://github.com/NixOS/nix/pull/11585)
+- `<nix/fetchurl.nix>` 启用 TLS 验证 [#11585](https://github.com/NixOS/nix/pull/11585)
 
-  Previously `<nix/fetchurl.nix>` did not do TLS verification. This was because the Nix sandbox in the past did not have access to TLS certificates, and Nix checks the hash of the fetched file anyway. However, this can expose authentication data from `netrc` and URLs to man-in-the-middle attackers. In addition, Nix now in some cases (such as when using impure derivations) does *not* check the hash. Therefore we have now enabled TLS verification. This means that downloads by `<nix/fetchurl.nix>` will now fail if you're fetching from a HTTPS server that does not have a valid certificate.
+  此前 `<nix/fetchurl.nix>` 不做 TLS 验证。这是因为过去的 Nix 沙箱无法访问 TLS 证书，而且 Nix 反正会检查被抓取文件的哈希。然而，这可能把来自 `netrc` 和 URL 的认证数据暴露给中间人攻击者。此外，Nix 现在在某些情况下（例如使用非纯 derivation 时）*不会*检查哈希。因此我们现已启用 TLS 验证。这意味着，如果你从没有有效证书的 HTTPS 服务器抓取文件，`<nix/fetchurl.nix>` 的下载将会失败。
 
-  `<nix/fetchurl.nix>` is also known as the builtin derivation builder `builtin:fetchurl`. It's not to be confused with the evaluation-time function `builtins.fetchurl`, which was not affected by this issue.
+  `<nix/fetchurl.nix>` 也被称为内建 derivation 构建器 `builtin:fetchurl`。它不应与求值期函数 `builtins.fetchurl` 混淆，后者不受此问题影响。
 
 
-## Contributors
+## 贡献者
 
-This release was made possible by the following 58 contributors:
+本发布版本得益于以下 58 位贡献者：
 
 - 1444 [**(@0x5a4)**](https://github.com/0x5a4)
 - Adrian Hesketh [**(@a-h)**](https://github.com/a-h)

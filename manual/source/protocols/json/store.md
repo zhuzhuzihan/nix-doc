@@ -1,20 +1,20 @@
 {{#include store-v1-fixed.md}}
 
-## Examples
+## 示例
 
-### Empty store
+### 空 store
 
 ```json
 {{#include schema/store-v1/empty.json}}
 ```
 
-### Store with one file
+### 含一个文件的 store
 
 ```json
 {{#include schema/store-v1/one-flat-file.json}}
 ```
 
-### Store with one derivation
+### 含一个 derivation 的 store
 
 ```json
 {{#include schema/store-v1/one-derivation.json}}

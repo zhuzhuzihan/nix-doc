@@ -1,14 +1,11 @@
-# Options
+# 选项
 
-The following options are allowed for all `nix-store` operations, but may not always have an effect.
+以下选项可用于所有 `nix-store` 操作，但不一定总是有效果。
 
 - <span id="opt-add-root">[`--add-root`](#opt-add-root)</span> *path*
 
-  Causes the result of a realisation (`--realise` and
-  `--force-realise`) to be registered as a root of the garbage
-  collector. *path* will be created as a symlink to the resulting
-  store path. In addition, a uniquely named symlink to *path* will
-  be created in `/nix/var/nix/gcroots/auto/`. For instance,
+  将实化（realisation，即 `--realise` 和
+  `--force-realise`）的结果注册为垃圾回收器的一个 GC root。*path* 将被创建为指向生成的存储路径的符号链接。此外，还会在 `/nix/var/nix/gcroots/auto/` 中创建一个唯一命名的指向 *path* 的符号链接。例如：
 
   ```console
   $ nix-store --add-root /home/eelco/bla/result --realise ...
@@ -20,17 +17,13 @@ The following options are allowed for all `nix-store` operations, but may not al
   lrwxrwxrwx    1 ... 2005-03-13 21:10 /home/eelco/bla/result -> /nix/store/1r11343n6qd4...-f-spot-0.0.10
   ```
 
-  Thus, when `/home/eelco/bla/result` is removed, the GC root in the
-  `auto` directory becomes a dangling symlink and will be ignored by
-  the collector.
+  因此，当 `/home/eelco/bla/result` 被删除时，`auto`
+  目录中的 GC root 会变成悬空符号链接，垃圾回收器会忽略它。
 
-  > **Warning**
+  > **警告**
   >
-  > Note that it is not possible to move or rename GC roots, since
-  > the symlink in the `auto` directory will still point to the old
-  > location.
+  > 注意，GC root 不能被移动或重命名，因为
+  > `auto` 目录中的符号链接仍然指向
+  > 旧位置。
 
-  If there are multiple results, then multiple symlinks will be
-  created by sequentially numbering symlinks beyond the first one
-  (e.g., `foo`, `foo-2`, `foo-3`, and so on).
-
+  如果有多个结果，则会创建多个符号链接，第一个之后的符号链接会按顺序编号（例如，`foo`、`foo-2`、`foo-3`，依此类推）。

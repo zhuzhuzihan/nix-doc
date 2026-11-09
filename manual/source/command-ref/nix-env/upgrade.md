@@ -1,8 +1,8 @@
 # Name
 
-`nix-env --upgrade` - upgrade packages in user environment
+`nix-env --upgrade` - 升级用户环境中的软件包
 
-# Synopsis
+概要
 
 `nix-env` {`--upgrade` | `-u`} *args*
   [`--lt` | `--leq` | `--eq` | `--always`]
@@ -12,64 +12,49 @@
   [`--from-profile` *path*]
   [`--preserve-installed` | `-P`]
 
-# Description
+# 描述
 
-The upgrade operation creates a new user environment, based on the
-current generation of the active profile, in which all store paths are
-replaced for which there are newer versions in the set of paths
-described by *args*. Paths for which there are no newer versions are
-left untouched; this is not an error. It is also not an error if an
-element of *args* matches no installed derivations.
+upgrade 操作基于当前激活 profile 的当前 generation 创建一个新的用户环境，其中所有在 *args* 所描述的路径集合中存在更新版本的存储路径都会被替换。
+没有更新版本的路径保持不变；这不是错误。
+如果 *args* 中的某个元素没有匹配到任何已安装的 derivation（派生），也不是错误。
 
-For a description of how *args* is mapped to a set of store paths, see
-[`--install`](./install.md). If *args* describes multiple
-store paths with the same symbolic name, only the one with the highest
-version is installed.
+关于 *args* 如何映射到一组存储路径的说明，参见
+[`--install`](./install.md)。
+如果 *args* 描述了多个具有相同符号名称的存储路径，则只安装版本最高的那个。
 
-# Flags
+# 标志
 
 - `--lt`
 
-  Only upgrade a derivation to newer versions. This is the default.
+  只升级到更新的版本。
+  这是默认行为。
 
 - `--leq`
 
-  In addition to upgrading to newer versions, also “upgrade” to
-  derivations that have the same version. Version are not a unique
-  identification of a derivation, so there may be many derivations
-  that have the same version. This flag may be useful to force
-  “synchronisation” between the installed and available derivations.
+  除了升级到更新的版本之外，还"升级"到具有相同版本的 derivation。
+  版本并不是 derivation 的唯一标识，因此可能存在许多版本相同的 derivation。
+  此标志可用于在已安装和可用的 derivation 之间强制"同步"。
 
 - `--eq`
 
-  *Only* “upgrade” to derivations that have the same version. This may
-  not seem very useful, but it actually is, e.g., when there is a new
-  release of Nixpkgs and you want to replace installed applications
-  with the same versions built against newer dependencies (to reduce
-  the number of dependencies floating around on your system).
+  *只*"升级"到具有相同版本的 derivation。
+  这看起来没什么用，但实际上很有用，例如当 Nixpkgs 发布了新版本，而你希望用基于更新依赖项构建的同版本软件包替换已安装的应用程序（以减少系统中漂浮的依赖项数量）。
 
 - `--always`
 
-  In addition to upgrading to newer versions, also “upgrade” to
-  derivations that have the same or a lower version. I.e., derivations
-  may actually be downgraded depending on what is available in the
-  active Nix expression.
+  除了升级到更新的版本之外，还"升级"到具有相同或更低版本的 derivation。
+  也就是说，derivation 实际上可能会被降级，取决于当前激活 Nix 表达式中有什么可用。
 
 - `--prebuilt-only` / `-b`
 
-  Use only derivations for which a substitute is registered, i.e.,
-  there is a pre-built binary available that can be downloaded in lieu
-  of building the derivation. Thus, no packages will be built from
-  source.
+  只使用已注册了 substitute 的 derivation，即存在可以直接下载的预构建二进制文件，用来替代构建该 derivation。
+  因此，不会有任何软件包从源码构建。
 
 - `--preserve-installed` / `-P`
 
-  Do not remove derivations with a name matching one of the
-  derivations being installed. Usually, trying to have two versions of
-  the same package installed in the same generation of a profile will
-  lead to an error in building the generation, due to file name
-  clashes between the two versions. However, this is not the case for
-  all packages.
+  不移除与被安装 derivation 同名的 derivation。
+  通常，在同一 generation 的 profile 中安装同一软件包的两个版本，会因为两个版本之间的文件名冲突而导致构建该 generation 时出错。
+  不过，并非所有软件包都是如此。
 
 {{#include ./opt-common.md}}
 
@@ -79,29 +64,28 @@ version is installed.
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
 ```console
 $ nix-env --upgrade --attr nixpkgs.gcc
 upgrading `gcc-3.3.1' to `gcc-3.4'
 ```
 
-When there are no updates available, nothing will happen:
+当没有可用的更新时，什么都不会发生：
 
 ```console
 $ nix-env --upgrade --attr nixpkgs.pan
 ```
 
-Using `-A` is preferred when possible, as it is faster and unambiguous but
-it is also possible to upgrade to a specific version by matching the derivation name:
+尽可能推荐使用 `-A`，因为它更快且没有歧义，但也可以通过匹配 derivation 名称升级到特定版本：
 
 ```console
 $ nix-env --upgrade gcc-3.3.2 --always
 upgrading `gcc-3.4' to `gcc-3.3.2'
 ```
 
-To try to upgrade everything
-(matching packages based on the part of the derivation name without version):
+尝试升级所有内容
+（根据 derivation 名称中不含版本号的部分匹配软件包）：
 
 ```console
 $ nix-env --upgrade
@@ -109,28 +93,26 @@ upgrading `hello-2.1.2' to `hello-2.1.3'
 upgrading `mozilla-1.2' to `mozilla-1.4'
 ```
 
-# Versions
+# 版本
 
-The upgrade operation determines whether a derivation `y` is an upgrade
-of a derivation `x` by looking at their respective `name` attributes.
-The names (e.g., `gcc-3.3.1` are split into two parts: the package name
-(`gcc`), and the version (`3.3.1`). The version part starts after the
-first dash not followed by a letter. `y` is considered an upgrade of `x`
-if their package names match, and the version of `y` is higher than that
-of `x`.
+upgrade 操作通过查看 derivation `y` 和 `x` 各自的 `name` 属性来判断 `y` 是否是 `x` 的升级。
+名称（例如 `gcc-3.3.1`）被拆分为两部分：软件包名
+（`gcc`）和版本（`3.3.1`）。
+版本部分从第一个后面不紧跟字母的连字符之后开始。
+如果 `y` 与 `x` 的软件包名匹配，且 `y` 的版本高于 `x` 的版本，则 `y` 被视为 `x` 的升级。
 
-The versions are compared by splitting them into contiguous components
-of numbers and letters. E.g., `3.3.1pre5` is split into `[3, 3, 1,
-"pre", 5]`. These lists are then compared lexicographically (from left
-to right). Corresponding components `a` and `b` are compared as follows.
-If they are both numbers, integer comparison is used. If `a` is an empty
-string and `b` is a number, `a` is considered less than `b`. The special
-string component `pre` (for *pre-release*) is considered to be less than
-other components. String components are considered less than number
-components. Otherwise, they are compared lexicographically (i.e., using
-case-sensitive string comparison).
+版本比较的方式是将其拆分为由数字和字母组成的连续组件。
+例如，`3.3.1pre5` 被拆分为 `[3, 3, 1,
+"pre", 5]`。
+然后按字典序（从左到右）比较这些列表。
+对应的组件 `a` 和 `b` 按如下方式比较。
+如果两者都是数字，则使用整数比较。
+如果 `a` 是空字符串而 `b` 是数字，则 `a` 被视为小于 `b`。
+特殊的字符串组件 `pre`（表示 *pre-release*，即预发布版）被视为小于其他组件。
+字符串组件被视为小于数字组件。
+否则，按字典序比较它们（即使用区分大小写的字符串比较）。
 
-This is illustrated by the following examples:
+以下示例说明了这一点：
 
     1.0 < 2.3
     2.1 < 2.3
@@ -144,4 +126,3 @@ This is illustrated by the following examples:
     2.3a < 2.3c
     2.3pre1 < 2.3c
     2.3pre1 < 2.3q
-

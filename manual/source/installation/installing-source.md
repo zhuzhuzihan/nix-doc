@@ -1,4 +1,3 @@
-# Installing Nix from Source
+# 从源码安装 Nix
 
-If no binary package is available or if you want to hack on Nix, you
-can build Nix from its Git repository.
+如果没有可用的二进制软件包，或者你想要对 Nix 进行开发改动，可以从其 Git 仓库构建 Nix。

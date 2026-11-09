@@ -1,17 +1,17 @@
-# Nix Archive (NAR) format
+# Nix Archive（NAR）格式
 
-This is the complete specification of the [Nix Archive] format.
-The Nix Archive format closely follows the abstract specification of a [file system object] tree,
-because it is designed to serialize exactly that data structure.
+这是 [Nix Archive] 格式的完整规范。
+Nix Archive 格式紧贴[文件系统对象][file system object]树的抽象规范，
+因为它正是为序列化该数据结构而设计的。
 
 [Nix Archive]: @docroot@/store/file-system-object/content-address.md#serial-nix-archive
 [file system object]: @docroot@/store/file-system-object.md
 
-The format of this specification is close to [Extended Backus–Naur form](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form), with the exception of the `str(..)` function / parameterized rule, which length-prefixes and pads strings.
-This makes the resulting binary format easier to parse.
+本规范的格式接近[扩展巴科斯–瑙尔范式](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form)，但有一个例外：`str(..)` 函数/参数化规则会对字符串做长度前缀和填充。
+这使得最终得到的二进制格式更易于解析。
 
-Regular users do *not* need to know this information.
-But for those interested in exactly how Nix works, e.g. if they are reimplementing it, this information can be useful.
+普通用户*并不*需要了解这些信息。
+但对于那些想确切了解 Nix 如何工作的人，例如想要重新实现它的人，这些信息可能有用。
 
 ```ebnf
 nar = str("nix-archive-1"), nar-obj;
@@ -34,22 +34,22 @@ directory = { directory-entry };
 directory-entry = str("entry"), str("("), str("name"), str(name), str("node"), nar-obj, str(")");
 ```
 
-The `str` function / parameterized rule is defined as follows:
+`str` 函数/参数化规则定义如下：
 
 - `str(s)` = `int(|s|), pad(s);`
 
-- `int(n)` = the 64-bit little endian representation of the number `n`
+- `int(n)` = 数字 `n` 的 64 位小端序表示
 
-- `pad(s)` = the byte sequence `s`, padded with 0s to a multiple of 8 byte
+- `pad(s)` = 字节序列 `s`，用 0 填充至 8 字节的倍数
 
-## Kaitai Struct Specification
+## Kaitai Struct 规范
 
-The Nix Archive (NAR) format is also formally described using [Kaitai Struct](https://kaitai.io/), an Interface Description Language (IDL) for defining binary data structures.
+Nix Archive（NAR）格式还使用 [Kaitai Struct](https://kaitai.io/)（一种用于定义二进制数据结构的接口描述语言（IDL））进行了形式化描述。
 
-> Kaitai Struct provides a language-agnostic, machine-readable specification that can be compiled into parsers for various programming languages (e.g., C++, Python, Java, Rust).
+> Kaitai Struct 提供一种与语言无关、机器可读的规范，可编译为多种编程语言（如 C++、Python、Java、Rust）的解析器。
 
 ```yaml
 {{#include nar.ksy}}
 ```
 
-The source of the spec can be found [here](https://github.com/nixos/nix/blob/master/src/nix-manual/source/protocols/nix-archive/nar.ksy). Contributions and improvements to the spec are welcomed.
+该规范的源文件可在[这里](https://github.com/nixos/nix/blob/master/src/nix-manual/source/protocols/nix-archive/nar.ksy)找到。欢迎对该规范做出贡献和改进。

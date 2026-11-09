@@ -1,22 +1,16 @@
 # Name
 
-`nix-store --read-log` - print build log
+`nix-store --read-log` - 打印构建日志
 
-# Synopsis
+# 概要
 
 `nix-store` {`--read-log` | `-l`} *paths…*
 
-# Description
+# 描述
 
-The operation `--read-log` prints the build log of the specified store
-paths on standard output. The build log is whatever the builder of a
-derivation wrote to standard output and standard error. If a store path
-is not a derivation, the deriver of the store path is used.
+`--read-log` 操作在标准输出上打印指定存储路径的构建日志。构建日志是 derivation 的 builder 写入标准输出和标准错误的所有内容。如果某个存储路径不是 derivation，则使用该存储路径的 deriver。
 
-Build logs are kept in `/nix/var/log/nix/drvs`. However, there is no
-guarantee that a build log is available for any particular store path.
-For instance, if the path was downloaded as a pre-built binary through a
-substitute, then the log is unavailable.
+构建日志保存在 `/nix/var/log/nix/drvs` 中。然而，并不能保证任何特定的存储路径都有可用的构建日志。例如，如果路径是通过 substitute 从预构建的二进制文件下载的，那么日志就不可用。
 
 {{#include ./opt-common.md}}
 
@@ -24,7 +18,7 @@ substitute, then the log is unavailable.
 
 {{#include ../env-common.md}}
 
-# Example
+# 示例
 
 ```console
 $ nix-store --read-log $(which ktorrent)
@@ -35,4 +29,3 @@ ktorrent-2.2.1/
 ktorrent-2.2.1/NEWS
 ...
 ```
-

@@ -1,13 +1,13 @@
 # Release 2.17 (2023-07-24)
 
-* [`nix-channel`](../command-ref/nix-channel.md) now supports a `--list-generations` subcommand.
+* [`nix-channel`](../command-ref/nix-channel.md) 现在支持 `--list-generations` 子命令。
 
-* The function [`builtins.fetchClosure`](../language/builtins.md#builtins-fetchClosure) can now fetch input-addressed paths in [pure evaluation mode](../command-ref/conf-file.md#conf-pure-eval), as those are not impure.
+* 函数 [`builtins.fetchClosure`](../language/builtins.md#builtins-fetchClosure) 现在可以在[纯求值模式](../command-ref/conf-file.md#conf-pure-eval)下获取 input-addressed 路径，因为它们并非非纯（impure）。
 
-* Nix now allows unprivileged/[`allowed-users`](../command-ref/conf-file.md#conf-allowed-users) to sign paths.
-  Previously, only [`trusted-users`](../command-ref/conf-file.md#conf-trusted-users) users could sign paths.
+* Nix 现在允许非特权用户/[`allowed-users`](../command-ref/conf-file.md#conf-allowed-users) 对路径签名。
+  此前，只有 [`trusted-users`](../command-ref/conf-file.md#conf-trusted-users) 中的用户可以对路径签名。
 
-* Nested dynamic attributes are now merged correctly by the parser. For example:
+* 解析器现在会正确合并嵌套的动态属性。例如：
 
   ```nix
   {
@@ -20,17 +20,17 @@
   }
   ```
 
-  This used to silently discard `nested.bar`, but now behaves as one would expect and evaluates to:
+  这过去会静默丢弃 `nested.bar`，但现在的行为符合预期，求值结果为：
 
   ```nix
   { nested = { bar = 2; foo = 1; }; }
   ```
 
-  Note that the feature of merging multiple *full declarations* of attribute sets like `nested` in the example is of questionable value.
-  It allows writing expressions that are very hard to read, for instance when there are many lines of code between two declarations of the same attribute.
-  This has been around for a long time and is therefore supported for backwards compatibility, but should not be relied upon.
+  注意，合并像例子中 `nested` 这样的属性集的多个*完整声明*这一特性，其价值值得怀疑。
+  它允许写出非常难以阅读的表达式，例如同一个属性的两处声明之间隔了很多行代码的情况。
+  这一行为已存在很久，因此出于向后兼容而受支持，但不应依赖它。
 
-  Instead, consider using the *nested attribute path* syntax:
+  作为替代，请考虑使用*嵌套属性路径*（nested attribute path）语法：
 
   ```nix
   {
@@ -39,4 +39,4 @@
   }
   ```
 
-* Tarball flakes can now redirect to an "immutable" URL that will be recorded in lock files. This allows the use of "mutable" tarball URLs like `https://example.org/hello/latest.tar.gz` in flakes. See the [tarball fetcher](../protocols/tarball-fetcher.md) for details.
+* Tarball flake 现在可以重定向到一个会被记录在 lock 文件中的"不可变"（immutable）URL。这允许在 flake 中使用诸如 `https://example.org/hello/latest.tar.gz` 的"可变"（mutable）tarball URL。详情参见 [tarball fetcher](../protocols/tarball-fetcher.md)。

@@ -1,115 +1,109 @@
-# Language Constructs
+# 语言结构
 
-This section covers syntax and semantics of the Nix language.
+本节介绍 Nix 语言的语法和语义。
 
-## Basic Literals
+## 基本字面量
 
-### String {#string-literal}
+### 字符串 {#string-literal}
 
-See [String literals](string-literals.md).
+参见[字符串字面量](string-literals.md)。
 
-### Number {#number-literal}
+### 数字 {#number-literal}
 
 <!-- TODO(@rhendric, #10970): split this into int and float -->
 
-  Numbers, which can be *integers* (like `123`) or *floating point*
-  (like `123.43` or `.27e13`).
+  数字可以是*整数*（如 `123`）或*浮点数*（如 `123.43` 或 `.27e13`）。
 
-  Integers in the Nix language are 64-bit [two's complement] signed integers, with a range of -9223372036854775808 to 9223372036854775807, inclusive.
+  Nix 语言中的整数是 64 位[二进制补码]有符号整数，取值范围为 -9223372036854775808 到 9223372036854775807（含两端）。
 
-  [two's complement]: https://en.wikipedia.org/wiki/Two%27s_complement
+  [二进制补码]: https://en.wikipedia.org/wiki/Two%27s_complement
 
-  Note that negative numeric literals are actually parsed as unary negation of positive numeric literals.
-  This means that the minimum integer `-9223372036854775808` cannot be written as-is as a literal, since the positive number `9223372036854775808` is one past the maximum range.
+  注意，负数字面量实际上被解析为对正数字面量的一元取负。
+  这意味着最小整数 `-9223372036854775808` 不能按原样写成字面量，因为正数 `9223372036854775808` 已经超出最大范围一位。
 
-  See [arithmetic] and [comparison] operators for semantics.
+  语义参见[算术]和[比较]运算符。
 
-  [arithmetic]: ./operators.md#arithmetic
-  [comparison]: ./operators.md#comparison
+  [算术]: ./operators.md#arithmetic
+  [比较]: ./operators.md#comparison
 
-### Path {#path-literal}
+### 路径 {#path-literal}
 
-  *Paths* can be expressed by path literals such as `./builder.sh`.
+  *路径*可以用路径字面量来表示，例如 `./builder.sh`。
 
-  A path literal must contain at least one slash to be recognised as such.
-  For instance, `builder.sh` is not a path:
-  it's parsed as an expression that selects the attribute `sh` from the variable `builder`.
+  路径字面量必须至少包含一个斜杠才会被识别为路径。
+  例如，`builder.sh` 就不是路径：
+  它被解析为一个从变量 `builder` 中选取属性 `sh` 的表达式。
 
-  Path literals are resolved relative to their [base directory](@docroot@/glossary.md#gloss-base-directory).
-  Path literals may also refer to absolute paths by starting with a slash.
+  路径字面量相对于其[基准目录](@docroot@/glossary.md#gloss-base-directory)解析。
+  路径字面量也可以以斜杠开头来引用绝对路径。
 
-  > **Note**
+  > **注意**
   >
-  > Absolute paths make expressions less portable.
-  > In the case where a function translates a path literal into an absolute path string for a configuration file, it is recommended to write a string literal instead.
-  > This avoids some confusion about whether files at that location will be used during evaluation.
-  > It also avoids unintentional situations where some function might try to copy everything at the location into the store.
+  > 绝对路径会降低表达式的可移植性。
+  > 当某个函数要把路径字面量转换为绝对路径字符串写进配置文件时，建议改用字符串字面量。
+  > 这样可以避免对求值期间是否会使用该位置的文件产生混淆，也可以避免某些函数意外地试图把该位置的所有内容复制进 Nix store。
 
-  If the first component of a path is a `~`, it is interpreted such that the rest of the path were relative to the user's home directory.
-  For example, `~/foo` would be equivalent to `/home/edolstra/foo` for a user whose home directory is `/home/edolstra`.
-  Path literals that start with `~` are not allowed in [pure](@docroot@/command-ref/conf-file.md#conf-pure-eval) evaluation.
+  如果路径的第一个组成部分是 `~`，则路径的其余部分被解释为相对于用户主目录的路径。
+  例如，对于主目录为 `/home/edolstra` 的用户，`~/foo` 等价于 `/home/edolstra/foo`。
+  以 `~` 开头的路径字面量在[纯](@docroot@/command-ref/conf-file.md#conf-pure-eval)求值模式中不允许使用。
 
-  Path literals can also include [string interpolation], besides being [interpolated into other expressions].
+  路径字面量除了可以被[插值进其他表达式]之外，本身也可以包含[字符串插值]。
 
-  [string interpolation]: ./string-interpolation.md
-  [interpolated into other expressions]: ./string-interpolation.md#interpolated-expression
+  [字符串插值]: ./string-interpolation.md
+  [插值进其他表达式]: ./string-interpolation.md#interpolated-expression
 
-  At least one slash (`/`) must appear *before* any interpolated expression for the result to be recognized as a path.
+  要使结果被识别为路径，至少要有一个斜杠（`/`）出现在任何插值表达式*之前*。
 
-  `a.${foo}/b.${bar}` is a syntactically valid number division operation.
-  `./a.${foo}/b.${bar}` is a path.
+  `a.${foo}/b.${bar}` 是一个语法上合法的数字除法运算。
+  `./a.${foo}/b.${bar}` 则是一个路径。
 
-  [Lookup path](./constructs/lookup-path.md) literals such as `<nixpkgs>` also resolve to path values.
+  [查找路径](./constructs/lookup-path.md)字面量（如 `<nixpkgs>`）同样会解析为路径值。
 
-## List {#list-literal}
+## 列表 {#list-literal}
 
-Lists are formed by enclosing a whitespace-separated list of values
-between square brackets. For example,
+列表通过把以空白分隔的一系列值括在方括号中来构成。例如，
 
 ```nix
 [ 123 ./foo.nix "abc" (f { x = y; }) ]
 ```
 
-defines a list of four elements, the last being the result of a call to
-the function `f`. Note that function calls have to be enclosed in
-parentheses. If they had been omitted, e.g.,
+这定义了一个包含四个元素的列表，最后一个元素是调用函数 `f` 的结果。注意，函数调用必须用圆括号括起来。如果省略了圆括号，例如，
 
 ```nix
 [ 123 ./foo.nix "abc" f { x = y; } ]
 ```
 
-the result would be a list of five elements, the fourth one being a
-function and the fifth being a set.
+结果将是一个包含五个元素的列表，第四个元素是一个函数，第五个是一个属性集。
 
-Note that lists are only lazy in values, and they are strict in length.
+注意，列表只在值上是惰性的，而在长度上是严格的。
 
-Elements in a list can be accessed using [`builtins.elemAt`](./builtins.md#builtins-elemAt).
+列表中的元素可以通过 [`builtins.elemAt`](./builtins.md#builtins-elemAt) 访问。
 
-## Attribute Set {#attrs-literal}
+## 属性集 {#attrs-literal}
 
-An attribute set is a collection of name-value-pairs called *attributes*.
+属性集是由称为*属性*的“名称-值”对组成的集合。
 
-Attribute sets are written enclosed in curly brackets (`{ }`).
-Attribute names and attribute values are separated by an equal sign (`=`).
-Each value can be an arbitrary expression, terminated by a semicolon (`;`)
+属性集用花括号（`{ }`）括起来书写。
+属性名与属性值之间用等号（`=`）分隔。
+每个值可以是任意表达式，并以分号（`;`）结束
 
-An attribute name is a string without context, and is denoted by a [name] (an [identifier](./identifiers.md#identifiers) or [string literal](string-literals.md)).
+属性名是一个不带上下文的字符串，用一个 [name]（[标识符](./identifiers.md#identifiers)或[字符串字面量](string-literals.md)）表示。
 
 [name]: ./identifiers.md#names
 
-> **Syntax**
+> **语法**
 >
 > *attrset* → `{` { *name* `=` *expr* `;` } `}`
 
-Attributes can appear in any order.
-An attribute name may only occur once in each attribute set.
+属性可以按任意顺序出现。
+每个属性名在同一个属性集中只能出现一次。
 
-> **Example**
+> **示例**
 >
-> This defines an attribute set with attributes named:
-> - `x` with the value `123`, an integer
-> - `text` with the value `"Hello"`, a string
-> - `y` where the value is the result of applying the function `f` to the attribute set `{ bla = 456; }`
+> 这定义了一个属性集，其属性名为：
+> - `x`，值为 `123`，一个整数
+> - `text`，值为 `"Hello"`，一个字符串
+> - `y`，其值是将函数 `f` 应用于属性集 `{ bla = 456; }` 的结果
 >
 > ```nix
 > {
@@ -119,22 +113,22 @@ An attribute name may only occur once in each attribute set.
 > }
 > ```
 
-Attributes in nested attribute sets can be written using *attribute paths*.
+嵌套属性集中的属性可以用*属性路径*来书写。
 
-> **Syntax**
+> **语法**
 >
 > *attrset* → `{` { *attrpath* `=` *expr* `;` } `}`
 
 <div id="attrpath-literal"></div>
-An attribute path is a dot-separated list of [names][name].
+属性路径是以点分隔的 [name] 列表。
 
-> **Syntax**
+> **语法**
 >
 > *attrpath* = *name* { `.` *name* }
 
 <!-- -->
 
-> **Example**
+> **示例**
 >
 > ```nix
 > { a.b.c = 1; a.b.d = 2; }
@@ -149,9 +143,9 @@ An attribute path is a dot-separated list of [names][name].
 >       };
 >     }
 
-Attribute names can also be set implicitly by using the [`inherit` keyword](#inheriting-attributes).
+属性名也可以通过 [`inherit` 关键字](#inheriting-attributes)来隐式设置。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > { inherit (builtins) true; }
@@ -159,19 +153,19 @@ Attribute names can also be set implicitly by using the [`inherit` keyword](#inh
 >
 >     { true = true; }
 
-Attributes can be accessed with the [`.` operator](./operators.md#attribute-selection).
+属性可以通过 [`.` 运算符](./operators.md#attribute-selection)访问。
 
-Example:
+示例：
 
 ```nix
 { a = "Foo"; b = "Bar"; }.a
 ```
 
-This evaluates to `"Foo"`.
+求值为 `"Foo"`。
 
-It is possible to provide a default value in an attribute selection using the `or` keyword.
+可以在属性选择中使用 `or` 关键字来提供默认值。
 
-Example:
+示例：
 
 ```nix
 { a = "Foo"; b = "Bar"; }.c or "Xyzzy"
@@ -181,9 +175,9 @@ Example:
 { a = "Foo"; b = "Bar"; }.c.d.e.f.g or "Xyzzy"
 ```
 
-will both evaluate to `"Xyzzy"` because there is no `c` attribute in the set.
+由于该属性集中没有 `c` 属性，两者都会求值为 `"Xyzzy"`。
 
-You can use arbitrary double-quoted strings as attribute names:
+你可以使用任意双引号字符串作为属性名：
 
 ```nix
 { "$!@#?" = 123; }."$!@#?"
@@ -194,9 +188,9 @@ let bar = "bar"; in
 { "foo ${bar}" = 123; }."foo ${bar}"
 ```
 
-Both will evaluate to `123`.
+两者都求值为 `123`。
 
-Attribute names support [string interpolation]:
+属性名支持[字符串插值]：
 
 ```nix
 let bar = "foo"; in
@@ -208,40 +202,33 @@ let bar = "foo"; in
 { ${bar} = 123; }.foo
 ```
 
-Both will evaluate to `123`.
+两者都求值为 `123`。
 
-In the special case where an attribute name inside of a set declaration
-evaluates to `null` (which is normally an error, as `null` cannot be coerced to
-a string), that attribute is simply not added to the set:
+在一种特殊情况下，如果属性集声明中的某个属性名求值为 `null`（通常这是一个错误，因为 `null` 不能被强制转换为字符串），那么该属性只是不会被加入属性集：
 
 ```nix
 { ${if foo then "bar" else null} = true; }
 ```
 
-This will evaluate to `{}` if `foo` evaluates to `false`.
+如果 `foo` 求值为 `false`，这会求值为 `{}`。
 
-A set that has a [`__functor`]{#attr-__functor} attribute whose value is callable (i.e. is
-itself a function or a set with a `__functor` attribute whose value is
-callable) can be applied as if it were a function, with the set itself
-passed in first , e.g.,
+拥有 [`__functor`]{#attr-__functor} 属性且其值可调用（即它本身是一个函数，或是一个带有可调用 `__functor` 属性值的属性集）的属性集，可以像函数一样被应用，此时属性集本身作为第一个参数传入，例如：
 
 ```nix
 let add = { __functor = self: x: x + self.x; };
-    inc = add // { x = 1; }; # inc is { x = 1; __functor = (...) }
-in inc 1 # equivalent of `add.__functor add 1` i.e. `1 + self.x`
+    inc = add // { x = 1; }; # inc 为 { x = 1; __functor = (...) }
+in inc 1 # 等价于 `add.__functor add 1`，即 `1 + self.x`
 ```
 
-evaluates to `2`. This can be used to attach metadata to a function
-without the caller needing to treat it specially, or to implement a form
-of object-oriented programming, for example.
+求值为 `2`。例如，这可以用来在不要求调用方特殊处理的情况下为函数附加元数据，或者实现某种形式的面向对象编程。
 
-## Recursive sets
+## 递归属性集
 
-Recursive sets are like normal [attribute sets](./types.md#type-attrs), but the attributes can refer to each other.
+递归属性集与普通的[属性集](./types.md#type-attrs)类似，但其属性之间可以相互引用。
 
 > *rec-attrset* = `rec {` [ *name* `=` *expr* `;` `]`... `}`
 
-Example:
+示例：
 
 ```nix
 rec {
@@ -250,16 +237,11 @@ rec {
 }.x
 ```
 
-This evaluates to `123`.
+求值为 `123`。
 
-Note that without `rec` the binding `x = y;` would
-refer to the variable `y` in the surrounding scope, if one exists, and
-would be invalid if no such variable exists. That is, in a normal
-(non-recursive) set, attributes are not added to the lexical scope; in a
-recursive set, they are.
+注意，如果没有 `rec`，绑定 `x = y;` 将引用外围作用域中的变量 `y`（如果存在），若不存在这样的变量则该表达式无效。也就是说，在普通（非递归）属性集中，属性不会被加入词法作用域；而在递归属性集中会被加入。
 
-Recursive sets of course introduce the danger of infinite recursion. For
-example, the expression
+递归属性集当然也带来了无限递归的危险。例如，表达式
 
 ```nix
 rec {
@@ -268,15 +250,15 @@ rec {
 }.x
 ```
 
-will crash with an `infinite recursion encountered` error message.
+会因 `infinite recursion encountered` 错误消息而崩溃。
 
-## Let-expressions
+## let 表达式
 
-A let-expression allows you to define local variables for an expression.
+let 表达式允许你为一个表达式定义局部变量。
 
 > *let-in* = `let` [ *identifier* = *expr* `;` ]... `in` *expr*
 
-Example:
+示例：
 
 ```nix
 let
@@ -285,18 +267,18 @@ let
 in x + y
 ```
 
-This evaluates to `"foobar"`.
+求值为 `"foobar"`。
 
-There is also another, older, syntax for let expressions that should not be used in new code:
+let 表达式还有一种更旧的语法，不应在新代码中使用：
 
 > *let* = `let` `{` *identifier* = *expr* `;` [ *identifier* = *expr* `;`]...  `}`
 
-In this form, the attribute set between the `{` `}` is recursive.
+在这种形式中，`{` `}` 之间的属性集是递归的。
 
-One of the attributes must have the special name `body`,
-which is the result of the expression.
+其中一个属性必须具有特殊名称 `body`，
+它是整个表达式的结果。
 
-Example:
+示例：
 
 ```nix
 let {
@@ -306,14 +288,14 @@ let {
 }
 ```
 
-This evaluates to "baz".
+求值为 "baz"。
 
-## Inheriting attributes
+## 继承属性
 
-When defining an [attribute set](./types.md#type-attrs) or in a [let-expression](#let-expressions) it is often convenient to copy variables from the surrounding lexical scope (e.g., when you want to propagate attributes).
-This can be shortened using the `inherit` keyword.
+在定义[属性集](./types.md#type-attrs)或 [let 表达式](#let-expressions)时，从外围词法作用域复制变量往往很方便（例如，当你想传递属性时）。
+这可以用 `inherit` 关键字来简写。
 
-Example:
+示例：
 
 ```nix
 let x = 123; in
@@ -323,7 +305,7 @@ let x = 123; in
 }
 ```
 
-is equivalent to
+等价于
 
 ```nix
 let x = 123; in
@@ -333,17 +315,17 @@ let x = 123; in
 }
 ```
 
-and both evaluate to `{ x = 123; y = 456; }`.
+两者都求值为 `{ x = 123; y = 456; }`。
 
-> **Note**
+> **注意**
 >
-> This works because `x` is added to the lexical scope by the `let` construct.
+> 这之所以有效，是因为 `x` 由 `let` 结构加入了词法作用域。
 
-It is also possible to inherit attributes from another attribute set.
+也可以从另一个属性集继承属性。
 
-Example:
+示例：
 
-In this fragment from `all-packages.nix`,
+在来自 `all-packages.nix` 的下面这个片段中，
 
 ```nix
 graphviz = (import ../tools/graphics/graphviz) {
@@ -362,12 +344,9 @@ libjpg = ...;
 ...
 ```
 
-the set used in the function call to the function defined in
-`../tools/graphics/graphviz` inherits a number of variables from the
-surrounding scope (`fetchurl` ... `yacc`), but also inherits `libXaw`
-(the X Athena Widgets) from the `xorg` set.
+用于调用 `../tools/graphics/graphviz` 中定义的函数的那个属性集，从外围作用域继承了许多变量（`fetchurl` … `yacc`），同时还从 `xorg` 属性集继承了 `libXaw`（X Athena Widgets）。
 
-Summarizing the fragment
+概括一下，片段
 
 ```nix
 ...
@@ -376,7 +355,7 @@ inherit (src-set) a b c;
 ...
 ```
 
-is equivalent to
+等价于
 
 ```nix
 ...
@@ -385,10 +364,9 @@ a = src-set.a; b = src-set.b; c = src-set.c;
 ...
 ```
 
-when used while defining local variables in a let-expression or while
-defining a set.
+适用于在 let 表达式中定义局部变量或定义属性集的场合。
 
-In a `let` expression, `inherit` can be used to selectively bring specific attributes of a set into scope. For example
+在 `let` 表达式中，`inherit` 可用于选择性地把某个属性集的特定属性引入作用域。例如
 
 
 ```nix
@@ -401,7 +379,7 @@ in
 }
 ```
 
-is equivalent to
+等价于
 
 ```nix
 let
@@ -412,22 +390,20 @@ in
 }
 ```
 
-both evaluate to `{ names = [ "a" "b" ]; }`.
+两者都求值为 `{ names = [ "a" "b" ]; }`。
 
-## Functions
+## 函数
 
-Functions have the following form:
+函数具有如下形式：
 
 ```nix
 pattern: body
 ```
 
-The pattern specifies what the argument of the function must look like,
-and binds variables in the body to (parts of) the argument. There are
-three kinds of patterns:
+模式（pattern）规定了函数的参数必须是什么样子，
+并把函数体中的变量绑定到参数（的各个部分）。共有三种模式：
 
-  - If a pattern is a single identifier, then the function matches any
-    argument. Example:
+  - 如果模式是单个标识符，则该函数匹配任意参数。示例：
 
     ```nix
     let negate = x: !x;
@@ -435,74 +411,60 @@ three kinds of patterns:
     in if negate true then concat "foo" "bar" else ""
     ```
 
-    Note that `concat` is a function that takes one argument and returns
-    a function that takes another argument. This allows partial
-    parameterisation (i.e., only filling some of the arguments of a
-    function); e.g.,
+    注意，`concat` 是一个接受一个参数并返回另一个接受一个参数的函数的函数。这允许部分参数化（即只填写函数的一部分参数）；例如，
 
     ```nix
     map (concat "foo") [ "bar" "bla" "abc" ]
     ```
 
-    evaluates to `[ "foobar" "foobla" "fooabc" ]`.
+    求值为 `[ "foobar" "foobla" "fooabc" ]`。
 
-  - A *set pattern* of the form `{ name1, name2, …, nameN }` matches a
-    set containing the listed attributes, and binds the values of those
-    attributes to variables in the function body. For example, the
-    function
+  - 形如 `{ name1, name2, …, nameN }` 的*属性集模式*匹配包含所列属性的属性集，
+    并把这些属性的值绑定到函数体中的变量。例如，函数
 
     ```nix
     { x, y, z }: z + y + x
     ```
 
-    can only be called with a set containing exactly the attributes `x`,
-    `y` and `z`. No other attributes are allowed. If you want to allow
-    additional arguments, you can use an ellipsis (`...`):
+    只能用恰好包含属性 `x`、`y` 和 `z` 的属性集来调用，不允许有其他属性。如果想允许额外的参数，可以使用省略号（`...`）：
 
     ```nix
     { x, y, z, ... }: z + y + x
     ```
 
-    This works on any set that contains at least the three named
-    attributes.
+    这适用于任何至少包含这三个指定属性的属性集。
 
-  - It is possible to provide *default values* for attributes, in
-    which case they are allowed to be missing. A default value is
-    specified by writing `name ?  e`, where *e* is an arbitrary
-    expression. For example,
+  - 可以为属性提供*默认值*，此时这些属性允许缺失。
+    默认值通过 `name ?  e` 来指定，其中 *e* 是任意表达式。例如，
 
     ```nix
     { x, y ? "foo", z ? "bar" }: z + y + x
     ```
 
-    specifies a function that only requires an attribute named `x`, but
-    optionally accepts `y` and `z`.
+    指定了一个只要求名为 `x` 的属性、但可选地接受 `y` 和 `z` 的函数。
 
-  - An `@`-pattern provides a means of referring to the whole value
-    being matched:
+  - `@` 模式提供了一种引用被匹配的整个值的手段：
 
     ```nix
     args@{ x, y, z, ... }: z + y + x + args.a
     ```
 
-    but can also be written as:
+    但也可以写作：
 
     ```nix
     { x, y, z, ... } @ args: z + y + x + args.a
     ```
 
-    Here `args` is bound to the argument *as passed*, which is further
-    matched against the pattern `{ x, y, z, ... }`.
-    The `@`-pattern makes mainly sense with an ellipsis(`...`) as
-    you can access attribute names as `a`, using `args.a`, which was
-    given as an additional attribute to the function.
+    这里 `args` 绑定到*按原样传入*的参数，然后再与模式 `{ x, y, z, ... }` 进行匹配。
+    `@` 模式主要在与省略号（`...`）一起使用时才有意义，
+    因为这样可以通过 `args.a` 访问作为额外属性传给函数的属性名 `a`。
 
-    > **Warning**
+    > **警告**
     >
-    > `args@` binds the name `args` to the attribute set that is passed to the function.
-    > In particular, `args` does *not* include any default values specified with `?` in the function's set pattern.
+    > `args@` 把名字 `args` 绑定到传给函数的那个属性集。
+    > 特别要注意，`args` *不*包含函数属性集模式中用 `?` 指定的任何默认值。
     >
-    > For instance
+    > 例如
     >
     > ```nix
     > let
@@ -511,7 +473,7 @@ three kinds of patterns:
     >   f {}
     > ```
     >
-    > is equivalent to
+    > 等价于
     >
     > ```nix
     > let
@@ -520,18 +482,18 @@ three kinds of patterns:
     >   f {}
     > ```
     >
-    > and both expressions will evaluate to:
+    > 并且两个表达式都会求值为：
     >
     > ```nix
     > [ 23 {} ]
     > ```
 
-  - All bindings introduced by the function are in scope in the entire function expression; not just in the body.
-    It can therefore be used in default values.
+  - 函数引入的所有绑定在整个函数表达式中都处于作用域内，而不仅在函数体中。
+    因此它们可以用于默认值。
 
-    > **Example**
+    > **示例**
     >
-    > A parameter (`x`), is used in the default value for another parameter (`y`):
+    > 某个参数（`x`）被用在另一个参数（`y`）的默认值中：
     >
     > ```nix
     > let
@@ -540,7 +502,7 @@ three kinds of patterns:
     >   f { x = 3; }
     > ```
     >
-    > This evaluates to:
+    > 求值为：
     >
     > ```nix
     > {
@@ -548,9 +510,9 @@ three kinds of patterns:
     > }
     > ```
 
-    > **Example**
+    > **示例**
     >
-    > The binding of an `@` pattern, `args`, is used in the default value for a parameter, `x`:
+    > `@` 模式的绑定 `args` 被用在参数 `x` 的默认值中：
     >
     > ```nix
     > let
@@ -559,46 +521,40 @@ three kinds of patterns:
     >   f { a = 1; }
     > ```
     >
-    > This evaluates to:
+    > 求值为：
     >
     > ```nix
     > 1
     > ```
 
-Note that functions do not have names. If you want to give them a name,
-you can bind them to an attribute, e.g.,
+注意，函数没有名字。如果想给函数起名字，可以把它绑定到一个属性，例如：
 
 ```nix
 let concat = { x, y }: x + y;
 in concat { x = "foo"; y = "bar"; }
 ```
 
-## Conditionals
+## 条件表达式
 
-Conditionals look like this:
+条件表达式形如：
 
 ```nix
 if e1 then e2 else e3
 ```
 
-where *e1* is an expression that should evaluate to a Boolean value
-(`true` or `false`).
+其中 *e1* 是一个应当求值为布尔值（`true` 或 `false`）的表达式。
 
-## Assertions
+## 断言
 
-Assertions are generally used to check that certain requirements on or
-between features and dependencies hold. They look like this:
+断言通常用于检查特性与依赖之间是否满足某些要求。它们形如：
 
 ```nix
 assert e1; e2
 ```
 
-where *e1* is an expression that should evaluate to a Boolean value. If
-it evaluates to `true`, *e2* is returned; otherwise expression
-evaluation is aborted and a backtrace is printed.
+其中 *e1* 是一个应当求值为布尔值的表达式。如果求值为 `true`，则返回 *e2*；否则表达式求值中止并打印回溯信息。
 
-Here is a Nix expression for the Subversion package that shows how
-assertions can be used:.
+下面是 Subversion 软件包的一个 Nix 表达式，展示了断言的用法：。
 
 ```nix
 { localServer ? false
@@ -626,78 +582,57 @@ stdenv.mkDerivation {
 }
 ```
 
-The points of interest are:
+值得注意的点有：
 
-1.  This assertion states that if Subversion is to have support for
-    local repositories, then Berkeley DB is needed. So if the Subversion
-    function is called with the `localServer` argument set to `true` but
-    the `db4` argument set to `null`, then the evaluation fails.
+1.  这条断言规定，如果 Subversion 要支持本地仓库，就需要 Berkeley DB。因此，如果调用 Subversion 函数时把 `localServer` 参数设为 `true` 而 `db4` 参数设为 `null`，则求值失败。
 
-    Note that `->` is the [logical
-    implication](https://en.wikipedia.org/wiki/Truth_table#Logical_implication)
-    Boolean operation.
+    注意，`->` 是[逻辑蕴涵](https://en.wikipedia.org/wiki/Truth_table#Logical_implication)布尔运算。
 
-2.  This is a more subtle condition: if Subversion is built with Apache
-    (`httpServer`) support, then the Expat library (an XML library) used
-    by Subversion should be same as the one used by Apache. This is
-    because in this configuration Subversion code ends up being linked
-    with Apache code, and if the Expat libraries do not match, a build-
-    or runtime link error or incompatibility might occur.
+2.  这是一个更微妙的条件：如果 Subversion 构建时带 Apache（`httpServer`）支持，那么 Subversion 使用的 Expat 库（一个 XML 库）应当与 Apache 使用的相同。这是因为在这种配置下，Subversion 的代码最终会与 Apache 的代码链接在一起；如果 Expat 库不匹配，可能会出现构建期或运行期的链接错误或不兼容。
 
-3.  This assertion says that in order for Subversion to have SSL support
-    (so that it can access `https` URLs), an OpenSSL library must be
-    passed. Additionally, it says that *if* Apache support is enabled,
-    then Apache's OpenSSL should match Subversion's. (Note that if
-    Apache support is not enabled, we don't care about Apache's
-    OpenSSL.)
+3.  这条断言规定，Subversion 要支持 SSL（以便访问 `https` URL），就必须传入一个 OpenSSL 库。此外还规定，*如果*启用了 Apache 支持，那么 Apache 的 OpenSSL 应与 Subversion 的一致。（注意，如果未启用 Apache 支持，我们并不关心 Apache 的 OpenSSL。）
 
-4.  The conditional here is not really related to assertions, but is
-    worth pointing out: it ensures that if SSL support is disabled, then
-    the Subversion derivation is not dependent on OpenSSL, even if a
-    non-`null` value was passed. This prevents an unnecessary rebuild of
-    Subversion if OpenSSL changes.
+4.  这里的条件表达式其实与断言关系不大，但值得指出：它确保当 SSL 支持被禁用时，即使传入了一个非 `null` 的值，Subversion 的 derivation（派生）也不依赖于 OpenSSL。这避免了 OpenSSL 变化时对 Subversion 的不必要重建。
 
-## With-expressions
+## with 表达式
 
-A *with-expression*,
+*with 表达式*，
 
 ```nix
 with e1; e2
 ```
 
-introduces the set *e1* into the lexical scope of the expression *e2*.
-For instance,
+把属性集 *e1* 引入表达式 *e2* 的词法作用域。
+例如，
 
 ```nix
 let as = { x = "foo"; y = "bar"; };
 in with as; x + y
 ```
 
-evaluates to `"foobar"` since the `with` adds the `x` and `y` attributes
-of `as` to the lexical scope in the expression `x + y`. The most common
-use of `with` is in conjunction with the `import` function. E.g.,
+求值为 `"foobar"`，因为 `with` 把 `as` 的 `x` 和 `y` 属性加进了表达式 `x + y` 的词法作用域。`with` 最常见的用法是与 `import` 函数配合使用。例如，
 
 ```nix
 with (import ./definitions.nix); ...
 ```
 
-makes all attributes defined in the file `definitions.nix` available as
-if they were defined locally in a `let`-expression.
+这使得文件 `definitions.nix` 中定义的所有属性都可用，就像它们是在 `let` 表达式中局部定义的一样。
 
-The bindings introduced by `with` do not shadow bindings introduced by
-other means, e.g.
+`with` 引入的绑定不会遮蔽（shadow）通过其他方式引入的绑定，例如：
 
 ```nix
 let a = 3; in with { a = 1; }; let a = 4; in with { a = 2; }; ...
 ```
 
-establishes the same scope as
+建立的作用域与
 
 ```nix
 let a = 1; in let a = 2; in let a = 3; in let a = 4; in ...
 ```
 
-Variables coming from outer `with` expressions *are* shadowed:
+相同。
+
+来自外层 `with` 表达式的变量*会*被遮蔽：
 
 ```nix
 with { a = "outer"; };
@@ -705,26 +640,26 @@ with { a = "inner"; };
 a
 ```
 
-Does evaluate to `"inner"`.
+确实会求值为 `"inner"`。
 
-## Comments
+## 注释
 
-- Inline comments start with `#` and run until the end of the line.
+- 行内注释以 `#` 开头，一直延续到行尾。
 
-  > **Example**
+  > **示例**
   >
   > ```nix
-  > # A number
-  > 2 # Equals 1 + 1
+  > # 一个数字
+  > 2 # 等于 1 + 1
   > ```
   >
   > ```console
   > 2
   > ```
 
-- Block comments start with `/*` and run until the next occurrence of `*/`.
+- 块注释以 `/*` 开头，一直延续到下一个 `*/` 出现为止。
 
-  > **Example**
+  > **示例**
   >
   > ```nix
   > /*
@@ -737,9 +672,9 @@ Does evaluate to `"inner"`.
   > "hello"
   > ```
 
-  This means that block comments cannot be nested.
+  这意味着块注释不能嵌套。
 
-  > **Example**
+  > **示例**
   >
   > ```nix
   > /* /* nope */ */ 1
@@ -754,9 +689,9 @@ Does evaluate to `"inner"`.
   >              |               ^
   > ```
 
-  Consider escaping nested comments and unescaping them in post-processing.
+  可以考虑对嵌套注释进行转义，并在后处理时再反转义。
 
-  > **Example**
+  > **示例**
   >
   > ```nix
   > /* /* nested *\/ */ 1

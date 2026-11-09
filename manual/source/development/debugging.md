@@ -1,27 +1,27 @@
-# Debugging Nix
+# 调试 Nix
 
-This section shows how to build and debug Nix with debug symbols enabled.
+本节介绍如何在启用调试符号的情况下构建和调试 Nix。
 
-Additionally, see [Testing Nix](./testing.md) for further instructions on how to debug Nix in the context of a unit test or functional test.
+此外，关于在单元测试或功能测试上下文中调试 Nix 的进一步说明，请参见[测试 Nix](./testing.md)。
 
-## Building Nix with Debug Symbols
+## 带调试符号构建 Nix
 
-In the development shell, `mesonBuildType` is set automatically to `debugoptimized`. This builds Nix with debug symbols, which are essential for effective debugging.
+在开发 shell 中，`mesonBuildType` 会自动设置为 `debugoptimized`。这会带调试符号构建 Nix，而这些符号对于高效调试至关重要。
 
-It is also possible to build without optimization for faster build:
+也可以不进行优化构建以加快构建速度：
 
 ```console
 [nix-shell]$ NIX_HARDENING_ENABLE=$(printLines $NIX_HARDENING_ENABLE | grep -v fortify)
 [nix-shell]$ export mesonBuildType=debug
 ```
 
-(The first line is needed because `fortify` hardening requires at least some optimization.)
+（第一行是必需的，因为 `fortify` 加固至少需要一些优化。）
 
-## Building Nix with sanitizers
+## 带消毒器（sanitizer）构建 Nix
 
-Nix can be built with [Address](https://clang.llvm.org/docs/AddressSanitizer.html) and
-[UB](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) sanitizers using LLVM
-or GCC. This is useful when debugging memory corruption issues.
+Nix 可以使用 LLVM 或 GCC 以
+[Address](https://clang.llvm.org/docs/AddressSanitizer.html) 和
+[UB](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) 消毒器构建。这在调试内存损坏问题时很有用。
 
 ```console
 [nix-shell]$ export mesonBuildType=debugoptimized
@@ -29,50 +29,50 @@ or GCC. This is useful when debugging memory corruption issues.
 [nix-shell]$ appendToVar mesonFlags "-Db_sanitize=address,undefined"
 ```
 
-## Debugging the Nix Binary
+## 调试 Nix 二进制文件
 
-Obtain your preferred debugger within the development shell:
+在开发 shell 中获取你偏好的调试器：
 
 ```console
 [nix-shell]$ nix-shell -p gdb
 ```
 
-On macOS, use `lldb`:
+在 macOS 上，使用 `lldb`：
 
 ```console
 [nix-shell]$ nix-shell -p lldb
 ```
 
-### Launching the Debugger
+### 启动调试器
 
-To debug the Nix binary, run:
+要调试 Nix 二进制文件，运行：
 
 ```console
 [nix-shell]$ gdb --args ../outputs/out/bin/nix
 ```
 
-On macOS, use `lldb`:
+在 macOS 上，使用 `lldb`：
 
 ```console
 [nix-shell]$ lldb -- ../outputs/out/bin/nix
 ```
 
-### Using the Debugger
+### 使用调试器
 
-Inside the debugger, you can set breakpoints, run the program, and inspect variables.
+在调试器内部，你可以设置断点、运行程序并检查变量。
 
 ```gdb
 (gdb) break main
 (gdb) run <arguments>
 ```
 
-Refer to the [GDB Documentation](https://www.gnu.org/software/gdb/documentation/) for comprehensive usage instructions.
+全面的用法说明请参阅 [GDB 文档](https://www.gnu.org/software/gdb/documentation/)。
 
-On macOS, use `lldb`:
+在 macOS 上，使用 `lldb`：
 
 ```lldb
 (lldb) breakpoint set --name main
 (lldb) process launch -- <arguments>
 ```
 
-Refer to the [LLDB Tutorial](https://lldb.llvm.org/use/tutorial.html) for comprehensive usage instructions.
+全面的用法说明请参阅 [LLDB 教程](https://lldb.llvm.org/use/tutorial.html)。

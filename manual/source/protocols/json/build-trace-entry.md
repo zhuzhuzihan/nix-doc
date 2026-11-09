@@ -1,14 +1,14 @@
 {{#include build-trace-entry-v3-fixed.md}}
 
-## Examples
+## 示例
 
-### Simple build trace entry
+### 简单的构建追踪条目
 
 ```json
 {{#include schema/build-trace-entry-v3/simple.json}}
 ```
 
-### Build trace entry with signature
+### 带签名的构建追踪条目
 
 ```json
 {{#include schema/build-trace-entry-v3/with-signature.json}}

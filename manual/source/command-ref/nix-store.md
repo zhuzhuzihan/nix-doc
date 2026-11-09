@@ -1,19 +1,18 @@
 # Name
 
-`nix-store` - manipulate or query the Nix store
+`nix-store` - 操作或查询 Nix store
 
-# Synopsis
+# 概要
 
 `nix-store` *operation* [*options…*] [*arguments…*]
   [`--option` *name* *value*]
   [`--add-root` *path*]
 
-# Description
+# 描述
 
-The command `nix-store` performs primitive operations on the Nix store.
-You generally do not need to run this command manually.
+命令 `nix-store` 对 Nix store 执行基础操作。你通常不需要手动运行这个命令。
 
-`nix-store` takes exactly one *operation* flag which indicates the subcommand to be performed. The following operations are available:
+`nix-store` 恰好接受一个 *operation* 标志，用于指示要执行的子命令。可用的操作如下：
 
 - [`--realise`](./nix-store/realise.md)
 - [`--serve`](./nix-store/serve.md)
@@ -37,12 +36,12 @@ You generally do not need to run this command manually.
 - [`--print-env`](./nix-store/print-env.md)
 - [`--generate-binary-cache-key`](./nix-store/generate-binary-cache-key.md)
 
-These pages can be viewed offline:
+这些页面可以离线查看：
 
-- `man nix-store-<operation>`.
+- `man nix-store-<operation>`。
 
-  Example: `man nix-store-realise`
+  示例：`man nix-store-realise`
 
 - `nix-store --help --<operation>`
 
-  Example: `nix-store --help --realise`
+  示例：`nix-store --help --realise`

@@ -1,64 +1,51 @@
 # Release 0.6 (2004-11-14)
 
-  - Rewrite of the normalisation engine.
+  - 重写了规范化引擎。
     
-      - Multiple builds can now be performed in parallel (option `-j`).
+      - 现在可以并行执行多个构建（选项 `-j`）。
     
-      - Distributed builds. Nix can now call a shell script to forward
-        builds to Nix installations on remote machines, which may or may
-        not be of the same platform type.
+      - 分布式构建。Nix 现在可以调用一个 shell 脚本，将构建转发到远程机器上的 Nix 安装，这些机器的平台类型可以相同也可以不同。
     
-      - Option `--fallback` allows recovery from broken substitutes.
+      - 选项 `--fallback` 允许从损坏的 substitute 中恢复。
     
-      - Option `--keep-going` causes building of other (unaffected)
-        derivations to continue if one failed.
+      - 选项 `--keep-going` 使得在某个 derivation（派生）构建失败时，其他（未受影响的）derivation 的构建得以继续。
 
-  - Improvements to the garbage collector (i.e., it should actually work
-    now).
+  - 垃圾回收器的改进（也就是说，它现在应该真正可用了）。
 
-  - Setuid Nix installations allow a Nix store to be shared among
-    multiple users.
+  - Setuid Nix 安装允许多个用户共享同一个 Nix store。
 
-  - Substitute registration is much faster now.
+  - substitute 注册现在快得多。
 
-  - A utility `nix-build` to build a Nix expression and create a symlink
-    to the result int the current directory; useful for testing Nix
-    derivations.
+  - 新增实用工具 `nix-build`，用于构建一个 Nix 表达式并在当前目录创建指向结果的符号链接；对测试 Nix derivation 很有用。
 
-  - Manual updates.
+  - 手册更新。
 
-  - `nix-env` changes:
+  - `nix-env` 变更：
     
-      - Derivations for other platforms are filtered out (which can be
-        overridden using `--system-filter`).
+      - 其他平台的 derivation 会被过滤掉（可以用 `--system-filter` 覆盖此行为）。
     
-      - `--install` by default now uninstall previous derivations with
-        the same name.
+      - `--install` 现在默认会卸载之前同名的 derivation。
     
-      - `--upgrade` allows upgrading to a specific version.
+      - `--upgrade` 允许升级到特定版本。
     
-      - New operation `--delete-generations` to remove profile
-        generations (necessary for effective garbage collection).
+      - 新增操作 `--delete-generations` 用于移除 profile 代际（这对有效的垃圾回收是必要的）。
     
-      - Nicer output (sorted, columnised).
+      - 更友好的输出（排序、分列）。
 
-  - More sensible verbosity levels all around (builder output is now
-    shown always, unless `-Q` is given).
+  - 各处的详细程度级别更加合理（builder 输出现在总是显示，除非给定 `-Q`）。
 
-  - Nix expression language changes:
+  - Nix 表达式语言变更：
     
-      - New language construct: `with
+      - 新的语言结构：`with
                                                         E1;
-                                                        E2` brings all attributes defined in the attribute set *E1* in
-        scope in *E2*.
+                                                        E2` 将属性集 *E1* 中定义的所有属性引入 *E2* 的作用域。
     
-      - Added a `map` function.
+      - 新增 `map` 函数。
     
-      - Various new operators (e.g., string concatenation).
+      - 各种新的运算符（例如字符串拼接）。
 
-  - Expression evaluation is much faster.
+  - 表达式求值快得多。
 
-  - An Emacs mode for editing Nix expressions (with syntax highlighting
-    and indentation) has been added.
+  - 新增了一个用于编辑 Nix 表达式的 Emacs 模式（带语法高亮和缩进）。
 
-  - Many bug fixes.
+  - 大量缺陷修复。

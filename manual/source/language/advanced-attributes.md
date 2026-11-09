@@ -1,13 +1,13 @@
-# Advanced Attributes
+# 高级属性
 
-Derivations can declare some infrequently used optional attributes.
+derivation（派生）可以声明一些不常使用的可选属性。
 
-## Inputs
+## 输入
 
   - [`exportReferencesGraph`]{#adv-attr-exportReferencesGraph}\
-    Specifies the [*export references graph*](@docroot@/store/derivation/index.md#export-references-graph) option.
-    The value of this attribute should be a list of pairs `[ name1 path1 name2 path2 ...  ]`.
-    For example, when the following derivation is built:
+    指定 [*export references graph*（导出引用图）](@docroot@/store/derivation/index.md#export-references-graph)选项。
+    该属性的值应为一个成对的列表 `[ name1 path1 name2 path2 ...  ]`。
+    例如，当构建以下 derivation 时：
 
     ```nix
     derivation {
@@ -16,99 +16,98 @@ Derivations can declare some infrequently used optional attributes.
     };
     ```
 
-    the references graph of `libfoo` is placed in the file
-    `libfoo-graph` in the temporary build directory.
+    `libfoo` 的引用图会被放置在临时构建目录中的
+    `libfoo-graph` 文件里。
 
   - [`passAsFile`]{#adv-attr-passAsFile}\
-    A list of names of attributes whose environment variables should be marked
-    [*pass as file*](@docroot@/store/derivation/index.md#pass-as-file).
-    For example, if you have
+    一个属性名列表，这些属性对应的环境变量应被标记为
+    [*pass as file*（以文件传递）](@docroot@/store/derivation/index.md#pass-as-file)。
+    例如，如果你有
 
     ```nix
     passAsFile = ["big"];
     big = "a very long string";
     ```
 
-    then when the builder runs, the environment variable `bigPath`
-    will contain the absolute path to a temporary file containing `a
-    very long string`.
+    那么当 builder 运行时，环境变量 `bigPath`
+    将包含一个临时文件的绝对路径，该文件的内容为 `a
+    very long string`。
 
   - [`__structuredAttrs`]{#adv-attr-structuredAttrs}\
-    If the special attribute `__structuredAttrs` is set to `true`, the other derivation
-    attributes are serialised into a file in JSON format.
+    如果特殊属性 `__structuredAttrs` 被设置为 `true`，则其他 derivation
+    属性会被序列化为一个 JSON 格式的文件。
 
-    See the [corresponding section in the derivation page](@docroot@/store/derivation/index.md#structured-attrs) for further details.
+    更多细节参见 [derivation 页面中的对应章节](@docroot@/store/derivation/index.md#structured-attrs)。
 
-    > **Warning**
+    > **警告**
     >
-    > If set to `true`, the top-level attributes [`allowedReferences`](#adv-attr-allowedReferences), [`allowedRequisites`](#adv-attr-allowedRequisites),
-    > [`disallowedReferences`](#adv-attr-disallowedReferences) and [`disallowedRequisites`](#adv-attr-disallowedRequisites)
-    > will have no effect; use [`outputChecks`](#adv-attr-outputChecks) instead.
+    > 如果设置为 `true`，顶层属性 [`allowedReferences`](#adv-attr-allowedReferences)、[`allowedRequisites`](#adv-attr-allowedRequisites)、
+    > [`disallowedReferences`](#adv-attr-disallowedReferences) 和 [`disallowedRequisites`](#adv-attr-disallowedRequisites)
+    > 将不产生任何效果；请改用 [`outputChecks`](#adv-attr-outputChecks)。
 
-## Output checks
+## 输出检查
 
-These attributes specify [checks on the derivation's outputs](@docroot@/store/derivation/outputs/index.md#output-checks).
-The concepts behind them are documented there; this section gives the syntax for specifying them from the Nix language.
+这些属性用于指定[对 derivation 输出的检查](@docroot@/store/derivation/outputs/index.md#output-checks)。
+其背后的概念在该处有文档说明；本节给出在 Nix 语言中指定它们的语法。
 
-Store paths in these lists may be given as strings with context (i.e. by interpolating a derivation), and outputs of the derivation itself are denoted by their plain output names, e.g. `"out"`.
+这些列表中的存储路径可以以带上下文的字符串形式给出（即通过插值一个 derivation 得到），而 derivation 自身的输出则用其朴素的输出名表示，例如 `"out"`。
 
   - [`allowedReferences`]{#adv-attr-allowedReferences}\
-    Specifies the [*allowed references*](@docroot@/store/derivation/outputs/index.md#allowed-references) check. For example,
+    指定 [*allowed references*（允许的引用）](@docroot@/store/derivation/outputs/index.md#allowed-references)检查。例如，
 
     ```nix
     allowedReferences = [];
     ```
 
-    enforces that the output of a derivation cannot have any runtime
-    dependencies on its inputs. To allow an output to have a runtime
-    dependency on itself, use `"out"` as a list item.
+    强制要求 derivation 的输出对其输入不能有任何运行时
+    依赖。要允许输出对自身有运行时
+    依赖，请使用 `"out"` 作为列表项。
 
   - [`allowedRequisites`]{#adv-attr-allowedRequisites}\
-    Specifies the [*allowed requisites*](@docroot@/store/derivation/outputs/index.md#allowed-requisites) check. For example,
+    指定 [*allowed requisites*（允许的传递依赖）](@docroot@/store/derivation/outputs/index.md#allowed-requisites)检查。例如，
 
     ```nix
     allowedRequisites = [ foobar ];
     ```
 
-    enforces that the output of a derivation cannot have any other
-    runtime dependency than `foobar`, and in addition it enforces that
-    `foobar` itself doesn't introduce any other dependency itself.
+    强制要求 derivation 的输出除 `foobar` 之外不能有任何其他
+    运行时依赖，并且还强制要求
+    `foobar` 自身不引入任何其他依赖。
 
   - [`disallowedReferences`]{#adv-attr-disallowedReferences}\
-    Specifies the [*disallowed references*](@docroot@/store/derivation/outputs/index.md#disallowed-references) check. For example,
+    指定 [*disallowed references*（禁止的引用）](@docroot@/store/derivation/outputs/index.md#disallowed-references)检查。例如，
 
     ```nix
     disallowedReferences = [ foo ];
     ```
 
-    enforces that the output of a derivation cannot have a direct
-    runtime dependency on the derivation `foo`.
+    强制要求 derivation 的输出对 derivation `foo` 不能有直接的
+    运行时依赖。
 
   - [`disallowedRequisites`]{#adv-attr-disallowedRequisites}\
-    Specifies the [*disallowed requisites*](@docroot@/store/derivation/outputs/index.md#disallowed-requisites) check. For example,
+    指定 [*disallowed requisites*（禁止的传递依赖）](@docroot@/store/derivation/outputs/index.md#disallowed-requisites)检查。例如，
 
     ```nix
     disallowedRequisites = [ foobar ];
     ```
 
-    enforces that the output of a derivation cannot have any runtime
-    dependency on `foobar` or any other derivation depending recursively
-    on `foobar`.
+    强制要求 derivation 的输出对 `foobar` 不能有任何运行时
+    依赖，对任何递归依赖于 `foobar` 的其他 derivation 也不能有。
 
   - [`outputChecks`]{#adv-attr-outputChecks}\
-    When using [structured attributes](#adv-attr-structuredAttrs), the `outputChecks`
-    attribute allows defining checks per-output.
+    当使用[结构化属性](#adv-attr-structuredAttrs)时，`outputChecks`
+    属性允许按输出定义检查。
 
-    In addition to
-    [`allowedReferences`](#adv-attr-allowedReferences), [`allowedRequisites`](#adv-attr-allowedRequisites),
-    [`disallowedReferences`](#adv-attr-disallowedReferences) and [`disallowedRequisites`](#adv-attr-disallowedRequisites),
-    the following attributes are available:
+    除了
+    [`allowedReferences`](#adv-attr-allowedReferences)、[`allowedRequisites`](#adv-attr-allowedRequisites)、
+    [`disallowedReferences`](#adv-attr-disallowedReferences) 和 [`disallowedRequisites`](#adv-attr-disallowedRequisites)
+    之外，还可以使用以下属性：
 
-    - `maxSize` specifies the [*max size*](@docroot@/store/derivation/outputs/index.md#max-size) check.
-    - `maxClosureSize` specifies the [*max closure size*](@docroot@/store/derivation/outputs/index.md#max-closure-size) check.
-    - `ignoreSelfRefs` controls the [*ignore self references*](@docroot@/store/derivation/outputs/index.md#ignore-self-refs) behavior.
+    - `maxSize` 指定 [*max size*（最大大小）](@docroot@/store/derivation/outputs/index.md#max-size)检查。
+    - `maxClosureSize` 指定 [*max closure size*（最大闭包大小）](@docroot@/store/derivation/outputs/index.md#max-closure-size)检查。
+    - `ignoreSelfRefs` 控制 [*ignore self references*（忽略自引用）](@docroot@/store/derivation/outputs/index.md#ignore-self-refs)行为。
 
-    Example:
+    示例：
 
     ```nix
     __structuredAttrs = true;
@@ -127,62 +126,62 @@ Store paths in these lists may be given as strings with context (i.e. by interpo
     };
     ```
 
-## Other output modifications
+## 其他输出修改
 
   - [`unsafeDiscardReferences`]{#adv-attr-unsafeDiscardReferences}\
-    When using [structured attributes](#adv-attr-structuredAttrs), the
-    attribute `unsafeDiscardReferences` is an attribute set with a boolean value for each output name.
-    If set to `true`, it enables the
-    [*unsafe discard references*](@docroot@/store/derivation/outputs/index.md#unsafe-discard-references)
-    behavior for that output.
+    当使用[结构化属性](#adv-attr-structuredAttrs)时，
+    属性 `unsafeDiscardReferences` 是一个属性集，为每个输出名给出一个布尔值。
+    如果设置为 `true`，则为该输出启用
+    [*unsafe discard references*（不安全地丢弃引用）](@docroot@/store/derivation/outputs/index.md#unsafe-discard-references)
+    行为。
 
-    Example:
+    示例：
 
     ```nix
     __structuredAttrs = true;
     unsafeDiscardReferences.out = true;
     ```
 
-## Build scheduling
+## 构建调度
 
   - [`preferLocalBuild`]{#adv-attr-preferLocalBuild}\
-    If set to `true`, enables the [*prefer local build*](@docroot@/store/derivation/index.md#prefer-local-build) option.
-    This is useful for derivations that are cheapest to build locally.
+    如果设置为 `true`，则启用 [*prefer local build*（优先本地构建）](@docroot@/store/derivation/index.md#prefer-local-build)选项。
+    这对在本地构建最划算的 derivation 很有用。
 
   - [`allowSubstitutes`]{#adv-attr-allowSubstitutes}\
-    If set to `false`, disables the [*allow substitutes*](@docroot@/store/derivation/index.md#allow-substitutes) option, so Nix will always build this derivation (locally or remotely) rather than substituting its outputs.
-    This is useful for derivations that are cheaper to build than to substitute.
+    如果设置为 `false`，则禁用 [*allow substitutes*（允许 substitute（替代））](@docroot@/store/derivation/index.md#allow-substitutes)选项，因此 Nix 将总是（在本地或远程）构建这个 derivation，而不是用 substitute（替代）方式获取其输出。
+    这对构建比替代获取更划算的 derivation 很有用。
 
 - [`requiredSystemFeatures`]{#adv-attr-requiredSystemFeatures}\
-  Specifies the [*required system features*](@docroot@/store/derivation/index.md#required-system-features) option:
-  Nix will only build the derivation on a machine that has the corresponding features set in its [`system-features` configuration](@docroot@/command-ref/conf-file.md#conf-system-features).
+  指定 [*required system features*（所需的系统特性）](@docroot@/store/derivation/index.md#required-system-features)选项：
+  Nix 只会在其 [`system-features` 配置](@docroot@/command-ref/conf-file.md#conf-system-features)中设置了相应特性的机器上构建该 derivation。
 
-  For example, setting
+  例如，设置
 
   ```nix
   requiredSystemFeatures = [ "kvm" ];
   ```
 
-  ensures that the derivation can only be built on a machine with the `kvm` feature.
+  可确保该 derivation 只能在具有 `kvm` 特性的机器上构建。
 
-# Impure builder configuration
+# 非纯 builder 配置
 
   - [`impureEnvVars`]{#adv-attr-impureEnvVars}\
-    Specifies the [*impure environment variables*](@docroot@/store/derivation/index.md#impure-env-vars) option: a list of environment variables
-    that should be passed from the environment of the calling user to the builder. For example,
-    `fetchurl` in Nixpkgs has the line
+    指定 [*impure environment variables*（非纯环境变量）](@docroot@/store/derivation/index.md#impure-env-vars)选项：一个环境变量列表，
+    这些环境变量应从调用用户的环境中传递给 builder。例如，
+    Nixpkgs 中的 `fetchurl` 有这样一行
 
     ```nix
     impureEnvVars = [ "http_proxy" "https_proxy" ... ];
     ```
 
-    to make it use the proxy server configuration specified by the user
-    in the environment variables `http_proxy` and friends.
+    以使其使用用户在环境变量 `http_proxy` 及类似变量中指定的
+    代理服务器配置。
 
-## Setting the derivation type
+## 设置 derivation 类型
 
-As discussed in [Derivation Outputs and Types of Derivations](@docroot@/store/derivation/outputs/index.md), there are multiples kinds of derivations / kinds of derivation outputs.
-The choice of the following attributes determines which kind of derivation we are making.
+如 [derivation 输出与 derivation 的类型](@docroot@/store/derivation/outputs/index.md)中所述，存在多种类型的 derivation / 多种类型的 derivation 输出。
+对以下属性的选择决定了我们要构建的是哪种类型的 derivation。
 
 - [`__contentAddressed`]
 
@@ -192,19 +191,19 @@ The choice of the following attributes determines which kind of derivation we ar
 
 - [`outputHashMode`]
 
-The three types of derivations are chosen based on the following combinations of these attributes.
-All other combinations are invalid.
+基于这些属性的以下组合来选择三种类型的 derivation。
+所有其他组合都是无效的。
 
-- [Input-addressing derivations](@docroot@/store/derivation/outputs/input-address.md)
+- [按输入寻址的 derivation](@docroot@/store/derivation/outputs/input-address.md)
 
-  This is the default for `builtins.derivation`.
-  Nix only currently supports one kind of input-addressing, so no other information is needed.
+  这是 `builtins.derivation` 的默认值。
+  目前 Nix 只支持一种按输入寻址的方式，因此不需要其他信息。
 
-  `__contentAddressed = false;` may also be included, but is not needed, and will trigger the experimental feature check.
+  也可以包含 `__contentAddressed = false;`，但这并非必需，且会触发实验性特性检查。
 
-- [Fixed-output derivations][fixed-output derivation]
+- [固定输出 derivation]
 
-  All of [`outputHash`], [`outputHashAlgo`], and [`outputHashMode`].
+  [`outputHash`]、[`outputHashAlgo`] 和 [`outputHashMode`] 三者全部指定。
 
   <!--
 
@@ -214,98 +213,98 @@ All other combinations are invalid.
 
   -->
 
-- [(Floating) content-addressing derivations](@docroot@/store/derivation/outputs/content-address.md)
+- [(浮动)按内容寻址的 derivation](@docroot@/store/derivation/outputs/content-address.md)
 
-  Both [`outputHashAlgo`] and [`outputHashMode`], `__contentAddressed = true;`, and *not* `outputHash`.
+  同时指定 [`outputHashAlgo`] 和 [`outputHashMode`]，`__contentAddressed = true;`，并且*不*指定 `outputHash`。
 
-  If an output hash was given, then the derivation output would be "fixed" not "floating".
+  如果给出了输出哈希，那么 derivation 输出将是「固定」的而非「浮动」的。
 
-Here is more information on the `output*` attributes, and what values they may be set to:
+以下是关于 `output*` 属性的更多信息，以及它们可以设置的值：
 
   - [`outputHashMode`]{#adv-attr-outputHashMode}
 
-    This specifies how the files of a content-addressing derivation output are digested to produce a content address.
+    该属性指定如何对按内容寻址的 derivation 输出的文件进行摘要以产生内容地址。
 
-    This works in conjunction with [`outputHashAlgo`](#adv-attr-outputHashAlgo).
-    Specifying one without the other is an error (unless [`outputHash` is also specified and includes its own hash algorithm as described below).
+    它与 [`outputHashAlgo`](#adv-attr-outputHashAlgo) 配合使用。
+    只指定其中一个而不指定另一个是一个错误（除非 [`outputHash` 也被指定且如后文所述包含了其自身的哈希算法）。
 
-    The `outputHashMode` attribute determines how the hash is computed.
-    It must be one of the following values:
+    `outputHashMode` 属性决定哈希是如何计算的。
+    它必须是以下值之一：
 
       - [`"flat"`](@docroot@/store/store-object/content-address.md#method-flat)
 
-        This is the default.
+        这是默认值。
 
-      - [`"recursive"` or `"nar"`](@docroot@/store/store-object/content-address.md#method-nix-archive)
+      - [`"recursive"` 或 `"nar"`](@docroot@/store/store-object/content-address.md#method-nix-archive)
 
-        > **Compatibility**
+        > **兼容性**
         >
-        > `"recursive"` is the traditional way of indicating this,
-        > and is supported since 2005 (virtually the entire history of Nix).
-        > `"nar"` is more clear, and consistent with other parts of Nix (such as the CLI),
-        > however support for it is only added in Nix version 2.21.
+        > `"recursive"` 是表示此模式的传统方式，
+        > 自 2005 年起就受支持（几乎是 Nix 的整部历史）。
+        > `"nar"` 更清晰，并与 Nix 的其他部分（如 CLI）保持一致，
+        > 然而对它的支持只在 Nix 2.21 版本中加入。
 
       - [`"text"`](@docroot@/store/store-object/content-address.md#method-text)
 
-        > **Warning**
+        > **警告**
         >
-        > The use of this method for derivation outputs is part of the [`dynamic-derivations`][xp-feature-dynamic-derivations] experimental feature.
+        > 对 derivation 输出使用此方法属于 [`dynamic-derivations`][xp-feature-dynamic-derivations] 实验性特性。
 
       - [`"git"`](@docroot@/store/store-object/content-address.md#method-git)
 
-        > **Warning**
+        > **警告**
         >
-        > This method is part of the [`git-hashing`][xp-feature-git-hashing] experimental feature.
+        > 此方法属于 [`git-hashing`][xp-feature-git-hashing] 实验性特性。
 
-    See [content-addressing store objects](@docroot@/store/store-object/content-address.md) for more information about the process this flag controls.
+    关于此标志所控制过程的更多信息，参见[按内容寻址的存储对象](@docroot@/store/store-object/content-address.md)。
 
   - [`outputHashAlgo`]{#adv-attr-outputHashAlgo}
 
-    This specifies the hash algorithm used to digest the [file system object] data of a content-addressing derivation output.
+    该属性指定用于对按内容寻址的 derivation 输出的[文件系统对象][file system object]数据进行摘要的哈希算法。
 
-    This works in conjunction with [`outputHashMode`](#adv-attr-outputHashAlgo).
-    Specifying one without the other is an error (unless `outputHash` is also specified and includes its own hash algorithm as described below).
+    它与 [`outputHashMode`](#adv-attr-outputHashAlgo) 配合使用。
+    只指定其中一个而不指定另一个是一个错误（除非 `outputHash` 也被指定且如后文所述包含了其自身的哈希算法）。
 
-    The `outputHashAlgo` attribute specifies the hash algorithm used to compute the hash.
-    It can currently be `"blake3"`, `"sha1"`, `"sha256"`, `"sha512"`, or `null`.
+    `outputHashAlgo` 属性指定用于计算哈希的哈希算法。
+    它当前可以是 `"blake3"`、`"sha1"`、`"sha256"`、`"sha512"` 或 `null`。
 
-    `outputHashAlgo` can only be `null` when `outputHash` follows the SRI format, because in that case the choice of hash algorithm is determined by `outputHash`.
+    `outputHashAlgo` 只有在 `outputHash` 遵循 SRI 格式时才能为 `null`，因为在这种情况下，哈希算法的选择由 `outputHash` 决定。
 
   - [`outputHash`]{#adv-attr-outputHash}
 
-    This will specify the output hash of the single output of a [fixed-output derivation].
+    该属性指定[固定输出 derivation] 的单一输出的输出哈希。
 
-    The `outputHash` attribute must be a string containing the hash in either hexadecimal or "nix32" encoding, or following the format for integrity metadata as defined by [SRI](@docroot@/glossary.md#gloss-sri).
-    The ["nix32" encoding](@docroot@/protocols/nix32.md) is Nix's variant of Base32 encoding.
+    `outputHash` 属性必须是一个字符串，包含以十六进制或 "nix32" 编码表示的哈希，或者遵循 [SRI](@docroot@/glossary.md#gloss-sri) 所定义的完整性元数据格式。
+    ["nix32" 编码](@docroot@/protocols/nix32.md)是 Nix 对 Base32 编码的变体。
 
-    > **Note**
+    > **注意**
     >
-    > The [`convertHash`](@docroot@/language/builtins.md#builtins-convertHash) function shows how to convert between different encodings.
-    > The [`nix-hash` command](../command-ref/nix-hash.md) has information about obtaining the hash for some contents, as well as converting to and from encodings.
+    > [`convertHash`](@docroot@/language/builtins.md#builtins-convertHash) 函数展示了如何在不同编码之间进行转换。
+    > [`nix-hash` 命令](../command-ref/nix-hash.md)包含关于获取某些内容哈希以及在不同编码间转换的信息。
 
   - [`__contentAddressed`]{#adv-attr-__contentAddressed}
 
-    > **Warning**
+    > **警告**
     >
-    > This attribute is part of an [experimental feature](@docroot@/development/experimental-features.md).
+    > 该属性属于一项[实验性特性](@docroot@/development/experimental-features.md)。
     >
-    > To use this attribute, you must enable the
-    > [`ca-derivations`][xp-feature-ca-derivations] experimental feature.
-    > For example, in [nix.conf](../command-ref/conf-file.md) you could add:
+    > 要使用该属性，你必须启用
+    > [`ca-derivations`][xp-feature-ca-derivations] 实验性特性。
+    > 例如，可以在 [nix.conf](../command-ref/conf-file.md) 中添加：
     >
     > ```
     > extra-experimental-features = ca-derivations
     > ```
 
-    This is a boolean with a default of `false`.
-    It determines whether the derivation is floating content-addressing.
+    这是一个布尔值，默认为 `false`。
+    它决定该 derivation 是否为浮动按内容寻址。
 
 [`__contentAddressed`]: #adv-attr-__contentAddressed
 [`outputHash`]: #adv-attr-outputHash
 [`outputHashAlgo`]: #adv-attr-outputHashAlgo
 [`outputHashMode`]: #adv-attr-outputHashMode
 
-[fixed-output derivation]: @docroot@/glossary.md#gloss-fixed-output-derivation
+[固定输出 derivation]: @docroot@/glossary.md#gloss-fixed-output-derivation
 [file system object]: @docroot@/store/file-system-object.md
 [store object]: @docroot@/store/store-object.md
 [xp-feature-dynamic-derivations]: @docroot@/development/experimental-features.md#xp-feature-dynamic-derivations

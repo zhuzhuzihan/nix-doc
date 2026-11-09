@@ -1,11 +1,8 @@
-# Verifying Build Reproducibility
+# 验证构建的可重现性
 
-You can use Nix's `diff-hook` setting to compare build results. Note
-that this hook is only executed if the results differ; it is not used
-for determining if the results are the same.
+你可以使用 Nix 的 `diff-hook` 设置来比较构建结果。注意，这个 hook 只在结果不同时才会被执行；它并不用于判定结果是否相同。
 
-For purposes of demonstration, we'll use the following Nix file,
-`deterministic.nix` for testing:
+出于演示目的，我们将使用下面这个 Nix 文件 `deterministic.nix` 进行测试：
 
 ```nix
 let
@@ -21,12 +18,12 @@ in {
 }
 ```
 
-Additionally, `nix.conf` contains:
+此外，`nix.conf` 中包含：
 
     diff-hook = /etc/nix/my-diff-hook
     run-diff-hook = true
 
-where `/etc/nix/my-diff-hook` is an executable file containing:
+其中 `/etc/nix/my-diff-hook` 是一个可执行文件，内容为：
 
 ```bash
 #!/bin/sh
@@ -35,17 +32,13 @@ echo "For derivation $3:"
 /run/current-system/sw/bin/diff -r "$1" "$2"
 ```
 
-The diff hook is executed by the same user and group who ran the build.
-However, the diff hook does not have write access to the store path just
-built.
+diff hook 由执行构建的同一用户和用户组运行。但是，diff hook 对刚构建出的存储路径（store path）没有写权限。
 
-# Spot-Checking Build Determinism
+# 抽查构建的确定性
 
-Verify a path which already exists in the Nix store by passing `--check`
-to the build command.
+通过向构建命令传入 `--check`，可以验证 Nix store 中已经存在的某个路径。
 
-If the build passes and is deterministic, Nix will exit with a status
-code of 0:
+如果构建通过且是确定性的，Nix 会以状态码 0 退出：
 
 ```console
 $ nix-build ./deterministic.nix --attr stable
@@ -59,8 +52,7 @@ checking outputs of '/nix/store/z98fasz2jqy9gs0xbvdj939p27jwda38-stable.drv'...
 /nix/store/yyxlzw3vqaas7wfp04g0b1xg51f2czgq-stable
 ```
 
-If the build is not deterministic, Nix will exit with a status code of
-1:
+如果构建不是确定性的，Nix 会以状态码 1 退出：
 
 ```console
 $ nix-build ./deterministic.nix --attr unstable
@@ -75,7 +67,7 @@ error: derivation '/nix/store/cgl13lbj1w368r5z8gywipl1ifli7dhk-unstable.drv' may
 not be deterministic: output '/nix/store/krpqk0l9ib0ibi1d2w52z293zw455cap-unstable' differs
 ```
 
-In the Nix daemon's log, we will now see:
+在 Nix 守护进程的日志中，我们将看到：
 
 ```
 For derivation /nix/store/cgl13lbj1w368r5z8gywipl1ifli7dhk-unstable.drv:
@@ -85,8 +77,7 @@ For derivation /nix/store/cgl13lbj1w368r5z8gywipl1ifli7dhk-unstable.drv:
 > 30204
 ```
 
-Using `--check` with `--keep-failed` will cause Nix to keep the second
-build's output in a special, `.check` path:
+将 `--check` 与 `--keep-failed` 结合使用会让 Nix 把第二次构建的输出保存在一个特殊的 `.check` 路径中：
 
 ```console
 $ nix-build ./deterministic.nix --attr unstable --check --keep-failed
@@ -97,27 +88,19 @@ not be deterministic: output '/nix/store/krpqk0l9ib0ibi1d2w52z293zw455cap-unstab
 from '/nix/store/krpqk0l9ib0ibi1d2w52z293zw455cap-unstable.check'
 ```
 
-In particular, notice the
-`/nix/store/krpqk0l9ib0ibi1d2w52z293zw455cap-unstable.check` output. Nix
-has copied the build results to that directory where you can examine it.
+尤其请注意 `/nix/store/krpqk0l9ib0ibi1d2w52z293zw455cap-unstable.check` 这个输出。Nix 已经把构建结果复制到了该目录，你可以在那里查看它。
 
-> []{#check-dirs-are-unregistered} **Note**
+> []{#check-dirs-are-unregistered} **注意**
 > 
-> Check paths are not protected against garbage collection, and this
-> path will be deleted on the next garbage collection.
+> Check 路径不受垃圾回收保护，该路径会在下一次垃圾回收时被删除。
 > 
-> The path is guaranteed to be alive for the duration of
-> the `diff-hook`'s execution, but may be deleted any time after.
+> 该路径保证在 `diff-hook` 执行期间一直存在，但在此之后的任何时间都可能被删除。
 > 
-> If the comparison is performed as part of automated tooling, please
-> use the diff-hook or author your tooling to handle the case where the
-> build was not deterministic and also a check path does not exist.
+> 如果这个比较是作为自动化工具的一部分进行的，请使用 diff hook，或者让你自己的工具能够处理「构建不是确定性的、同时 check 路径也不存在」的情况。
 
-`--check` is only usable if the derivation has been built on the system
-already. If the derivation has not been built Nix will fail with the
-error:
+`--check` 只有在该 derivation 已经在本系统上构建过的情况下才能使用。如果该 derivation 尚未构建，Nix 将报错：
 
     error: some outputs of '/nix/store/hzi1h60z2qf0nb85iwnpvrai3j2w7rr6-unstable.drv' 
     are not valid, so checking is not possible
 
-Run the build without `--check`, and then try with `--check` again.
+此时请先不带 `--check` 运行构建，然后再带上 `--check` 重试。

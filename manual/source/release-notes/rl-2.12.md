@@ -1,42 +1,30 @@
 # Release 2.12 (2022-12-06)
 
-* On Linux, Nix can now run builds in a user namespace where they run
-  as root (UID 0) and have 65,536 UIDs available.
-  This is primarily useful for running containers such as `systemd-nspawn`
-  inside a Nix build. For an example, see [`tests/systemd-nspawn/nix`][nspawn].
+* 在 Linux 上，Nix 现在可以在 user namespace 中运行构建，构建过程以 root（UID 0）身份运行并拥有 65,536 个可用 UID。
+  这主要用于在 Nix 构建内部运行诸如 `systemd-nspawn` 之类的容器。示例见 [`tests/systemd-nspawn/nix`][nspawn]。
 
   [nspawn]: https://github.com/NixOS/nix/blob/67bcb99700a0da1395fa063d7c6586740b304598/tests/systemd-nspawn.nix.
 
-  A build can enable this by setting the derivation attribute:
+  构建可以通过设置 derivation（派生）属性来启用它：
 
   ```
   requiredSystemFeatures = [ "uid-range" ];
   ```
 
-  The `uid-range` [system feature] requires the [`auto-allocate-uids`]
-  setting to be enabled.
+  `uid-range` [system feature] 要求启用 [`auto-allocate-uids`] 设置。
 
   [system feature]: ../command-ref/conf-file.md#conf-system-features
 
-* Nix can now automatically pick UIDs for builds, removing the need to
-  create `nixbld*` user accounts. See [`auto-allocate-uids`].
+* Nix 现在可以为构建自动挑选 UID，从而无需创建 `nixbld*` 用户账户。参见 [`auto-allocate-uids`]。
 
   [`auto-allocate-uids`]: ../command-ref/conf-file.md#conf-auto-allocate-uids
 
-* On Linux, Nix has experimental support for running builds inside a
-  cgroup. See
-  [`use-cgroups`](../command-ref/conf-file.md#conf-use-cgroups).
+* 在 Linux 上，Nix 对在 cgroup 中运行构建提供实验性支持。参见
+  [`use-cgroups`](../command-ref/conf-file.md#conf-use-cgroups)。
 
-* `<nix/fetchurl.nix>` now accepts an additional argument `impure` which
-  defaults to `false`.  If it is set to `true`, the `hash` and `sha256`
-  arguments will be ignored and the resulting derivation will have
-  `__impure` set to `true`, making it an impure derivation.
+* `<nix/fetchurl.nix>` 现在接受一个额外的参数 `impure`，默认为 `false`。如果将其设为 `true`，`hash` 和 `sha256` 参数将被忽略，且产生的 derivation 会将 `__impure` 设为 `true`，从而成为一个非纯（impure）derivation。
 
-* If `builtins.readFile` is called on a file with context, then only
-  the parts of the context that appear in the content of the file are
-  retained.  This avoids a lot of spurious errors where strings end up
-  having a context just because they are read from a store path
-  ([#7260](https://github.com/NixOS/nix/pull/7260)).
+* 如果对带有上下文（context）的文件调用 `builtins.readFile`，则只会保留出现在文件内容中的那部分上下文。这避免了大量虚假错误——字符串仅仅因为是从某个存储路径读出的就带上了上下文
+  ([#7260](https://github.com/NixOS/nix/pull/7260))。
 
-* `nix build --json` now prints some statistics about top-level
-  derivations, such as CPU statistics when cgroups are enabled.
+* `nix build --json` 现在会打印关于顶层 derivation 的一些统计信息，例如启用 cgroup 时的 CPU 统计。

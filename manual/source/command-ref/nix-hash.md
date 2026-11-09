@@ -1,97 +1,93 @@
 # Name
 
-`nix-hash` - compute the cryptographic hash of a path
+`nix-hash` - 计算路径的密码学哈希
 
-# Synopsis
+# 概要
 
 `nix-hash` [`--flat`] [`--base32`] [`--truncate`] [`--type` *hashAlgo*] *path…*
 
 `nix-hash` [`--to-base16`|`--to-base32`|`--to-base64`|`--to-sri`] [`--type` *hashAlgo*] *hash…*
 
-# Description
+# 描述
 
-The command `nix-hash` computes the cryptographic hash of the contents
-of each *path* and prints it on standard output. By default, it computes
-an MD5 hash, but other hash algorithms are available as well. The hash
-is printed in hexadecimal. To generate the same hash as
-`nix-prefetch-url` you have to specify multiple arguments, see below for
-an example.
+命令 `nix-hash` 计算每个 *path* 内容的密码学哈希并将其打印到标准输出。默认情况下，它计算
+MD5 哈希，但也可以使用其他哈希算法。哈希
+以十六进制打印。要生成与
+`nix-prefetch-url` 相同的哈希，你必须指定多个参数，示例见下文。
 
-The hash is computed over a *serialisation* of each path: a dump of
-the file system tree rooted at the path. This allows directories and
-symlinks to be hashed as well as regular files. The dump is in the
-*[Nix Archive (NAR)][Nix Archive] format* produced by [`nix-store
---dump`](@docroot@/command-ref/nix-store/dump.md).  Thus, `nix-hash path`
-yields the same cryptographic hash as `nix-store --dump path |
-md5sum`.
+哈希是对每个路径的*序列化（serialisation）*计算的：即以该路径为根的文件系统树的转储。这使得目录和
+符号链接也可以像普通文件一样被哈希。转储采用 [`nix-store
+--dump`](@docroot@/command-ref/nix-store/dump.md) 生成的 *[Nix Archive (NAR)][Nix Archive] 格式*。因此，`nix-hash path`
+产生的密码学哈希与 `nix-store --dump path |
+md5sum` 相同。
 
 [Nix Archive]: @docroot@/store/file-system-object/content-address.md#serial-nix-archive
 
-# Options
+# 选项
 
 - `--flat`
 
-  Print the cryptographic hash of the contents of each regular file *path*.
-  That is, instead of computing
-  the hash of the [Nix Archive (NAR)](@docroot@/store/file-system-object/content-address.md#serial-nix-archive) of *path*,
-  just [directly hash](@docroot@/store/file-system-object/content-address.md#serial-flat) *path* as is.
-  This requires *path* to resolve to a regular file rather than directory.
-  The result is identical to that produced by the GNU commands
-  `md5sum` and `sha1sum`.
+  打印每个普通文件 *path* 内容的密码学哈希。
+  也就是说，不再计算 *path* 的
+  [Nix Archive (NAR)](@docroot@/store/file-system-object/content-address.md#serial-nix-archive) 的哈希，
+  而是[直接按原样哈希](@docroot@/store/file-system-object/content-address.md#serial-flat) *path*。
+  这要求 *path* 解析为普通文件而非目录。
+  结果与 GNU 命令
+  `md5sum` 和 `sha1sum` 产生的结果相同。
 
 - `--base16`
 
-  Print the hash in a hexadecimal representation (default).
+  以十六进制表示打印哈希（默认）。
 
 - `--base32`
 
-  Print the hash in [Nix32](@docroot@/protocols/nix32.md) representation rather than hexadecimal.
-  This representation is more compact and can be used in Nix
-  expressions (such as in calls to `fetchurl`).
+  以 [Nix32](@docroot@/protocols/nix32.md) 表示而非十六进制打印哈希。
+  这种表示更紧凑，并且可以用在 Nix
+  表达式中（例如在 `fetchurl` 的调用中）。
 
 - `--base64`
 
-  Similar to `--base32`, but print the hash in a [Base64](https://en.wikipedia.org/wiki/Base64) representation,
-  which is more compact than the Nix32 one.
+  类似于 `--base32`，但以 [Base64](https://en.wikipedia.org/wiki/Base64) 表示打印哈希，
+  比 Nix32 更紧凑。
 
 - `--sri`
 
-  Print the hash in [SRI](@docroot@/glossary.md#gloss-sri) format with Base64 encoding.
-  The type of hash algorithm will be prepended to the hash string,
-  followed by a hyphen (-) and the Base64 hash body.
+  以带 Base64 编码的 [SRI](@docroot@/glossary.md#gloss-sri) 格式打印哈希。
+  哈希算法类型会附加在哈希字符串之前，
+  后跟一个连字符（-）和 Base64 哈希主体。
 
 - `--truncate`
 
-  Truncate hashes longer than 160 bits (such as SHA-256) to 160 bits.
+  将超过 160 位（例如 SHA-256）的哈希截断为 160 位。
 
 - `--type` *hashAlgo*
 
-  Use the specified cryptographic hash algorithm, which can be one of
-  `blake3`, `md5`, `sha1`, `sha256`, and `sha512`.
+  使用指定的密码学哈希算法，可以是
+  `blake3`、`md5`、`sha1`、`sha256` 和 `sha512` 之一。
 
 - `--to-base16`
 
-  Don’t hash anything, but convert the [Nix32](@docroot@/protocols/nix32.md) hash representation
-  *hash* to hexadecimal.
+  不做任何哈希，而是将 [Nix32](@docroot@/protocols/nix32.md) 哈希表示
+  *hash* 转换为十六进制。
 
 - `--to-base32`
 
-  Don’t hash anything, but convert the hexadecimal hash representation
-  *hash* to [Nix32](@docroot@/protocols/nix32.md).
+  不做任何哈希，而是将十六进制哈希表示
+  *hash* 转换为 [Nix32](@docroot@/protocols/nix32.md)。
 
 - `--to-base64`
 
-  Don’t hash anything, but convert the hexadecimal hash representation
-  *hash* to Base64.
+  不做任何哈希，而是将十六进制哈希表示
+  *hash* 转换为 Base64。
 
 - `--to-sri`
 
-  Don’t hash anything, but convert the hexadecimal hash representation
-  *hash* to SRI.
+  不做任何哈希，而是将十六进制哈希表示
+  *hash* 转换为 SRI。
 
-# Examples
+# 示例
 
-Computing the same hash as `nix-prefetch-url`:
+计算与 `nix-prefetch-url` 相同的哈希：
 
 ```console
 $ nix-prefetch-url file://<(echo test)
@@ -100,7 +96,7 @@ $ nix-hash --type sha256 --flat --base32 <(echo test)
 1lkgqb6fclns49861dwk9rzb6xnfkxbpws74mxnx01z9qyv1pjpj
 ```
 
-Computing hashes:
+计算哈希：
 
 ```console
 $ mkdir test
@@ -134,7 +130,7 @@ $ nix-hash --type sha256 --flat test/world
 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
 ```
 
-Converting between hexadecimal, Nix32, Base64, and SRI:
+在十六进制、Nix32、Base64 和 SRI 之间转换：
 
 ```console
 $ nix-hash --type sha1 --to-base32 e4fd8ba5f7bbeaea5ace89fe10255536cd60dab6

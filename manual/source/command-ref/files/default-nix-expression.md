@@ -1,26 +1,26 @@
-## Default Nix expression
+## 默认 Nix 表达式
 
-The source for the [Nix expressions](@docroot@/glossary.md#gloss-nix-expression) used by [`nix-env`] by default:
+[`nix-env`] 默认使用的 [Nix 表达式](@docroot@/glossary.md#gloss-nix-expression)的来源：
 
 - `~/.nix-defexpr`
-- `$XDG_STATE_HOME/nix/defexpr` if [`use-xdg-base-directories`] is set to `true`.
+- 如果 [`use-xdg-base-directories`] 设置为 `true`，则为 `$XDG_STATE_HOME/nix/defexpr`。
 
-It is loaded as follows:
+其加载方式如下：
 
-- If the default expression is a file, it is loaded as a Nix expression.
-- If the default expression is a directory containing a `default.nix` file, that `default.nix` file is loaded as a Nix expression.
-- If the default expression is a directory without a `default.nix` file, then its contents (both files and subdirectories) are loaded as Nix expressions.
-  The expressions are combined into a single attribute set, each expression under an attribute with the same name as the original file or subdirectory.
-  Subdirectories without a `default.nix` file are traversed recursively in search of more Nix expressions, but the names of these intermediate directories are not added to the attribute paths of the default Nix expression.
+- 如果默认表达式是一个文件，则将其作为 Nix 表达式加载。
+- 如果默认表达式是一个包含 `default.nix` 文件的目录，则将该 `default.nix` 文件作为 Nix 表达式加载。
+- 如果默认表达式是一个不含 `default.nix` 文件的目录，则其内容（包括文件和子目录）都会作为 Nix 表达式加载。
+  这些表达式被合并为一个单一的属性集，每个表达式放在一个与原文件或子目录同名的属性下。
+  没有 `default.nix` 文件的子目录会被递归遍历以寻找更多 Nix 表达式，但这些中间目录的名称不会添加到默认 Nix 表达式的属性路径中。
 
-Then, the resulting expression is interpreted like this:
+然后，得到的表达式按如下方式解释：
 
-- If the expression is an attribute set, it is used as the default Nix expression.
-- If the expression is a function, an empty set is passed as argument and the return value is used as the default Nix expression.
+- 如果该表达式是一个属性集，则它被用作默认 Nix 表达式。
+- 如果该表达式是一个函数，则会传入一个空集作为参数，其返回值被用作默认 Nix 表达式。
 
-> **Example**
+> **示例**
 >
-> If the default expression contains two files, `foo.nix` and `bar.nix`, then the default Nix expression will be equivalent to
+> 如果默认表达式包含两个文件 `foo.nix` 和 `bar.nix`，那么默认 Nix 表达式将等价于
 >
 > ```nix
 > {
@@ -29,24 +29,24 @@ Then, the resulting expression is interpreted like this:
 > }
 > ```
 
-The file [`manifest.nix`](@docroot@/command-ref/files/manifest.nix.md) is always ignored.
+文件 [`manifest.nix`](@docroot@/command-ref/files/manifest.nix.md) 总是被忽略。
 
-The command [`nix-channel`] places a symlink to the current user's [channels] in this directory, the [user channel link](#user-channel-link).
-This makes all subscribed channels available as attributes in the default expression.
+命令 [`nix-channel`] 会将指向当前用户 [channel] 的符号链接放入该目录，即[用户 channel 链接](#user-channel-link)。
+这使得所有已订阅的 channel 都可以作为属性在默认表达式中使用。
 
-## User channel link
+## 用户 channel 链接
 
-A symlink that ensures that [`nix-env`] can find the current user's [channels]:
+一个确保 [`nix-env`] 能找到当前用户 [channel] 的符号链接：
 
 - `~/.nix-defexpr/channels`
-- `$XDG_STATE_HOME/nix/defexpr/channels` if [`use-xdg-base-directories`] is set to `true`.
+- 如果 [`use-xdg-base-directories`] 设置为 `true`，则为 `$XDG_STATE_HOME/nix/defexpr/channels`。
 
-This symlink points to:
+该符号链接指向：
 
-- `$XDG_STATE_HOME/nix/profiles/channels` for regular users
-- `$NIX_STATE_DIR/profiles/per-user/root/channels` for `root`
+- 普通用户为 `$XDG_STATE_HOME/nix/profiles/channels`
+- `root` 用户为 `$NIX_STATE_DIR/profiles/per-user/root/channels`
 
-In a multi-user installation, you may also have `~/.nix-defexpr/channels_root`, which links to the channels of the root user.
+在多用户安装中，你还可能看到 `~/.nix-defexpr/channels_root`，它指向 root 用户的 channel。
 
 [`nix-channel`]: @docroot@/command-ref/nix-channel.md
 [`nix-env`]: @docroot@/command-ref/nix-env.md

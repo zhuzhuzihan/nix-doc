@@ -1,58 +1,53 @@
 # Release 2.15 (2023-04-11)
 
-* Commands which take installables on the command line can now read them from the standard input if
-  passed the `--stdin` flag. This is primarily useful when you have a large amount of paths which
-  exceed the OS argument limit.
+* 在命令行上接受 installable 的命令现在可以通过 `--stdin` 标志从标准输入读取它们。这主要用于路径数量庞大、超出操作系统参数上限的情况。
 
-* The `nix-hash` command now supports Base64 and SRI. Use the flags `--base64`
-  or `--sri` to specify the format of output hash as Base64 or SRI, and `--to-base64`
-  or `--to-sri` to convert a hash to Base64 or SRI format, respectively.
+* `nix-hash` 命令现在支持 Base64 和 SRI。使用标志 `--base64` 或 `--sri` 把输出哈希的格式指定为 Base64 或 SRI，并使用 `--to-base64` 或 `--to-sri` 分别把哈希转换为 Base64 或 SRI 格式。
 
-  As the choice of hash formats is no longer binary, the `--base16` flag is also added
-  to explicitly specify the Base16 format, which is still the default.
+  由于哈希格式的选择不再是二选一，还新增了 `--base16` 标志用于显式指定 Base16 格式——它仍是默认格式。
 
-* The special handling of an [installable](../command-ref/new-cli/nix.md#installables) with `.drv` suffix being interpreted as all of the given [store derivation](@docroot@/glossary.md#gloss-store-derivation)'s output paths is removed, and instead taken as the literal store path that it represents.
+* 此前，带 `.drv` 后缀的 [installable](../command-ref/new-cli/nix.md#installables) 会被特殊处理，解释为给定 [store derivation](@docroot@/glossary.md#gloss-store-derivation) 的全部输出路径；该特殊处理已被移除，现在它会被当作它所表示的字面存储路径。
 
-  The new `^` syntax for store paths introduced in Nix 2.13 allows explicitly referencing output paths of a derivation.
-  Using this is better and more clear than relying on the now-removed `.drv` special handling.
+  Nix 2.13 中引入的用于存储路径的新 `^` 语法允许显式引用 derivation（派生）的输出路径。
+  相比现已移除的 `.drv` 特殊处理，使用它更好也更清晰。
 
-  For example,
+  例如，
   ```shell-session
   $ nix path-info /nix/store/fpq78s2h8ffh66v2iy0q1838mhff06y8-glibc-2.33-78.drv
   ```
 
-  now gives info about the derivation itself, while
+  现在给出的是 derivation 本身的信息，而
 
   ```shell-session
   $ nix path-info /nix/store/fpq78s2h8ffh66v2iy0q1838mhff06y8-glibc-2.33-78.drv^*
   ```
-  provides information about each of its outputs.
+  给出的是它每个输出的信息。
 
-* The experimental command `nix describe-stores` has been removed.
+* 实验性命令 `nix describe-stores` 已被移除。
 
-* Nix stores and their settings are now documented in [`nix help-stores`](@docroot@/command-ref/new-cli/nix3-help-stores.md).
+* Nix store 及其设置现在记录在 [`nix help-stores`](@docroot@/command-ref/new-cli/nix3-help-stores.md) 中。
 
-* Documentation for operations of `nix-store` and `nix-env` are now available on separate pages of the manual.
-  They include all common options that can be specified and common environment variables that affect these commands.
+* `nix-store` 和 `nix-env` 各操作（operation）的文档现在可以在手册的独立页面上查阅。
+  其中包含所有可指定的通用选项以及影响这些命令的通用环境变量。
 
-  These pages can be viewed offline with `man` using
+  这些页面可以用 `man` 离线查看：
 
-  * `man nix-store-<operation>` and `man nix-env-<operation>`
-  * `nix-store --help --<operation>` and `nix-env --help --<operation>`.
+  * `man nix-store-<operation>` 和 `man nix-env-<operation>`
+  * `nix-store --help --<operation>` 和 `nix-env --help --<operation>`。
 
-* Nix when used as a client now checks whether the store (the server) trusts the client.
-  (The store always had to check whether it trusts the client, but now the client is informed of the store's decision.)
-  This is useful for scripting interactions with (non-legacy-ssh) remote Nix stores.
+* Nix 作为客户端使用时，现在会检查 store（服务器端）是否信任该客户端。
+  （store 一直都需要检查它是否信任客户端，但现在客户端也会被告知 store 的决定。）
+  这对编写与（非 legacy-ssh）远程 Nix store 交互的脚本很有用。
 
-  `nix store ping` and `nix doctor` now display this information.
+  `nix store ping` 和 `nix doctor` 现在会显示这一信息。
 
-* The new command `nix derivation add` allows adding derivations to the store without involving the Nix language.
-  It exists to round out our collection of basic utility/plumbing commands, and allow for a low barrier-to-entry way of experimenting with alternative front-ends to the Nix Store.
-  It uses the same JSON layout as `nix derivation show`, and is its inverse.
+* 新命令 `nix derivation add` 允许在不涉及 Nix 语言的情况下把 derivation 加入 store。
+  它的存在是为了补齐我们的基础工具/plumbing 命令集，并提供一种低门槛的方式来试验 Nix Store 的替代前端。
+  它使用与 `nix derivation show` 相同的 JSON 布局，并且是它的逆操作。
 
-* `nix show-derivation` has been renamed to `nix derivation show`.
-  This matches `nix derivation add`, and avoids bloating the top-level namespace.
-  The old name is still kept as an alias for compatibility, however.
+* `nix show-derivation` 已更名为 `nix derivation show`。
+  这与 `nix derivation add` 保持一致，并避免了顶层命名空间的膨胀。
+  不过，出于兼容性考虑，旧名称仍作为别名保留。
 
-* The `nix derivation {add,show}` JSON format now includes the derivation name as a top-level field.
-  This is useful in general, but especially necessary for the `add` direction, as otherwise we would need to pass in the name out of band for certain cases.
+* `nix derivation {add,show}` 的 JSON 格式现在把 derivation 名称作为一个顶层字段。
+  这总体上有用，但对 `add` 方向尤其必要，否则在某些情况下我们将不得不通过带外方式传入名称。

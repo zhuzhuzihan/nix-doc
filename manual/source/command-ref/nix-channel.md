@@ -1,91 +1,91 @@
 # Name
 
-`nix-channel` - manage Nix channels
+`nix-channel` - 管理 Nix channel
 
-# Synopsis
+# 概要
 
 `nix-channel` {`--add` url [*name*] | `--remove` *name* | `--list` | `--update` [*names…*] | `--list-generations` | `--rollback` [*generation*] }
 
-# Description
+# 描述
 
-Channels are a mechanism for referencing remote Nix expressions and conveniently retrieving their latest version.
+Channel（通道）是一种引用远程 Nix 表达式并便捷地获取其最新版本的机制。
 
-The moving parts of channels are:
-- The official channels listed at <https://channels.nixos.org>
-- The user-specific list of [subscribed channels](#subscribed-channels)
-- The [downloaded channel contents](#channels)
-- The [Nix expression search path](@docroot@/command-ref/conf-file.md#conf-nix-path), set with the [`-I` option](#opt-I) or the [`NIX_PATH` environment variable](#env-NIX_PATH)
+channel 的组成部分包括：
+- <https://channels.nixos.org> 上列出的官方 channel
+- 用户专属的[已订阅 channel 列表](#subscribed-channels)
+- [已下载的 channel 内容](#channels)
+- [Nix 表达式搜索路径](@docroot@/command-ref/conf-file.md#conf-nix-path)，通过 [`-I` 选项](#opt-I)或 [`NIX_PATH` 环境变量](#env-NIX_PATH)设置
 
-> **Note**
+> **注意**
 >
-> The state of a subscribed channel is external to the Nix expressions relying on it.
-> This may limit reproducibility.
+> 已订阅 channel 的状态独立于依赖它的 Nix 表达式之外。
+> 这可能限制可重现性。
 >
-> Dependencies on other Nix expressions can be declared explicitly with:
-> - [`fetchurl`](@docroot@/language/builtins.md#builtins-fetchurl), [`fetchTarball`](@docroot@/language/builtins.md#builtins-fetchTarball), or [`fetchGit`](@docroot@/language/builtins.md#builtins-fetchGit) in Nix expressions
-> - the [`-I` option](@docroot@/command-ref/opt-common.md#opt-I) in command line invocations
+> 对其他 Nix 表达式的依赖可以显式声明：
+> - 在 Nix 表达式中使用 [`fetchurl`](@docroot@/language/builtins.md#builtins-fetchurl)、[`fetchTarball`](@docroot@/language/builtins.md#builtins-fetchTarball) 或 [`fetchGit`](@docroot@/language/builtins.md#builtins-fetchGit)
+> - 在命令行调用中使用 [`-I` 选项](@docroot@/command-ref/opt-common.md#opt-I)
 
-This command has the following operations:
+该命令具有以下操作：
 
 - `--add` *url* \[*name*\]
 
-  Add a channel *name* located at *url* to the list of subscribed channels.
-  If *name* is omitted, default to the last component of *url*, with the suffixes `-stable` or `-unstable` removed.
+  将位于 *url* 的 channel *name* 添加到已订阅 channel 列表中。
+  如果省略 *name*，则默认使用 *url* 的最后一个组成部分，并移除 `-stable` 或 `-unstable` 后缀。
 
-  > **Note**
+  > **注意**
   >
-  > `--add` does not automatically perform an update.
-  > Use `--update` explicitly.
+  > `--add` 不会自动执行更新。
+  > 请显式使用 `--update`。
 
-  A channel URL must point to a directory containing a file `nixexprs.tar.gz`.
-  At the top level, that tarball must contain a single directory with a `default.nix` file that serves as the channel’s entry point.
+  channel URL 必须指向一个包含文件 `nixexprs.tar.gz` 的目录。
+  在顶层，该 tarball 必须包含一个带有 `default.nix` 文件的目录，该文件作为 channel 的入口点。
 
 - `--remove` *name*
 
-  Remove the channel *name* from the list of subscribed channels.
+  从已订阅 channel 列表中移除 channel *name*。
 
 - `--list`
 
-  Print the names and URLs of all subscribed channels on standard output.
+  将所有已订阅 channel 的名称和 URL 打印到标准输出。
 
 - `--update` \[*names*…\]
 
-  Download the Nix expressions of subscribed channels and create a new generation.
-  Update all channels if none is specified, and only those included in *names* otherwise.
+  下载已订阅 channel 的 Nix 表达式并创建新的 generation。
+  如果未指定任何 channel，则更新所有 channel；否则只更新 *names* 中包含的那些。
 
-  > **Note**
+  > **注意**
   >
-  > Downloaded channel contents are cached.
-  > Use `--tarball-ttl` or the [`tarball-ttl` configuration option](@docroot@/command-ref/conf-file.md#conf-tarball-ttl) to change the validity period of cached downloads.
+  > 下载的 channel 内容会被缓存。
+  > 使用 `--tarball-ttl` 或 [`tarball-ttl` 配置选项](@docroot@/command-ref/conf-file.md#conf-tarball-ttl)来更改缓存下载的有效期。
 
 - `--list-generations`
 
-  Prints a list of all the current existing generations for the
-  channel profile.
+  打印 channel profile 当前所有已存在 generation 的列表。
 
-  Works the same way as
+  工作方式与
   ```
   nix-env --profile /nix/var/nix/profiles/per-user/$USER/channels --list-generations
   ```
+  相同。
 
 - `--rollback` \[*generation*\]
 
-  Revert channels to the state before the last call to `nix-channel --update`.
-  Optionally, you can specify a specific channel *generation* number to restore.
+  将 channel 回退到上一次调用 `nix-channel --update` 之前的状态。
+  你还可以选择指定要恢复的特定 channel *generation* 编号。
 
 {{#include ./opt-common.md}}
 
 {{#include ./env-common.md}}
 
-# Files
+# 文件
 
-`nix-channel` operates on the following files.
+`nix-channel` 操作以下文件。
 
 {{#include ./files/channels.md}}
 
-# Examples
+# 示例
 
-Subscribe to the Nixpkgs channel and run `hello` from the GNU Hello package:
+订阅 Nixpkgs channel，并运行来自 GNU Hello 软件包的 `hello`：
 
 ```console
 $ nix-channel --add https://channels.nixos.org/nixpkgs-unstable
@@ -96,7 +96,7 @@ $ nix-shell -p hello --run hello
 hello
 ```
 
-Revert channel updates using `--rollback`:
+使用 `--rollback` 回退 channel 更新：
 
 ```console
 $ nix-instantiate --eval '<nixpkgs>' --attr lib.version
@@ -109,7 +109,7 @@ $ nix-instantiate --eval '<nixpkgs>' --attr lib.version
 "22.11pre281526.d0419badfad"
 ```
 
-Remove a channel:
+移除一个 channel：
 
 ```console
 $ nix-channel --remove nixpkgs

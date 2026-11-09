@@ -1,4 +1,3 @@
 # Release 1.5 (2013-02-27)
 
-This is a brown paper bag release to fix a regression introduced by the
-hard link security fix in 1.4.
+这是一个"牛皮纸袋"版本，用于修复 1.4 中硬链接安全修复所引入的回归问题。

@@ -1,10 +1,10 @@
-# Variables
+# 变量
 
-A *variable* is an [identifier](identifiers.md) used as an expression.
+*变量（variable）*是用作表达式的[标识符](identifiers.md)。
 
-> **Syntax**
+> **语法**
 >
 > *expression* → *identifier*
 
-A variable must have the same name as a definition in the [scope](./scope.md) that encloses it.
-The value of a variable is the value of the corresponding expression in the enclosing scope.
+变量必须与其外围[作用域](./scope.md)中某个定义的名称相同。
+变量的值就是外围作用域中对应表达式的值。

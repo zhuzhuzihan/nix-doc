@@ -1,18 +1,11 @@
-# Garbage Collector Roots
+# 垃圾回收器根
 
-The roots of the garbage collector are all store paths to which there
-are symlinks in the directory `prefix/nix/var/nix/gcroots`. For
-instance, the following command makes the path
-`/nix/store/d718ef...-foo` a root of the collector:
+垃圾回收器的根（root）是在目录 `prefix/nix/var/nix/gcroots` 中有符号链接指向的所有存储路径（store path）。例如，以下命令使路径 `/nix/store/d718ef...-foo` 成为垃圾回收器的一个根：
 
 ```console
 $ ln -s /nix/store/d718ef...-foo /nix/var/nix/gcroots/bar
 ```
 
-That is, after this command, the garbage collector will not remove
-`/nix/store/d718ef...-foo` or any of its dependencies.
+也就是说，执行此命令之后，垃圾回收器将不会移除 `/nix/store/d718ef...-foo` 及其任何依赖。
 
-Subdirectories of `prefix/nix/var/nix/gcroots` are searched
-recursively. Symlinks to store paths count as roots. Symlinks to
-non-store paths are ignored, unless the non-store path is itself a
-symlink to a store path.
+`prefix/nix/var/nix/gcroots` 的子目录会被递归搜索。指向存储路径的符号链接算作根；指向非存储路径的符号链接会被忽略，除非该非存储路径本身又是指向某个存储路径的符号链接。

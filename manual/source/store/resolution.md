@@ -1,22 +1,22 @@
-# Derivation Resolution
+# Derivation 解析（Resolution）
 
-*See [this chapter's appendix](@docroot@/store/math-notation.md) on grammar and metavariable conventions.*
+*参见[本章附录](@docroot@/store/math-notation.md)中关于语法与元变量约定的说明。*
 
-To *resolve* a derivation is to replace its [inputs] with the simplest inputs &mdash; plain store paths &mdash; that denote the same store objects.
+*解析*（resolve）一个 derivation，是指把它的[输入]替换为表示相同存储对象的最简输入——即普通的存储路径。
 
-Derivations that only have store paths as inputs are likewise called *resolved derivations*.
-(They are called that whether they are in fact the output of derivation resolution, or just made that way without non-store-path inputs to begin with.)
+只以存储路径作为输入的 derivation 同样被称为 *resolved derivation*（已解析 derivation）。
+（无论它们实际上是 derivation 解析的产物，还是一开始就不含非存储路径输入、天然如此，都这样称呼。）
 
-## Input Content Equivalence of Derivations
+## Derivation 的输入内容等价
 
-[Deriving paths][deriving-path] intentionally make it possible to refer to the same [store object] in multiple ways.
-This is a consequence of content-addressing, since different derivations can produce the same outputs, and the same data can also be manually added to the store.
-This is also a consequence even of input-addressing, as an output can be referred to by derivation and output name, or directly by its [computed](./derivation/outputs/input-address.md) store path.
-Since dereferencing deriving paths is thus not injective, it induces an equivalence relation on deriving paths.
+[Deriving paths][deriving-path] 有意使同一个[存储对象]可以被多种方式引用。
+这是内容寻址的结果，因为不同的 derivation 可以产出相同的输出，而且相同的数据也可以被手动添加进 store。
+这甚至也是输入寻址的结果，因为一个输出既可以按 derivation 与输出名引用，也可以直接按其[计算出的](./derivation/outputs/input-address.md)存储路径引用。
+由于对 deriving path 的解引用不是单射的，它在 deriving path 上诱导出一个等价关系。
 
-Let's call this equivalence relation \\(\\sim\\), where \\(p_1 \\sim p_2\\) means that deriving paths \\(p_1\\) and \\(p_2\\) refer to the same store object.
+我们把这一等价关系记为 \\(\\sim\\)，其中 \\(p_1 \\sim p_2\\) 表示 deriving path \\(p_1\\) 与 \\(p_2\\) 引用同一个存储对象。
 
-**Content Equivalence**: Two deriving paths are equivalent if they refer to the same store object:
+**内容等价（Content Equivalence）**：两个 deriving path 若引用同一存储对象，则等价：
 
 \\[
 \\begin{prooftree}
@@ -25,9 +25,9 @@ Let's call this equivalence relation \\(\\sim\\), where \\(p_1 \\sim p_2\\) mean
 \\end{prooftree}
 \\]
 
-where \\({}^\*p\\) denotes the store object that deriving path \\(p\\) refers to.
+其中 \\({}^\*p\\) 表示 deriving path \\(p\\) 所引用的存储对象。
 
-This also induces an equivalence relation on sets of deriving paths:
+这也在 deriving path 的集合上诱导出一个等价关系：
 
 \\[
 \\begin{prooftree}
@@ -36,7 +36,7 @@ This also induces an equivalence relation on sets of deriving paths:
 \\end{prooftree}
 \\]
 
-**Input Content Equivalence**: This, in turn, induces an equivalence relation on derivations: two derivations are equivalent if their inputs are equivalent, and they are otherwise equal:
+**输入内容等价（Input Content Equivalence）**：这又进一步在 derivation 上诱导出一个等价关系：若两个 derivation 的输入等价且其余部分相等，则二者等价：
 
 \\[
 \\begin{prooftree}
@@ -50,16 +50,16 @@ $}
 \\end{prooftree}
 \\]
 
-Derivation resolution always maps derivations to input-content-equivalent derivations.
+derivation 解析总是把 derivation 映射到与其输入内容等价的 derivation。
 
-## Resolution relation
+## 解析关系
 
-Dereferencing a derived path &mdash; \\({}^\*p\\) above &mdash; was just introduced as a black box.
-But actually it is a multi-step process of looking up build results in the [build trace] that itself depends on resolving the lookup keys.
-Resolution is thus a recursive multi-step process that is worth diagramming formally.
+对 derived path 的解引用——即上文的 \\({}^\*p\\)——此前只是作为一个黑箱引入的。
+但实际上它是一个多步骤的过程：在 [build trace] 中查找构建结果，而查找本身就依赖于对查找键的解析。
+因此解析是一个递归的多步骤过程，值得形式化地画出来。
 
-We can do this with a small-step binary transition relation; let's call it \\(\rightsquigarrow\\).
-We can then conclude dereferenced equality like this:
+我们可以用一个小步二元迁移关系来做到这一点；记之为 \\(\rightsquigarrow\\)。
+然后我们可以这样得出解引用后的相等：
 
 \\[
 \\begin{prooftree}
@@ -69,13 +69,13 @@ We can then conclude dereferenced equality like this:
 \\end{prooftree}
 \\]
 
-I.e. by showing that both original items resolve (over 0 or more small steps, hence the \\({}^*\\)) to the same exact item.
+也就是说，通过证明两个原始项都（经过 0 步或多步小步规约，故有 \\({}^*\\)）解析到完全相同的项。
 
-With this motivation, let's now formalize a [small-step](https://en.wikipedia.org/wiki/Operational_semantics#Small-step_semantics) system of reduction rules for resolution.
+带着这一动机，我们现在来形式化一个用于解析的[小步](https://en.wikipedia.org/wiki/Operational_semantics#Small-step_semantics)规约规则系统。
 
-### Formal rules
+### 形式化规则
 
-### \\(\text{resolved}\\) unary relation
+### \\(\text{resolved}\\) 一元关系
 
 \\[
 \\begin{prooftree}
@@ -91,18 +91,18 @@ With this motivation, let's now formalize a [small-step](https://en.wikipedia.or
 \\end{prooftree}
 \\]
 
-### \\(\rightsquigarrow\\) binary relation
+### \\(\rightsquigarrow\\) 二元关系
 
-> **Remark**
+> **注记**
 >
-> Actually, to be completely formal we would need to keep track of the build trace we are choosing to resolve against.
+> 实际上，若要完全形式化，我们还需要跟踪我们所选定据以解析的 build trace。
 >
-> We could do that by making \\(\rightsquigarrow\\) a ternary relation, which would pass the build trace to itself until it finally uses it in that one rule.
-> This would add clutter more than insight, so we didn't bother to write it.
+> 我们可以把 \\(\rightsquigarrow\\) 做成三元关系来做到这一点，它会把 build trace 一路传递给自己，直到在最后一条规则中真正用上它。
+> 但这带来的繁琐多于洞见，所以我们没有费心去写。
 >
-> There are other options too, like saying the whole reduction rule system is parameterized on the build trace, essentially [currying](https://en.wikipedia.org/wiki/Currying) the ternary \\(\rightsquigarrow\\) into a function from build traces to the binary relation written above.
+> 还有其他办法，例如说整个规约规则系统以 build trace 为参数，本质上是把三元关系 \\(\rightsquigarrow\\) 经过[柯里化](https://en.wikipedia.org/wiki/Currying)变成一个从 build trace 到上文所写二元关系的函数。
 
-#### Core build trace lookup rule
+#### 核心 build trace 查找规则
 
 \\[
 \\begin{prooftree}
@@ -115,7 +115,7 @@ With this motivation, let's now formalize a [small-step](https://en.wikipedia.or
 \\end{prooftree}
 \\]
 
-#### Inductive rules
+#### 归纳规则
 
 \\[
 \\begin{prooftree}
@@ -139,49 +139,49 @@ With this motivation, let's now formalize a [small-step](https://en.wikipedia.or
 \\end{prooftree}
 \\]
 
-### Properties
+### 性质
 
-Like all well-behaved evaluation relations, partial resolution is [*confluent*](https://en.wikipedia.org/wiki/Confluence_(abstract_rewriting)).
-Also, if we take the symmetric closure of \\(\\rightsquigarrow^\*\\), we end up with the equivalence relations of the previous section.
-Resolution respects content equivalence for deriving paths, and input content equivalence for derivations.
+与所有表现良好的求值关系一样，部分解析是[*合流的*](https://en.wikipedia.org/wiki/Confluence_(abstract_rewriting))。
+此外，若取 \\(\\rightsquigarrow^\*\\) 的对称闭包，就会得到上一节中的那些等价关系。
+解析尊重 deriving path 的内容等价和 derivation 的输入内容等价。
 
-> **Remark**
+> **注记**
 >
-> We chose to define from scratch an "resolved" unary relation explicitly above.
-> But it can also be defined as the normal forms of the \\(\\rightsquigarrow^\*\\) relation:
+> 我们选择在上面从零开始显式定义一个 "resolved" 一元关系。
+> 但它也可以被定义为 \\(\\rightsquigarrow^\*\\) 关系的范式：
 >
 > \\[ a \text{ resolved} \Leftrightarrow \forall b. b \rightsquigarrow^* a \Rightarrow b = a\\]
 >
-> In prose, resolved terms are terms which \\(\\rightsquigarrow^\*\\) only relates on the left side to the same term on the right side; they are the terms which can be resolved no further.
+> 用散文来说：resolved 的项，是指 \\(\\rightsquigarrow^\*\\) 在左侧把它们与右侧同一项相关联的项；它们是不能再被进一步解析的项。
 
-## Partial versus Complete Resolution
+## 部分解析与完全解析
 
-Similar to evaluation, we can also speak of *partial* versus *complete* derivation resolution.
-Partial derivation resolution is what we've actually formalized above with \\(\\rightsquigarrow^\*\\).
-Complete resolution is resolution ending in a resolved term (deriving path or derivation).
-(Which is a normal form of the relation, per the remark above.)
+与求值类似，我们也可以谈论*部分*与*完全*的 derivation 解析。
+部分 derivation 解析就是我们上面用 \\(\\rightsquigarrow^\*\\) 实际形式化的东西。
+完全解析则是以 resolved 项（deriving path 或 derivation）收尾的解析。
+（按上面的注记，它是该关系的一个范式。）
 
-With partial resolution, a derivation is related to equivalent derivations with the same or simpler inputs, but not all those inputs will be plain store paths.
-This is useful when the input refers to a floating content addressed output we have not yet built &mdash; we don't know what (content-address) store path will used for that derivation, so we are "stuck" trying to resolve the deriving path in question.
-(In the above formalization, this happens when the build trace is missing the keys we wish to look up in it.)
+在部分解析下，一个 derivation 会关联到输入相同或更简单的等价 derivation，但并非所有那些输入都会是普通存储路径。
+当输入引用一个我们尚未构建的浮动内容寻址输出时，这很有用——我们不知道该 derivation 将使用什么（内容寻址的）存储路径，所以在解析所论的 deriving path 时会"卡住"。
+（在上面的形式化中，这发生在 build trace 缺少我们想要查找的键的时候。）
 
-Complete resolution is a *functional* relation, i.e. values on the left are uniquely related with values on the right.
-It is not however, a *total* relation (in general, assuming arbitrary build traces).
-This is discussed in the next section.
+完全解析是一个*函数性的*关系，即左边的值与右边的值唯一地相关联。
+然而，它一般而言不是一个*全*关系（在任意 build trace 的假设下）。
+这一点将在下一节讨论。
 
-## Termination
+## 终止性
 
-For static derivations graphs, complete resolution is indeed total, because it always terminates for all inputs.
-(A relation that is both total and functional is a function.)
+对于静态的 derivation 图，完全解析确实是全的，因为它对所有输入总是终止。
+（既是全的又是函数性的关系就是一个函数。）
 
-For [dynamic][xp-feature-dynamic-derivations] derivation graphs, however, this is not the case &mdash; resolution is not guaranteed to terminate.
-The issue isn't rewriting deriving paths themselves:
-a single rewrite to normalize an output deriving path to a constant one always exists, and always proceeds in one step.
-The issue is that dynamic derivations (i.e. those that are filled-in the graph by a previous resolution) may have more transitive dependencies than the original derivation.
+然而对于[动态][xp-feature-dynamic-derivations]的 derivation 图，情况并非如此——解析不保证终止。
+问题不在于重写 deriving path 本身：
+把一个输出的 deriving path 规范化为常量 deriving path 的单次重写总是存在，且总是一步完成。
+问题在于动态 derivation（即由先前的解析填充进图中的那些）可能比原始 derivation 有更多的传递依赖。
 
-> **Example**
+> **示例**
 >
-> Suppose we have this deriving path
+> 假设有这个 deriving path
 > ```json
 > {
 >   "drvPath": {
@@ -191,26 +191,27 @@ The issue is that dynamic derivations (i.e. those that are filled-in the graph b
 >   "output": "baz"
 > }
 > ```
-> and derivation `foo` is already resolved.
-> When we resolve deriving path we'll end up with something like.
+> 且 derivation `foo` 已经解析。
+> 当我们解析这个 deriving path 时，最终会得到类似
 > ```json
 > {
 >   "drvPath": "...-foo-bar.drv",
 >   "output": "baz"
 > }
 > ```
-> So far is just an atomic single rewrite, with no termination issues.
-> But the derivation `foo-bar` may have its *own* dynamic derivation inputs.
-> Resolution must resolve that derivation first before the above deriving path can finally be normalized to a plain `...-foo-bar-baz` store path.
+> 的结果。
+> 到目前为止这只是一次原子的单步重写，没有终止性问题。
+> 但 derivation `foo-bar` 可能有其*自身*的动态 derivation 输入。
+> 解析必须先解析那个 derivation，上面的 deriving path 才能最终被规范化为普通的 `...-foo-bar-baz` 存储路径。
 
-The important thing to notice is that while "build trace" *keys* must be resolved.
-The *value* those keys are mapped to have no such constraints.
-An arbitrary store object has no notion of being resolved or not.
-But, an arbitrary store object can be read back as a derivation (as will in fact be done in case for dynamic derivations / nested output deriving paths).
-And those derivations need *not* be resolved.
+需要注意的重要一点是："build trace" 的*键*必须是 resolved 的。
+但这些键所映射到的*值*没有这样的约束。
+任意的存储对象没有 resolved 与否的概念。
+不过，任意的存储对象都可以被读回为一个 derivation（动态 derivation / 嵌套输出 deriving path 的情形实际上正是如此）。
+而这些 derivation *未必*是 resolved 的。
 
-It is those dynamic non-resolved derivations which are the source of non-termination.
-By the same token, they are also the reason why dynamic derivations offer greater expressive power.
+正是这些动态的、未 resolved 的 derivation 是非终止性的来源。
+同理，它们也是动态 derivation 具有更强表达能力的原因。
 
 [store object]: @docroot@/store/store-object.md
 [inputs]: @docroot@/store/derivation/index.md#inputs

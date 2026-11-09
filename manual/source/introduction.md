@@ -1,168 +1,87 @@
-# Introduction
+# 介绍
 
-Nix is a _purely functional package manager_.  This means that it
-treats packages like values in a purely functional programming language
-— packages are built by functions that don’t have
-side-effects, and they never change after they have been built.  Nix
-stores packages in the _Nix store_, usually the directory
-`/nix/store`, where each package has its own unique subdirectory such
-as
+Nix 是一个*纯函数式软件包管理器*。这意味着它像纯函数式编程语言中的值一样对待软件包——软件包由没有副作用的函数构建，并且在构建完成之后永远不会改变。Nix 将软件包存储在 _Nix store_（Nix 存储）中，通常是 `/nix/store` 目录，其中每个软件包都拥有自己唯一的子目录，例如
 
     /nix/store/q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1/
 
-where `q06x3jll2yfz…` is a unique identifier for the package that
-captures all its dependencies (it’s a cryptographic hash of the
-package’s build dependency graph).  This enables many powerful
-features.
+其中 `q06x3jll2yfz…` 是该软件包的唯一标识符，它涵盖了该软件包的全部依赖（它是该软件包构建依赖图的密码学哈希）。这使得许多强大的特性成为可能。
 
-## Multiple versions
+## 多版本共存
 
-You can have multiple versions or variants of a package
-installed at the same time.  This is especially important when
-different applications have dependencies on different versions of the
-same package — it prevents the “DLL hell”.  Because of the hashing
-scheme, different versions of a package end up in different paths in
-the Nix store, so they don’t interfere with each other.
+你可以同时安装同一软件包的多个版本或变体。当不同的应用程序依赖于同一软件包的不同版本时，这一点尤其重要——它可以避免所谓的「DLL 地狱」。由于哈希方案的存在，同一软件包的不同版本最终会位于 Nix store 中的不同路径下，因此它们彼此互不干扰。
 
-An important consequence is that operations like upgrading or
-uninstalling an application cannot break other applications, since
-these operations never “destructively” update or delete files that are
-used by other packages.
+一个重要的推论是，升级或卸载某个应用程序的操作不会破坏其他应用程序，因为这些操作绝不会以「破坏性」方式更新或删除其他软件包正在使用的文件。
 
-## Complete dependencies
+## 完整的依赖
 
-Nix helps you make sure that package dependency specifications are
-complete.  In general, when you’re making a package for a package
-management system like RPM, you have to specify for each package what
-its dependencies are, but there are no guarantees that this
-specification is complete.  If you forget a dependency, then the
-package will build and work correctly on _your_ machine if you have
-the dependency installed, but not on the end user's machine if it's
-not there.
+Nix 帮助你确保软件包的依赖声明是完整的。一般而言，当你为 RPM 这样的软件包管理系统制作软件包时，你必须为每个软件包声明其依赖是什么，但没有任何保证能确保这份声明是完整的。如果你遗漏了某个依赖，那么只要 _你的_ 机器上装了它，这个软件包就能正常构建和运行；而在缺少该依赖的最终用户机器上则会失败。
 
-Since Nix on the other hand doesn’t install packages in “global”
-locations like `/usr/bin` but in package-specific directories, the
-risk of incomplete dependencies is greatly reduced.  This is because
-tools such as compilers don’t search in per-packages directories such
-as `/nix/store/5lbfaxb722zp…-openssl-0.9.8d/include`, so if a package
-builds correctly on your system, this is because you specified the
-dependency explicitly. This takes care of the build-time dependencies.
+相比之下，由于 Nix 并不把软件包安装到像 `/usr/bin` 这样的「全局」位置，而是安装到软件包专属的目录中，依赖不完整的风险大大降低。这是因为编译器等工具不会搜索像 `/nix/store/5lbfaxb722zp…-openssl-0.9.8d/include` 这样的软件包专属目录，所以如果一个软件包能在你的系统上正确构建，那就说明你显式地声明了该依赖。这就解决了构建期依赖的问题。
 
-Once a package is built, runtime dependencies are found by scanning
-binaries for the [hash parts](@docroot@/store/store-path.md#digest) of Nix store paths (such as `r8vvq9kq…`).
-This sounds risky, but it works extremely well.
+软件包构建完成后，运行期依赖是通过在二进制文件中扫描 Nix store 路径的 [哈希部分](@docroot@/store/store-path.md#digest)（例如 `r8vvq9kq…`）来发现的。这听起来有些冒险，但实际效果非常好。
 
-## Multi-user support
+## 多用户支持
 
-Nix has multi-user support.  This means that non-privileged users can
-securely install software.  Each user can have a different _profile_,
-a set of packages in the Nix store that appear in the user’s `PATH`.
-If a user installs a package that another user has already installed
-previously, the package won’t be built or downloaded a second time.
-At the same time, it is not possible for one user to inject a Trojan
-horse into a package that might be used by another user.
+Nix 支持多用户。这意味着非特权用户可以安全地安装软件。每个用户可以拥有一个不同的 _profile_，即出现在该用户 `PATH` 中的一组 Nix store 中的软件包。如果某个用户安装了一个其他用户已经安装过的软件包，该软件包不会被重复构建或下载。同时，一个用户也不可能向另一个用户可能会使用的软件包中植入木马。
 
-## Atomic upgrades and rollbacks
+## 原子升级与回滚
 
-Since package management operations never overwrite packages in the
-Nix store but just add new versions in different paths, they are
-_atomic_.  So during a package upgrade, there is no time window in
-which the package has some files from the old version and some files
-from the new version — which would be bad because a program might well
-crash if it’s started during that period.
+由于软件包管理操作从不覆盖 Nix store 中的软件包，而只是把新版本添加到不同的路径下，这些操作是_原子的_。因此，在软件包升级过程中，不存在这样一个时间窗口：软件包中既有旧版本的文件，又有新版本的文件——这种情况是很糟糕的，因为在这段时间内启动的程序很可能会崩溃。
 
-And since packages aren’t overwritten, the old versions are still
-there after an upgrade.  This means that you can _roll back_ to the
-old version:
+而且由于软件包不会被覆盖，升级之后旧版本依然存在。这意味着你可以_回滚_到旧版本：
 
 ```console
 $ nix-env --upgrade --attr nixpkgs.some-package
 $ nix-env --rollback
 ```
 
-## Garbage collection
+## 垃圾回收
 
-When you uninstall a package like this…
+当你像这样卸载一个软件包时……
 
 ```console
 $ nix-env --uninstall firefox
 ```
 
-the package isn’t deleted from the system right away (after all, you
-might want to do a rollback, or it might be in the profiles of other
-users).  Instead, unused packages can be deleted safely by running the
-_garbage collector_:
+该软件包并不会立即从系统中删除（毕竟你可能想要回滚，或者它可能还在其他用户的 profile 中）。相反，未被使用的软件包可以通过运行_垃圾回收器_来安全地删除：
 
 ```console
 $ nix-collect-garbage
 ```
 
-This deletes all packages that aren’t in use by any user profile or by
-a currently running program.
+该命令会删除所有未被任何用户 profile 或当前正在运行的程序使用的软件包。
 
-## Functional package language
+## 函数式软件包语言
 
-Packages are built from _Nix expressions_, which is a simple
-functional language.  A Nix expression describes everything that goes
-into a package build task (a “derivation”): other packages, sources,
-the build script, environment variables for the build script, etc.
-Nix tries very hard to ensure that Nix expressions are
-_deterministic_: building a Nix expression twice should yield the same
-result.
+软件包由 _Nix 表达式_ 构建，Nix 表达式是一种简单的函数式语言。一个 Nix 表达式描述了一个软件包构建任务（即一个 derivation（派生））所涉及的一切：其他软件包、源代码、构建脚本、构建脚本的环境变量等等。Nix 会尽力确保 Nix 表达式是_确定性的_：对同一个 Nix 表达式构建两次应当产生相同的结果。
 
-Because it’s a functional language, it’s easy to support
-building variants of a package: turn the Nix expression into a
-function and call it any number of times with the appropriate
-arguments.  Due to the hashing scheme, variants don’t conflict with
-each other in the Nix store.
+由于它是一门函数式语言，因此很容易支持构建软件包的多个变体：把 Nix 表达式变成一个函数，然后用相应的参数调用任意多次即可。得益于哈希方案，这些变体在 Nix store 中互不冲突。
 
-## Transparent source/binary deployment
+## 透明的源码/二进制部署
 
-Nix expressions generally describe how to build a package from
-source, so an installation action like
+Nix 表达式通常描述如何从源码构建软件包，因此像下面这样的安装操作
 
 ```console
 $ nix-env --install --attr nixpkgs.firefox
 ```
 
-_could_ cause quite a bit of build activity, as not only Firefox but
-also all its dependencies (all the way up to the C library and the
-compiler) would have to be built, at least if they are not already in the
-Nix store.  This is a _source deployment model_.  For most users,
-building from source is not very pleasant as it takes far too long.
-However, Nix can automatically skip building from source and instead
-use a _binary cache_, a web server that provides pre-built
-binaries. For instance, when asked to build
-`/nix/store/b6gvzjyb2pg0…-firefox-33.1` from source, Nix would first
-check if the file `https://cache.nixos.org/b6gvzjyb2pg0….narinfo`
-exists, and if so, fetch the pre-built binary referenced from there;
-otherwise, it would fall back to building from source.
+_可能_会引发相当多的构建活动：不仅 Firefox 本身，它的所有依赖（一直到 C 库和编译器）都需要被构建——前提是它们尚未存在于 Nix store 中。这就是_源码部署模型_。对大多数用户而言，从源码构建并不令人愉快，因为耗时太长。不过，Nix 可以自动跳过从源码构建，转而使用_二进制缓存_，即一个提供预构建二进制文件的 Web 服务器。例如，当需要从源码构建 `/nix/store/b6gvzjyb2pg0…-firefox-33.1` 时，Nix 会先检查文件 `https://cache.nixos.org/b6gvzjyb2pg0….narinfo` 是否存在；如果存在，就获取其中引用的预构建二进制文件，否则回退到从源码构建。
 
-## Nix Packages collection
+## Nix 软件包集合
 
-We provide a large set of Nix expressions containing more than 140,000
-existing Unix packages, the _Nix Packages collection_ (Nixpkgs).
+我们提供了大量的 Nix 表达式，涵盖了超过 140,000 个现存的 Unix 软件包，即 _Nix 软件包集合_（Nixpkgs）。
 
-## Managing build environments
+## 管理构建环境
 
-Nix is extremely useful for developers as it makes it easy to
-automatically set up the build environment for a package. Given a Nix
-expression that describes the dependencies of your package, the
-command `nix-shell` will build or download those dependencies if
-they’re not already in your Nix store, and then start a Bash shell in
-which all necessary environment variables (such as compiler search
-paths) are set.
+Nix 对开发者极为有用，因为它可以轻松地为软件包自动搭建构建环境。给定一个描述你的软件包依赖关系的 Nix 表达式，命令 `nix-shell` 会在这些依赖尚未存在于你的 Nix store 时构建或下载它们，然后启动一个 Bash shell，其中所有必要的环境变量（例如编译器搜索路径）都已被设置好。
 
-For example, the following command gets all dependencies of the
-Pan newsreader, as described by [its
-Nix expression](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/networking/newsreaders/pan/default.nix):
+例如，下面的命令会获取新闻组阅读器 Pan 的全部依赖，正如[它的 Nix 表达式](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/networking/newsreaders/pan/default.nix)所描述的那样：
 
 ```console
 $ nix-shell '<nixpkgs>' --attr pan
 ```
 
-You’re then dropped into a shell where you can edit, build and test
-the package:
+随后你会进入一个 shell，在其中可以编辑、构建并测试该软件包：
 
 ```console
 [nix-shell]$ unpackPhase
@@ -172,22 +91,14 @@ the package:
 [nix-shell]$ ./pan/gui/pan
 ```
 
-## Portability
+## 可移植性
 
-Nix runs on Linux, macOS and FreeBSD.
+Nix 可以运行于 Linux、macOS 和 FreeBSD。
 
 ## NixOS
 
-NixOS is a Linux distribution based on Nix.  It uses Nix not just for
-package management but also to manage the system configuration (e.g.,
-to build configuration files in `/etc`).  This means, among other
-things, that it is easy to roll back the entire configuration of the
-system to an earlier state.  Also, users can install software without
-root privileges.  For more information and downloads, see the [NixOS
-homepage](https://nixos.org/).
+NixOS 是一个基于 Nix 的 Linux 发行版。它不仅使用 Nix 进行软件包管理，还用它管理系统配置（例如构建 `/etc` 中的配置文件）。这意味着，除其他优点外，将整个系统配置回滚到较早的状态非常容易。此外，用户无需 root 权限即可安装软件。更多信息与下载请参见 [NixOS 主页](https://nixos.org/)。
 
-## License
+## 许可证
 
-Nix is released under the terms of the [GNU LGPLv2.1 or (at your
-option) any later
-version](http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html).
+Nix 依据 [GNU LGPLv2.1 或（由你选择）任何更高版本](http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)的条款发布。

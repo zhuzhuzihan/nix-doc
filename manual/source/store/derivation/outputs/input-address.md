@@ -1,41 +1,41 @@
-# Input-addressing derivation outputs
+# 输入寻址 derivation 输出
 
 [input addressing]: #input-addressing
 
-"Input addressing" means the address the store object by the *way it was made* rather than *what it is*.
-That is to say, an input-addressed output's store path is a function not of the output itself, but of the derivation that produced it.
-Even if two store paths have the same contents, if they are produced in different ways, and one is input-addressed, then they will have different store paths, and thus guaranteed to not be the same store object.
+"输入寻址"是指按存储对象*被制造的方式*而非*它是什么*来寻址。
+也就是说，输入寻址输出的存储路径不是输出的函数，而是产出它的 derivation 的函数。
+即使两个存储路径内容相同，只要它们的产出方式不同，且其中之一是输入寻址的，它们就会有不同的存储路径，从而保证不是同一个存储对象。
 
-## Masking content addressed derivation outputs {#input-masked-drv}
+## 掩蔽内容寻址的 derivation 输出 {#input-masked-drv}
 
-A naive implementation of an output hash computation for input-addressed outputs would be to hash the derivation hash and output together.
-This clearly has the uniqueness properties we want for input-addressed outputs, but suffers from an inefficiency.
-Specifically, new builds would be required whenever a change is made to a fixed-output derivation, despite having provably no differences in the inputs to the new derivation compared to what it used to be.
-Concretely, this would cause a "mass rebuild" whenever any fetching detail changes, including mirror lists, certificate authority certificates, etc.
+对输入寻址输出计算输出哈希的朴素做法，是把 derivation 哈希与输出一起做哈希。
+这显然具有我们期望的输入寻址输出的唯一性性质，但存在效率问题。
+具体来说，每当固定输出 derivation 发生变更时，就需要新的构建，尽管可以证明新 derivation 的输入与原先相比毫无差异。
+具体而言，这会导致任何抓取细节（包括镜像列表、证书颁发机构证书等）发生变化时都触发"大规模重建"。
 
-To solve this problem, we compute output hashes differently, so that certain output hashes become identical.
-We do this by *masking*: before hashing, we rewrite the parts of the derivation whose differences we do not want to see.
+为了解决这个问题，我们以不同的方式计算输出哈希，使某些输出哈希变得相同。
+做法是*掩蔽*（masking）：在哈希之前，重写 derivation 中我们不希望看到差异的部分。
 
-There are two maskings, and they are independent:
+有两种掩蔽，它们相互独立：
 
-- *Input masking* replaces each input derivation's store path with a hash standing for what that input *produces*, rather than for the derivation that produces it.
-  This is what makes different fixed-output derivation inputs that produce the same outputs stop mattering.
+- *输入掩蔽*把每个输入 derivation 的存储路径替换为一个哈希，该哈希代表那个输入*所产出的东西*，而不是产出它的 derivation。
+  这使得产出相同输出的不同固定输出 derivation 输入不再造成影响。
 
-- *Output masking* blanks the derivation's own output paths --- in `outputs`, and in the environment variables named after them.
-  This is needed when those very paths are what we are computing; it is not wanted when the derivation is merely being hashed to stand in for an input to something else, where the paths it already has are exactly what identifies it.
+- *输出掩蔽*把 derivation 自身的输出路径置空——在 `outputs` 中，以及以它们命名的环境变量中。
+  当我们正在计算的就是那些路径本身时，需要这样做；当 derivation 只是作为某个其他东西的输入的代表而被哈希时，则不希望这样做，因为它已有的路径恰恰是标识它的东西。
 
-A derivation with only the first applied is an *input-masked derivation*; one with both is a *fully masked derivation*.
+只应用第一种掩蔽的 derivation 是*输入掩蔽 derivation*；两种都应用的则是*完全掩蔽 derivation*。
 
-Every non-injective function induces an equivalence relation on its domain, by saying two elements are equivalent if they map to the same value.
-But the equivalence relation induced by input masking is also pleasant to characterize directly, without reference to input masking at all.
-Intuitively this makes sense, because the details of how exactly inputs are hashed (which hash function, say) shouldn't matter (ignoring hash collisions and the like) --- all that matters is which derivations are deemed equivalent.
-The [semantic properties](#semantic-properties) section below develops this further.
+每个非单射函数都会在其定义域上诱导出一个等价关系：把映射到同一值的两个元素视为等价。
+但输入掩蔽所诱导的等价关系也可以直接刻画，完全不必提及输入掩蔽。
+直觉上这是合理的，因为输入究竟如何被哈希（例如用哪个哈希函数）的细节不应有影响（忽略哈希碰撞之类）——重要的是哪些 derivation 被视为等价。
+下文的[语义性质](#semantic-properties)一节将对此进一步展开。
 
-So how do we compute the [hash part](@docroot@/store/store-path.md#digest) of the output paths of an input-addressed derivation?
-This is done by the function `hashInputMaskedDerivation`, shown below, which does the input masking itself; its callers do any output masking.
+那么，我们如何计算输入寻址 derivation 的输出路径的[哈希部分](@docroot@/store/store-path.md#digest)？
+这由下面所示的函数 `hashInputMaskedDerivation` 完成，它执行输入掩蔽本身；其调用者做输出掩蔽。
 
-First, a word on inputs.
-`hashInputMaskedDerivation` is only defined on derivations whose [inputs](@docroot@/store/derivation/index.md#inputs) take the first-order form:
+首先，说一说输入。
+`hashInputMaskedDerivation` 只对[输入](@docroot@/store/derivation/index.md#inputs)为一阶形式的 derivation 有定义：
 ```typescript
 type ConstantPath = {
   path: StorePath;
@@ -51,7 +51,7 @@ type FirstOrderDerivingPath = ConstantPath | FirstOrderOutputPath;
 type Inputs = Set<FirstOrderDerivingPath>;
 ```
 
-For the algorithm below, we adopt a derivation where the two types of (first order) derived paths are partitioned into two sets, as follows:
+对下文的算法，我们采用一个把两类（一阶）derived path 划分为两个集合的 derivation，如下：
 ```typescript
 type Derivation = {
   // inputs: Set<FirstOrderDerivingPath>; // replaced
@@ -61,9 +61,9 @@ type Derivation = {
 };
 ```
 
-In the [currently-experimental][xp-feature-dynamic-derivations] higher-order case where outputs of outputs are allowed as [deriving paths][deriving-path] and thus derivation inputs, derivations using that generalization are not valid arguments to this function.
-Those derivations must be (partially) [resolved](@docroot@/store/resolution.md) enough first, to the point where no such higher-order inputs remain.
-Then, and only then, can input addresses be assigned.
+在[当前处于实验状态][xp-feature-dynamic-derivations]的高阶情形下，输出的输出可以作为 [deriving path][deriving-path]、从而作为 derivation 输入；使用这种泛化的 derivation 不是该函数的有效参数。
+那些 derivation 必须先（部分地）[解析](@docroot@/store/resolution.md)到足够的程度，直到不再有这样的高阶输入。
+然后、且只有然后，才能分配输入地址。
 
 ```
 function hashInputMaskedDerivation(drv) -> Hash:
@@ -97,95 +97,95 @@ function hashOutputsOrInputMaskedDerivation(drv) -> Map[String, Hash] | Hash:
 
 ### `hashInputMaskedDerivation`
 
-We replace each element in the derivation's `inputDrvOutputs` using data from a call to `hashOutputsOrInputMaskedDerivation` on the `drvPath` of that element.
-When `hashOutputsOrInputMaskedDerivation` returns a single drv hash (because the input derivation in question is input-addressing), we simply swap out the `drvPath` for that hash, and keep the same output name.
-When `hashOutputsOrInputMaskedDerivation` returns a map of content addresses per-output, we look up the output in question, and pair it with the output name `out`.
+我们用对该元素的 `drvPath` 调用 `hashOutputsOrInputMaskedDerivation` 所得的数据，替换 derivation 的 `inputDrvOutputs` 中的每个元素。
+当 `hashOutputsOrInputMaskedDerivation` 返回单个 drv 哈希时（因为所论的输入 derivation 是输入寻址的），我们直接把 `drvPath` 换成那个哈希，并保留相同的输出名。
+当 `hashOutputsOrInputMaskedDerivation` 返回按输出的内容地址映射时，我们查找所论的输出，并将其与输出名 `out` 配对。
 
-That rewriting is the input masking.
-The resulting pseudo-derivation (with hashes instead of store paths in `inputDrvs`) is then printed (in the ["ATerm" format](@docroot@/protocols/derivation-aterm.md#input-address-encoding)) and hashed, and this becomes the hash of the input-masked derivation.
+这一重写就是输入掩蔽。
+得到的伪 derivation（`inputDrvs` 中以哈希代替存储路径）随后被打印（为 ["ATerm" 格式](@docroot@/protocols/derivation-aterm.md#input-address-encoding)）并做哈希，这成为输入掩蔽 derivation 的哈希。
 
-When calculating output hashes, `hashInputMaskedDerivation` is called on an almost-complete input-addressing derivation, which is just missing its input-addressed outputs paths --- that is, one that is already output masked, making it fully masked.
-The derivation hash is then used to calculate output paths for each output, as the [complete store path calculation](@docroot@/protocols/store-path.md#fingerprint) specifies: it is the digest of the hashed ATerm that specification calls for, under the `"output:" id` case, where `id` is the output name.
-The store object's name is the derivation's name, with `-` and the output name appended --- unless the output is named `out`, in which case the derivation's name is used as-is.
+在计算输出哈希时，`hashInputMaskedDerivation` 被调用在一个几乎完整的输入寻址 derivation 上，它只缺自己的输入寻址输出路径——也就是说，它已经输出掩蔽，因此是完全掩蔽的。
+然后按[完整的存储路径计算](@docroot@/protocols/store-path.md#fingerprint)规范，用该 derivation 哈希为每个输出计算输出路径：它是该规范所要求的被哈希 ATerm 的摘要，属于 `"output:" id` 情形，其中 `id` 是输出名。
+存储对象的名称是 derivation 的名称加上 `-` 和输出名——除非输出名为 `out`，此时直接使用 derivation 的名称。
 
-Note that one derivation hash serves every output; what distinguishes their paths is only the output name, which enters twice over, as both `id` and part of the name.
+注意，一个 derivation 哈希服务于所有输出；区分它们路径的只有输出名，而且输出名出现了两次：既是 `id`，也是名称的一部分。
 
-Those output paths can then be substituted into the almost-complete input-addressed derivation to complete it.
+随后，这些输出路径可以被代回那个几乎完整的输入寻址 derivation，使其完整。
 
-> **Note**
+> **注意**
 >
-> There may be an unintentional deviation from specification currently implemented in the `(outputHashes[output].toBase16(), "out")` case.
-> This is not fatal because the deviation would only apply for content-addressing derivations with more than one output, and that only occurs in the floating case, which is [experimental][xp-feature-ca-derivations].
-> Once this bug is fixed, this note will be removed.
+> 当前实现在 `(outputHashes[output].toBase16(), "out")` 情形中可能存在与规范的无意偏差。
+> 这不是致命的，因为该偏差只会影响有多个输出的内容寻址 derivation，而这只发生在浮动情形，后者是[实验性的][xp-feature-ca-derivations]。
+> 此 bug 修复后，本说明将被移除。
 
 ### `hashOutputsOrInputMaskedDerivation`
 
-`hashOutputsOrInputMaskedDerivation` consists of two main cases, based on whether the outputs of the derivation are to be input-addressed or content-addressed.
+`hashOutputsOrInputMaskedDerivation` 包含两个主要情形，依据 derivation 的输出将被输入寻址还是内容寻址。
 
-#### Input-addressed outputs case
+#### 输入寻址输出情形
 
-In the input-addressed case, it just calls `hashInputMaskedDerivation`, and returns that derivation hash.
-This makes `hashInputMaskedDerivation` and `hashOutputsOrInputMaskedDerivation` mutually-recursive.
+在输入寻址情形下，它只是调用 `hashInputMaskedDerivation`，并返回那个 derivation 哈希。
+这使得 `hashInputMaskedDerivation` 与 `hashOutputsOrInputMaskedDerivation` 相互递归。
 
-> **Note**
+> **注意**
 >
-> In this case, `hashInputMaskedDerivation` is being called on a *complete* input-addressing derivation that already has its output paths calculated: it is not output masked, so it is input-masked only, not fully masked.
-> The input masking takes place anyways.
+> 在这种情形下，`hashInputMaskedDerivation` 被调用在一个*完整的*输入寻址 derivation 上，它已经计算出了自己的输出路径：它没有输出掩蔽，因此只是输入掩蔽的，而不是完全掩蔽的。
+> 输入掩蔽照样发生。
 
-#### Content-addressed outputs case
+#### 内容寻址输出情形
 
-If the outputs are [content-addressed](./content-address.md), then it computes a hash for each output derived from the content-address of that output.
+如果输出是[内容寻址](./content-address.md)的，它就为每个输出计算一个由该输出的内容地址派生的哈希。
 
-> **Note**
+> **注意**
 >
-> In the [fixed](./content-address.md#fixed) content-addressing case, the outputs' content addresses are statically specified in advance, so this always just works.
-> (The fixed case is what the pseudo-code shows.)
+> 在[固定](./content-address.md#fixed)内容寻址情形中，输出的内容地址被预先静态指定，所以这总是直接可行。
+> （伪代码展示的正是固定情形。）
 >
-> In the [floating](./content-address.md#floating) case, the content addresses are not specified in advance.
-> This is what the "or get from [build trace](@docroot@/store/build-trace.md) if floating" comment refers to.
-> In this case, the algorithm is *stuck* until the input in question is built, and we know what the actual contents of the output in question is.
+> 在[浮动](./content-address.md#floating)情形中，内容地址没有被预先指定。
+> 这就是"浮动时从 [build trace](@docroot@/store/build-trace.md) 获取"这一注释所指的情形。
+> 在这种情形下，算法会*卡住*，直到所论的输入被构建、我们知道了所论输出的实际内容为止。
 >
-> That is OK however, because there is no problem with delaying the assigning of input addresses (which, remember, is what `hashInputMaskedDerivation` is ultimately for) until all inputs are known.
+> 不过这没有问题，因为把输入地址的分配（请记住，这正是 `hashInputMaskedDerivation` 的最终目的）推迟到所有输入都已知之时，并无不妥。
 
-### Deferring input-addressing when downstream of unknown CA store objects {#deferred}
+### 在未知 CA 存储对象的下游推迟输入寻址 {#deferred}
 
-As the previous note says, the algorithm is *stuck* when an input is a [floating content-addressed](./content-address.md#floating) output that has not been built yet: there is no content address to substitute for it, so the input masking cannot be completed and no input address can be computed.
+正如前一条说明所说，当一个输入是尚未构建的[浮动内容寻址](./content-address.md#floating)输出时，算法会*卡住*：没有内容地址可以代换它，因此输入掩蔽无法完成，也无法计算输入地址。
 
-The derivation is still written to the store, with its outputs *deferred*: an output in this state has no store path at all, and the environment variable named after it is empty.
-This costs nothing, because a derivation's own store path is [content-addressed](@docroot@/store/store-object/content-address.md#method-text) on the bytes of its serialization, which do not depend on its output paths being known.
+derivation 仍会被写入 store，其输出处于*推迟*状态：处于此状态的输出根本没有存储路径，以其命名的环境变量为空。
+这没有任何代价，因为 derivation 自身的存储路径是按其序列化字节[内容寻址](@docroot@/store/store-object/content-address.md#method-text)的，而这些字节并不取决于其输出路径是否已知。
 
-A deferred output does not use a third kind of addressing alongside input- and content-addressing.
-It is input-addressed; it just does not know its path yet.
+推迟的输出并没有使用与输入寻址、内容寻址并列的第三种寻址。
+它是输入寻址的；只是还不知道自己的路径。
 
-Being stuck is contagious.
-A derivation with deferred outputs has, for this purpose, unknown outputs of its own, so `hashOutputsOrInputMaskedDerivation` is stuck on it in turn, and anything depending on it must also defer.
-The condition therefore propagates downstream from the floating output that caused it.
+卡住是会传染的。
+就此目的而言，带推迟输出的 derivation 有着自己未知的输出，因此 `hashOutputsOrInputMaskedDerivation` 会转而卡在它上面，任何依赖它的东西也必须推迟。
+于是这个条件从引起它的浮动输出向下游传播。
 
-Deferral is resolved by building, not by revisiting the same derivation.
-Once the offending inputs are built, their content addresses are known, and the derivation can be [resolved](@docroot@/store/resolution.md): its inputs are replaced by the plain store paths they turned out to denote.
-The resolved derivation is a *different* derivation, with its own store path --- necessarily so, since it has different bytes.
-It has no input derivations left to be stuck on, so its input addresses are computable, and it is what actually gets built.
+推迟通过构建来化解，而不是通过重新审视同一个 derivation。
+一旦出问题的输入被构建，它们的内容地址就已知了，该 derivation 就可以被[解析](@docroot@/store/resolution.md)：其输入被替换为它们实际所表示的普通存储路径。
+解析后的 derivation 是一个*不同的* derivation，有自己的存储路径——必然如此，因为它的字节不同。
+它不再有会卡住的输入 derivation，因此其输入地址可计算，它才是真正被构建的那个。
 
-> **Note**
+> **注意**
 >
-> Nothing gates deferred outputs themselves.
-> They only *arise* downstream of [floating content-addressed](./content-address.md#floating) outputs.
+> 没有任何东西为推迟输出本身设门槛。
+> 它们只会在[浮动内容寻址](./content-address.md#floating)输出的下游*出现*。
 
-### Performance
+### 性能
 
-The recursion in the algorithm is potentially inefficient:
-it could call itself once for each path by which a subderivation can be reached, i.e., `O(V^k)` times for a derivation graph with `V` derivations and with out-degree of at most `k`.
-In the actual implementation, [memoisation](https://en.wikipedia.org/wiki/Memoization) is used to reduce this cost to be proportional to the total number of `inputDrvOutputs` encountered.
+算法中的递归可能低效：
+对每条可以到达某个子 derivation 的路径，它都可能调用自身一次，即对一个有 `V` 个 derivation、出度至多 `k` 的 derivation 图，调用次数为 `O(V^k)`。
+在实际实现中，使用[备忘](https://en.wikipedia.org/wiki/Memoization)把这一开销降到与遇到的 `inputDrvOutputs` 总数成正比。
 
-### Semantic properties {#semantic-properties}
+### 语义性质 {#semantic-properties}
 
-*See [this chapter's appendix](@docroot@/store/math-notation.md) on grammar and metavariable conventions.*
+*参见[本章附录](@docroot@/store/math-notation.md)中关于语法与元变量约定的说明。*
 
-Masking is, mathematically, a quotient, in reference to quotient types or sets: what it discards is exactly what we want two derivations to be allowed to differ in.
-Accordingly, `hashInputMaskedDerivation` partitions input-addressing derivations into equivalence classes: every derivation in that equivalence class is mapped to the same derivation hash.
-We can characterize this equivalence relation directly, by working bottom up.
+从数学上讲，掩蔽是一个商（quotient），参照商类型或商集：它丢弃的恰恰是我们允许两个 derivation 不同的那些方面。
+相应地，`hashInputMaskedDerivation` 把输入寻址 derivation 划分成等价类：该等价类中的每个 derivation 都被映射到同一个 derivation 哈希。
+我们可以自底向上地直接刻画这一等价关系。
 
-We start by defining an equivalence relation on first-order output deriving paths that refer content-addressed derivation outputs. Two such paths are equivalent if they refer to the same store object:
+我们先在引用内容寻址 derivation 输出的一阶输出 deriving path 上定义一个等价关系。两个这样的路径若引用同一存储对象，则等价：
 
 \\[
 \\begin{prooftree}
@@ -200,9 +200,9 @@ $}
 \\end{prooftree}
 \\]
 
-where \\({}^*(s, o)\\) denotes the store object that the output deriving path refers to.
+其中 \\({}^*(s, o)\\) 表示该输出 deriving path 所引用的存储对象。
 
-We will also need the following construction to lift any equivalence relation on \\(X\\) to an equivalence relation on (finite) sets of \\(X\\) (in short, \\(\\mathcal{P}(X)\\)):
+我们还需要如下构造，把 \\(X\\) 上的任意等价关系提升为 \\(X\\) 的（有限）集合（简记为 \\(\\mathcal{P}(X)\\)）上的等价关系：
 
 \\[
 \\begin{prooftree}
@@ -212,7 +212,7 @@ We will also need the following construction to lift any equivalence relation on
 \\end{prooftree}
 \\]
 
-Now we can define the equivalence relation \\(\\sim_\\mathrm{IA}\\) on input-addressed derivation outputs. Two input-addressed outputs are equivalent if their derivations are equivalent (via the yet-to-be-defined \\(\\sim_{\\mathrm{IADrv}}\\) relation) and their output names are the same:
+现在我们可以在输入寻址 derivation 输出上定义等价关系 \\(\\sim_\\mathrm{IA}\\)。两个输入寻址输出若其 derivation 等价（通过尚未定义的 \\(\\sim_{\\mathrm{IADrv}}\\) 关系）且输出名相同，则等价：
 
 \\[
 \\begin{prooftree}
@@ -224,8 +224,8 @@ Now we can define the equivalence relation \\(\\sim_\\mathrm{IA}\\) on input-add
 \\end{prooftree}
 \\]
 
-And now we can define \\(\\sim_{\\mathrm{IADrv}}\\).
-Two input-addressed derivations are equivalent if their content-addressed inputs are equivalent, their input-addressed inputs are also equivalent, and they are otherwise equal:
+现在我们可以定义 \\(\\sim_{\\mathrm{IADrv}}\\)。
+两个输入寻址 derivation 若其内容寻址输入等价、其输入寻址输入也等价、且其余部分相等，则等价：
 
 <!-- cheating a bit with the semantics to get a good layout that fits on the page -->
 
@@ -252,23 +252,23 @@ $}
 \\end{prooftree}
 \\]
 
-where \\(\\mathrm{caInputs}(d)\\) returns the content-addressed inputs of \\(d\\) and \\(\\mathrm{iaInputs}(d)\\) returns the input-addressed inputs.
+其中 \\(\\mathrm{caInputs}(d)\\) 返回 \\(d\\) 的内容寻址输入，\\(\\mathrm{iaInputs}(d)\\) 返回输入寻址输入。
 
-> **Note**
+> **注意**
 >
-> An astute reader might notice that that nowhere does `inputSrcs` enter into these definitions.
-> That means that replacing an input derivation with its outputs directly added to `inputSrcs` always results in a derivation in a different equivalence class, despite the resulting input closure (as would be mounted in the store at build time) being the same.
-> [Issue #9259](https://github.com/NixOS/nix/issues/9259) is about creating a coarser equivalence relation to address this.
+> 细心的读者可能会注意到，`inputSrcs` 在这些定义中完全没有出现。
+> 这意味着把一个输入 derivation 替换为其输出并直接加入 `inputSrcs`，总会得到一个处于不同等价类的 derivation，尽管得到的输入闭包（即构建时挂载进 store 的内容）是相同的。
+> [Issue #9259](https://github.com/NixOS/nix/issues/9259) 就是要创建一个更粗的等价关系来解决这个问题。
 >
-> \\(\\sim_\mathrm{Drv}\\) from [derivation resolution](@docroot@/store/resolution.md) is such an equivalence relation.
-> It is coarser than this one: any two derivations which are "'hash input-masked derivation'-equivalent" (\\(\\sim_\mathrm{IADrv}\\)) are also "resolution-equivalent" (\\(\\sim_\mathrm{Drv}\\)).
-> It also relates derivations whose `inputDrvOutputs` have been rewritten into `inputSrcs`.
+> 来自 [derivation 解析](@docroot@/store/resolution.md)的 \\(\\sim_\mathrm{Drv}\\) 就是这样一个等价关系。
+> 它比这一个更粗：任何两个"'hash input-masked derivation'-等价"（\\(\\sim_\mathrm{IADrv}\\)）的 derivation 也是"解析等价"（\\(\\sim_\mathrm{Drv}\\)）的。
+> 它还关联那些 `inputDrvOutputs` 被改写为 `inputSrcs` 的 derivation。
 >
-> Input-addressing downstream of content addressing, as described above, anticipates this.
-> Since a content-addressed input contributes only its content address, and not the derivation that produced it, derivations differing only in *how* an identical content-addressed input was produced are already \\(\\sim_\mathrm{IADrv}\\)-equivalent.
-> And since a deferred derivation is completely resolved before it is input-addressed, its input-addressed `inputDrvOutputs` are normalized to `inputSrcs` as well --- so derivations differing only in how an identical *input-addressed* input was produced are \\(\\sim_\mathrm{IADrv}\\)-equivalent too.
-> That is the same "identify an input by what it is, rather than by how it was made" move as \\(\\sim_\mathrm{Drv}\\).
-> The difference is that \\(\\sim_\mathrm{Drv}\\) makes it unconditionally, whereas here it falls out for content-addressed inputs always, and for the rest only where deferral forced a resolution first.
+> 如上所述，内容寻址下游的输入寻址已经预见了这一点。
+> 由于内容寻址输入贡献的只是其内容地址、而非产出它的 derivation，仅在*相同*的内容寻址输入如何被产出上有差异的 derivation 已经是 \\(\\sim_\mathrm{IADrv}\\)-等价的。
+> 又由于推迟的 derivation 在被输入寻址之前已完全解析，其输入寻址的 `inputDrvOutputs` 也被规范化为 `inputSrcs`——因此仅在*相同的输入寻址*输入如何被产出上有差异的 derivation 也是 \\(\\sim_\mathrm{IADrv}\\)-等价的。
+> 这与 \\(\\sim_\mathrm{Drv}\\) 的"按输入是什么、而非按它如何被制造来识别输入"的思路相同。
+> 区别在于 \\(\\sim_\mathrm{Drv}\\) 无条件地这样做，而在这里，它对内容寻址输入总是成立，对其余输入只在推迟迫使先解析时才成立。
 
 [deriving-path]: @docroot@/store/derivation/index.md#deriving-path
 [xp-feature-dynamic-derivations]: @docroot@/development/experimental-features.md#xp-feature-dynamic-derivations

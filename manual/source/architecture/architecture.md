@@ -1,17 +1,17 @@
-# Architecture
+# 架构
 
-This chapter describes how Nix works.
-It should help users understand why Nix behaves as it does, and it should help developers understand how to modify Nix and how to write similar tools.
+本章描述 Nix 的工作方式。
+它应当帮助用户理解 Nix 为什么这样表现，也应当帮助开发者理解如何修改 Nix 以及如何编写类似的工具。
 
-## Overview
+## 概览
 
-Nix consists of [hierarchical layers].
+Nix 由[分层架构]组成。
 
-[hierarchical layers]: https://en.wikipedia.org/wiki/Multitier_architecture#Layers
+[分层架构]: https://en.wikipedia.org/wiki/Multitier_architecture#Layers
 
-The following [concept map] shows its main components (rectangles), the objects they operate on (rounded rectangles), and their interactions (connecting phrases):
+下面的[概念图]展示了它的主要组件（矩形）、这些组件操作的对象（圆角矩形），以及它们之间的交互（连接短语）：
 
-[concept map]: https://en.wikipedia.org/wiki/Concept_map
+[概念图]: https://en.wikipedia.org/wiki/Concept_map
 
 ```
 
@@ -52,32 +52,32 @@ The following [concept map] shows its main components (rectangles), the objects 
                                             '---------------'
 ```
 
-At the top is the [command line interface](../command-ref/index.md) that drives the underlying layers.
+最顶层是驱动底层各层的[命令行界面](../command-ref/index.md)。
 
-The [Nix language](../language/index.md) evaluator transforms Nix expressions into self-contained *build plans*, which are used to derive *build results* from referenced *build inputs*.
+[Nix 语言](../language/index.md)求值器（evaluator）将 Nix 表达式转换为自包含的*构建计划*（build plan），构建计划用于从被引用的*构建输入*（build input）派生出*构建结果*（build result）。
 
-The command line interface and Nix expressions are what users deal with most.
+命令行界面和 Nix 表达式是用户打交道最多的部分。
 
-> **Note**
+> **注意**
 >
-> The Nix language itself does not have a notion of *packages* or *configurations*.
-> As far as we are concerned here, the inputs and results of a build plan are just data.
+> Nix 语言本身没有*软件包*（package）或*配置*（configuration）的概念。
+> 就本文而言，构建计划的输入和结果只是数据。
 
-Underlying the command line interface and the Nix language evaluator is the [Nix store](../store/index.md), a mechanism to keep track of build plans, data, and references between them.
-It can also execute build plans to produce new data, which are made available to the operating system as files.
+位于命令行界面和 Nix 语言求值器之下的是 [Nix store](../store/index.md)，一种跟踪构建计划、数据以及它们之间引用关系的机制。
+它还可以执行构建计划以产生新的数据，这些数据以文件的形式提供给操作系统。
 
-A build plan itself is a series of *build tasks*, together with their build inputs.
+构建计划本身是一系列*构建任务*（build task），连同它们的构建输入。
 
-> **Important**
-> A build task in Nix is called [store derivation](@docroot@/glossary.md#gloss-store-derivation).
+> **重要**
+> Nix 中的构建任务称为 [store derivation](@docroot@/glossary.md#gloss-store-derivation)。
 
-Each build task has a special build input executed as *build instructions* in order to perform the build.
-The result of a build task can be input to another build task.
+每个构建任务都有一个特殊的构建输入，它作为*构建指令*（build instructions）被执行以完成构建。
+一个构建任务的结果可以作为另一个构建任务的输入。
 
-The following [data flow diagram] shows a build plan for illustration.
-Build inputs used as instructions to a build task are marked accordingly:
+下面的[数据流图]展示了一个用于说明的构建计划。
+作为构建任务的指令使用的构建输入被相应地标记：
 
-[data flow diagram]: https://en.wikipedia.org/wiki/Data-flow_diagram
+[数据流图]: https://en.wikipedia.org/wiki/Data-flow_diagram
 
 ```
 +--------------------------------------------------------------------+
@@ -113,4 +113,3 @@ Build inputs used as instructions to a build task are marked accordingly:
 |                                                                    |
 +--------------------------------------------------------------------+
 ```
-

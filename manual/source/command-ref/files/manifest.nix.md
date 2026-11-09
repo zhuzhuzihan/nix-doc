@@ -1,8 +1,8 @@
 ## `manifest.nix`
 
-The manifest file records the provenance of the packages that are installed in a [profile](./profiles.md) managed by [`nix-env`](@docroot@/command-ref/nix-env.md).
+manifest 文件记录了由 [`nix-env`](@docroot@/command-ref/nix-env.md) 管理的 [profile](./profiles.md) 中所安装软件包的来源信息。
 
-Here is an example of how this file might look like after installing `hello` from Nixpkgs:
+以下示例展示了从 Nixpkgs 安装 `hello` 后该文件可能的样子：
 
 ```nix
 [{
@@ -123,6 +123,6 @@ Here is an example of how this file might look like after installing `hello` fro
 }]
 ```
 
-Each element in this list corresponds to an installed package.
-It incorporates some attributes of the original derivation, including `meta`, `name`, `out`, `outPath`, `outputs`, `system`.
-This information is used by Nix for querying and updating the package.
+列表中的每个元素对应一个已安装的软件包。
+它包含原始 derivation（派生）的部分属性，包括 `meta`、`name`、`out`、`outPath`、`outputs`、`system`。
+Nix 使用这些信息来查询和更新软件包。

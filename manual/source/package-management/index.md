@@ -1,4 +1,1 @@
-This chapter discusses how to do package management with Nix, i.e.,
-how to obtain, install, upgrade, and erase packages. This is the
-“user’s” perspective of the Nix system — people who want to *create*
-packages should consult the chapter on the [Nix language](../language/index.md).
+本章讨论如何使用 Nix 进行软件包管理，即如何获取、安装、升级和删除软件包。这是 Nix 系统「用户」的视角 —— 想要*创建*软件包的用户请参阅 [Nix 语言](../language/index.md)一章。

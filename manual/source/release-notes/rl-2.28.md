@@ -1,38 +1,38 @@
 # Release 2.28.0 (2025-04-02)
 
-This is an atypical release, and for almost all intents and purposes, it is just a continuation of 2.27; not a feature release.
+这是一个非典型的发布版本；无论从哪个角度看，它基本上都只是 2.27 的延续，而不是一个新特性版本。
 
-We had originally set the goal of making 2.27 the Nixpkgs default for NixOS 25.05, but dependents that link to Nix need certain _interface breaking_ changes in the C++ headers. This is not something we should do in a patch release, so this is why we branched 2.28 right off 2.27 instead of `master`.
+我们最初的目标是让 2.27 成为 NixOS 25.05 中 Nixpkgs 的默认版本，但链接到 Nix 的下游项目需要在 C++ 头文件中做出某些*破坏接口*的变更。这类变更不适合放在补丁版本中做，因此我们直接从 2.27（而不是 `master`）分出了 2.28 分支。
 
-This completes the infrastructure overhaul for the [RFC 132](https://github.com/NixOS/rfcs/blob/master/rfcs/0132-meson-builds-nix.md) switchover to meson as our build system.
+本次发布完成了 [RFC 132](https://github.com/NixOS/rfcs/blob/master/rfcs/0132-meson-builds-nix.md) 所规划的将构建系统切换到 meson 的基础设施改造工作。
 
-## Major changes
+## 重大变更
 
-- Unstable C++ API reworked
+- 重构了不稳定的 C++ API
   [#12836](https://github.com/NixOS/nix/pull/12836)
   [#12798](https://github.com/NixOS/nix/pull/12798)
   [#12773](https://github.com/NixOS/nix/pull/12773)
 
-  Now the C++ interface confirms to common conventions much better than before:
+  现在 C++ 接口比以往更符合通用惯例：
 
-  - All headers are expected to be included with the initial `nix/`, e.g. as `#include "nix/....hh"` (what Nix's headers now do) or `#include <nix/....hh>` (what downstream projects may choose to do).
-    Likewise, the pkg-config files have `-I${includedir}` not `-I${includedir}/nix` or similar.
+  - 所有头文件都应带上 `nix/` 前缀来包含，例如 `#include "nix/....hh"`（Nix 自身的头文件现在就是这样）或 `#include <nix/....hh>`（下游项目可以选择这种方式）。
+    同样，pkg-config 文件使用 `-I${includedir}`，而不再是 `-I${includedir}/nix` 之类的形式。
 
-    Including without the `nix/` like before sometimes worked because of how for `#include` C pre-process checks the directory containing the current file, not just the lookup path, but this was not reliable.
+    以前不带 `nix/` 前缀的包含有时能正常工作，是因为 C 预处理器处理 `#include` 时会检查当前文件所在目录（而不仅仅是查找路径），但这种方式并不可靠。
 
-  - All configuration headers are included explicitly by the (regular) headers that need them.
-    There is no more need to pass `-include` to force additional files to be included.
+  - 所有配置头文件都由需要它们的（常规）头文件显式包含。
+    不再需要通过 `-include` 强制包含额外的文件。
 
-  - The public, installed configuration headers no longer contain implementation-specific details that are not relevant to the API.
-    The vast majority of definitions that were previously in there are now moved to new headers that are not installed, but used during Nix's own compilation only.
-    The remaining macro definitions are renamed to have `NIX_` as a prefix.
+  - 公开安装的配置头文件不再包含与 API 无关的实现细节。
+    原先放在其中的绝大多数定义已被移到新的头文件中，这些头文件不会被安装，仅在 Nix 自身编译时使用。
+    保留下来的宏定义都被重命名，加上 `NIX_` 前缀。
 
-  - The name of the Nix component the header comes from
-    (e.g. `util`, `store`, `expr`, `flake`, etc.)
-    is now part of the path to the header, coming after `nix` and before the header name
-    (or rest of the header path, if it is already in a directory).
+  - 头文件所属的 Nix 组件名
+    （如 `util`、`store`、`expr`、`flake` 等）
+    现在成为头文件路径的一部分，位于 `nix` 之后、头文件名之前
+    （如果该路径本身已在某个目录中，则位于路径其余部分之前）。
 
-  Here is a contrived diff showing a few of these changes at once:
+  下面是一个人为构造的 diff，一次性展示了上述几项变更：
 
   ```diff
   @@ @@
@@ -61,12 +61,11 @@ This completes the infrastructure overhaul for the [RFC 132](https://github.com/
   +const char *s = "hi from " NIX_LOCAL_SYSTEM;
   ```
 
-- C API `nix_flake_init_global` removed [#5638](https://github.com/NixOS/nix/issues/5638) [#12759](https://github.com/NixOS/nix/pull/12759)
+- 移除 C API 函数 `nix_flake_init_global` [#5638](https://github.com/NixOS/nix/issues/5638) [#12759](https://github.com/NixOS/nix/pull/12759)
 
-  In order to improve the modularity of the code base, we are removing a use of global state, and therefore the `nix_flake_init_global` function.
+  为了提升代码库的模块化程度，我们移除了一处全局状态的使用，也就是 `nix_flake_init_global` 函数。
 
-  Instead, use `nix_flake_settings_add_to_eval_state_builder`.
-  For example:
+  作为替代，请使用 `nix_flake_settings_add_to_eval_state_builder`。例如：
 
   ```diff
   -    nix_flake_init_global(ctx, settings);
@@ -79,12 +78,12 @@ This completes the infrastructure overhaul for the [RFC 132](https://github.com/
   +    HANDLE_ERROR(ctx);
   ```
 
-  Although this change is not as critical, we figured it would be good to do this API change at the same time, also.
-  Also note that we try to keep the C API compatible, but we decided to break this function because it was young and likely not in widespread use yet. This frees up time to make important progress on the rest of the C API.
+  虽然这项变更没有前者那么关键，但我们认为趁此机会一并完成这个 API 变更是有好处的。
+  另请注意，我们尽量保持 C API 的兼容性，但之所以决定破坏这个函数，是因为它还很年轻、大概率尚未被广泛使用。这为我们腾出时间，去推进 C API 其余部分的重要进展。
 
-## Contributors
+## 贡献者
 
-This earlier-than-usual release was made possible by the following 16 contributors:
+这次早于惯例的发布由以下 16 位贡献者共同促成：
 
 - Farid Zakaria [**(@fzakaria)**](https://github.com/fzakaria)
 - Jörg Thalheim [**(@Mic92)**](https://github.com/Mic92)

@@ -1,54 +1,31 @@
 # Release 1.11 (2016-01-19)
 
-This is primarily a bug fix release. It also has a number of new
-features:
+这主要是一个缺陷修复版本，同时也包含一些新特性：
 
-  - `nix-prefetch-url` can now download URLs specified in a Nix
-    expression. For example,
+  - `nix-prefetch-url` 现在可以下载 Nix 表达式中指定的 URL。例如，
     
         $ nix-prefetch-url -A hello.src
     
-    will prefetch the file specified by the `fetchurl` call in the
-    attribute `hello.src` from the Nix expression in the current
-    directory, and print the cryptographic hash of the resulting file on
-    stdout. This differs from `nix-build -A
-                    hello.src` in that it doesn't verify the hash, and is thus useful
-    when you’re updating a Nix expression.
+    会从当前目录的 Nix 表达式中预取属性 `hello.src` 里 `fetchurl` 调用所指定的文件，并将结果文件的密码学哈希打印到 stdout。它与 `nix-build -A
+                    hello.src` 的不同之处在于它不验证哈希，因此在更新 Nix 表达式时很有用。
     
-    You can also prefetch the result of functions that unpack a tarball,
-    such as `fetchFromGitHub`. For example:
+    你也可以预取解包 tarball 的函数的结果，例如 `fetchFromGitHub`。比如：
     
         $ nix-prefetch-url --unpack https://github.com/NixOS/patchelf/archive/0.8.tar.gz
     
-    or from a Nix expression:
+    或从 Nix 表达式预取：
     
         $ nix-prefetch-url -A nix-repl.src
 
-  - The builtin function `<nix/fetchurl.nix>` now supports downloading
-    and unpacking NARs. This removes the need to have multiple downloads
-    in the Nixpkgs stdenv bootstrap process (like a separate busybox
-    binary for Linux, or curl/mkdir/sh/bzip2 for Darwin). Now all those
-    files can be combined into a single NAR, optionally compressed using
-    `xz`.
+  - 内建函数 `<nix/fetchurl.nix>` 现在支持下载并解包 NAR。这使得 Nixpkgs stdenv 引导过程中不再需要多次下载（例如 Linux 上单独的 busybox 二进制文件，或 Darwin 上的 curl/mkdir/sh/bzip2）。现在所有这些文件都可以合并为一个 NAR，并可选地用 `xz` 压缩。
 
-  - Nix now supports SHA-512 hashes for verifying fixed-output
-    derivations, and in `builtins.hashString`.
+  - Nix 现在对固定输出 derivation（派生）的验证以及在 `builtins.hashString` 中支持 SHA-512 哈希。
 
-  - The new flag `--option build-repeat
-                            N` will cause every build to be executed *N*+1 times. If the build
-    output differs between any round, the build is rejected, and the
-    output paths are not registered as valid. This is primarily useful
-    to verify build determinism. (We already had a `--check` option to
-    repeat a previously succeeded build. However, with `--check`,
-    non-deterministic builds are registered in the DB. Preventing that
-    is useful for Hydra to ensure that non-deterministic builds don't
-    end up getting published to the binary cache.)
+  - 新标志 `--option build-repeat
+                            N` 会使每次构建执行 *N*+1 次。如果任何一轮的构建输出不同，该构建会被拒绝，输出路径不会被注册为有效。这主要用于验证构建的确定性。（我们已有 `--check` 选项来重复一次先前成功的构建。但使用 `--check` 时，非确定性构建仍会注册进数据库。避免这一点对 Hydra 很有用，可确保非确定性构建最终不会发布到二进制缓存。）
 
-  - The options `--check` and `--option
-                            build-repeat N`, if they detect a difference between two runs of the
-    same derivation and `-K` is given, will make the output of the other
-    run available under `store-path-check`. This makes it easier to
-    investigate the non-determinism using tools like `diffoscope`, e.g.,
+  - 选项 `--check` 和 `--option
+                            build-repeat N` 如果检测到同一 derivation 的两次运行之间存在差异，且给定了 `-K`，会将另一次运行的输出置于 `store-path-check` 下提供。这使得使用 `diffoscope` 等工具调查非确定性更容易，例如：
     
         $ nix-build pkgs/stdenv/linux -A stage1.pkgs.zlib --check -K
         error: derivation ‘/nix/store/l54i8wlw2265…-zlib-1.2.8.drv’ may not
@@ -65,23 +42,12 @@ features:
         │   │ +rw-r--r-- 30001/30000   3096 Jan 12 15:28 2016 adler32.o
         …
 
-  - Improved FreeBSD support.
+  - 改进了 FreeBSD 支持。
 
-  - `nix-env -qa --xml --meta` now prints license information.
+  - `nix-env -qa --xml --meta` 现在会打印许可证信息。
 
-  - The maximum number of parallel TCP connections that the binary cache
-    substituter will use has been decreased from 150 to 25. This should
-    prevent upsetting some broken NAT routers, and also improves
-    performance.
+  - 二进制缓存 substituter 将使用的最大并行 TCP 连接数已从 150 降到 25。这应该能避免让某些有缺陷的 NAT 路由器不高兴，同时也提升了性能。
 
-  - All "chroot"-containing strings got renamed to "sandbox". In
-    particular, some Nix options got renamed, but the old names are
-    still accepted as lower-priority aliases.
+  - 所有包含 "chroot" 的字符串都更名为 "sandbox"。特别是一些 Nix 选项被更名，但旧名称仍作为低优先级别名被接受。
 
-This release has contributions from Anders Claesson, Anthony Cowley,
-Bjørn Forsman, Brian McKenna, Danny Wilson, davidak, Eelco Dolstra,
-Fabian Schmitthenner, FrankHB, Ilya Novoselov, janus, Jim Garrison, John
-Ericson, Jude Taylor, Ludovic Courtès, Manuel Jacob, Mathnerd314, Pascal
-Wittmann, Peter Simons, Philip Potter, Preston Bennes, Rommel M.
-Martinez, Sander van der Burg, Shea Levy, Tim Cuthbertson, Tuomas
-Tynkkynen, Utku Demir and Vladimír Čunát.
+本版本包含来自 Anders Claesson、Anthony Cowley、Bjørn Forsman、Brian McKenna、Danny Wilson、davidak、Eelco Dolstra、Fabian Schmitthenner、FrankHB、Ilya Novoselov、janus、Jim Garrison、John Ericson、Jude Taylor、Ludovic Courtès、Manuel Jacob、Mathnerd314、Pascal Wittmann、Peter Simons、Philip Potter、Preston Bennes、Rommel M. Martinez、Sander van der Burg、Shea Levy、Tim Cuthbertson、Tuomas Tynkkynen、Utku Demir 和 Vladimír Čunát 的贡献。

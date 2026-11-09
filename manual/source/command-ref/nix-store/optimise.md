@@ -1,26 +1,18 @@
 # Name
 
-`nix-store --optimise` - reduce disk space usage
+`nix-store --optimise` - 减少磁盘空间占用
 
-## Synopsis
+## 概要
 
 `nix-store` `--optimise`
 
-## Description
+## 描述
 
-The operation `--optimise` reduces Nix store disk space usage by finding
-identical files in the store and hard-linking them to each other. It
-typically reduces the size of the store by something like 25-35%. Only
-regular files and symlinks are hard-linked in this manner. Files are
-considered identical when they have the same [Nix Archive (NAR)][Nix Archive] serialisation:
-that is, regular files must have the same contents and permission
-(executable or non-executable), and symlinks must have the same
-contents.
+`--optimise` 操作通过在 store 中查找相同文件并将它们互相硬链接来减少 Nix store 的磁盘空间占用。它通常可将 store 的大小减少约 25-35%。只有普通文件和符号链接会以这种方式进行硬链接。当文件具有相同的 [Nix Archive (NAR)][Nix Archive] 序列化结果时，即被视为相同：也就是说，普通文件必须具有相同的内容和权限（可执行或不可执行），符号链接必须具有相同的目标。
 
-After completion, or when the command is interrupted, a report on the
-achieved savings is printed on standard error.
+完成后或命令被中断时，会在标准错误上打印一份关于所节省空间的报告。
 
-Use `-vv` or `-vvv` to get some progress indication.
+使用 `-vv` 或 `-vvv` 可以获得一些进度提示。
 
 {{#include ./opt-common.md}}
 
@@ -28,7 +20,7 @@ Use `-vv` or `-vvv` to get some progress indication.
 
 {{#include ../env-common.md}}
 
-## Example
+## 示例
 
 ```console
 $ nix-store --optimise

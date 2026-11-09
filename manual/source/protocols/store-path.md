@@ -1,143 +1,142 @@
-# Complete Store Path Calculation
+# 存储路径的完整计算规则
 
-This is the complete specification for how [store path]s are calculated.
+这是关于[存储路径]如何计算的完整规范。
 
-The format of this specification is close to [Extended Backus–Naur form](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form), but must deviate for a few things such as hash functions which we treat as bidirectional for specification purposes.
+本规范的格式接近[扩展巴科斯–瑙尔范式](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form)（EBNF），但在少数地方必须有所偏离，例如哈希函数——出于规范的目的，我们将其视为双向的。
 
-Regular users do *not* need to know this information --- store paths can be treated as black boxes computed from the properties of the store objects they refer to.
-But for those interested in exactly how Nix works, e.g. if they are reimplementing it, this information can be useful.
+普通用户*并不*需要了解这些信息 --- 存储路径可以当作黑盒对待，它们由其所指的存储对象的属性计算得出。
+但对于那些想确切了解 Nix 如何工作的人，例如想要重新实现它的人，这些信息可能有用。
 
-[store path]: @docroot@/store/store-path.md
+[存储路径]: @docroot@/store/store-path.md
 
-## Store path proper
+## 存储路径本体
 
 ```ebnf
 store-path = store-dir "/" digest "-" name
 ```
-where
+其中
 
-- `name` = the name of the store object.
+- `name` = 存储对象的名称。
 
-- `store-dir` = the [path of the store directory](@docroot@/store/store-path.md#store-directory-path)
+- `store-dir` = [存储目录的路径](@docroot@/store/store-path.md#store-directory-path)
 
-- `digest` = [Nix32](@docroot@/protocols/nix32.md) representation of the compressed to 160 bits [SHA-256] hash of `fingerprint`.
+- `digest` = `fingerprint` 压缩至 160 位的 [SHA-256] 哈希的 [Nix32](@docroot@/protocols/nix32.md) 表示。
 
-  For the definition of the hash compression algorithm, please refer to section 5.1 of the [Nix thesis](https://edolstra.github.io/pubs/phd-thesis.pdf).
+  哈希压缩算法定义请参见 [Nix 论文](https://edolstra.github.io/pubs/phd-thesis.pdf)的第 5.1 节。
 
-## Fingerprint
+## 指纹
 
 - ```ebnf
   fingerprint = type ":sha256:" inner-digest ":" store ":" name
   ```
 
-  Note that it includes the location of the store as well as the name to make sure that changes to either of those are reflected in the hash
-  (e.g. you won't get `/nix/store/<digest>-name1` and `/nix/store/<digest>-name2`, or `/gnu/store/<digest>-name1`, with equal hash parts).
+  注意，其中同时包含了 store 的位置和名称，以确保二者中任何一者的变更都会反映在哈希中
+  （例如，`/nix/store/<digest>-name1` 与 `/nix/store/<digest>-name2`，或 `/gnu/store/<digest>-name1`，不会拥有相同的哈希部分）。
 
-- `type` = one of:
+- `type` = 以下之一：
 
   - ```ebnf
     | "text" { ":" store-path }
     ```
 
-    This is for the
+    这用于以
     ["Text"](@docroot@/store/store-object/content-address.md#method-text)
-    method of content addressing store objects.
-    The optional trailing store paths are the references of the store object.
+    方法对存储对象进行内容寻址。
+    可选的尾部存储路径是该存储对象的引用（references）。
 
   - ```ebnf
     | "source" { ":" store-path } [ ":self" ]
     ```
 
-    This is for the
+    这用于以
     ["Nix Archive"](@docroot@/store/store-object/content-address.md#method-nix-archive)
-    method of content addressing store objects,
-    if the hash algorithm is [SHA-256].
-    Just like in the "Text" case, we can have the store objects referenced by their paths.
-    Additionally, we can have an optional `:self` label to denote self-reference.
+    方法对存储对象进行内容寻址，
+    当哈希算法为 [SHA-256] 时。
+    与 "Text" 情形一样，可以通过路径引用存储对象。
+    此外，还可以有一个可选的 `:self` 标签来表示自引用。
 
   - ```ebnf
     | "output:" id
     ```
 
-    For either the outputs built from derivations,
-    or content-addressed store objects that are not using one of the two above cases.
-    To be explicit about the latter, that is currently these methods:
+    用于由 derivation（派生）构建的输出，或未使用上述两种情形之一的内容寻址存储对象。
+    明确地说，后者目前包括以下方法：
 
-    - ["Flat"](@docroot@/store/store-object/content-address.md#method-flat)
-    - ["Git"](@docroot@/store/store-object/content-address.md#method-git)
-    - ["Nix Archive"](@docroot@/store/store-object/content-address.md#method-nix-archive) if the hash algorithm is not [SHA-256].
+    - [Flat](@docroot@/store/store-object/content-address.md#method-flat)
+    - [Git](@docroot@/store/store-object/content-address.md#method-git)
+    - [Nix Archive](@docroot@/store/store-object/content-address.md#method-nix-archive)，当哈希算法不是 [SHA-256] 时
 
-    `id` is the name of the output (usually, "out").
-    For content-addressed store objects, `id`, is always "out".
+    `id` 是输出的名称（通常是 "out"）。
+    对于内容寻址存储对象，`id` 总是 "out"。
 
-- `inner-digest` = base-16 representation of a SHA-256 hash of `inner-fingerprint`.
-  The base-16 encoding uses lower-cased hex digits.
+- `inner-digest` = `inner-fingerprint` 的 SHA-256 哈希的 base-16 表示。
+  base-16 编码使用小写十六进制数字。
 
-## Inner fingerprint
+## 内部指纹
 
-- `inner-fingerprint` = one of the following based on `type`:
+- `inner-fingerprint` = 根据 `type` 取以下之一：
 
-  - if `type` = `"text:" ...`:
+  - 若 `type` = `"text:" ...`：
 
-    the string written to the resulting store path.
+    写入所得存储路径的字符串。
 
-  - if `type` = `"source:" ...`:
+  - 若 `type` = `"source:" ...`：
 
-    the [Nix Archive (NAR)] serialization of the [file system object](@docroot@/store/file-system-object.md) of the store object.
+    该存储对象的[文件系统对象](@docroot@/store/file-system-object.md)的 [Nix Archive (NAR)] 序列化。
 
-  - if `type` = `"output:" id`:
+  - 若 `type` = `"output:" id`：
 
-    - For input-addressed derivation outputs:
+    - 对于输入寻址的 derivation 输出：
 
-      the [ATerm](@docroot@/protocols/derivation-aterm.md#input-address-encoding) serialization of the ["fully masked derivation"](@docroot@/store/derivation/outputs/input-address.md#input-masked-drv), in which fixed-output inputs are replaced by their content addresses and the derivation's own output paths are blanked.
+      ["完全掩码的 derivation"](@docroot@/store/derivation/outputs/input-address.md#input-masked-drv)的 [ATerm](@docroot@/protocols/derivation-aterm.md#input-address-encoding) 序列化，其中固定输出（fixed-output）输入被替换为其内容地址，而 derivation 自身的输出路径被置空。
 
-    - For content-addressed store paths:
+    - 对于内容寻址存储路径：
 
       ```ebnf
       "fixed:out:" rec algo ":" hash ":"
       ```
 
-      where
+      其中
 
-      - `rec` = one of:
+      - `rec` = 以下之一：
 
         - ```ebnf
           | ""
           ```
-          (empty string) for hashes of the flat (single file) serialization
+          （空字符串）用于扁平（单文件）序列化的哈希
 
         - ```ebnf
           | "r:"
           ```
-          hashes of the for [Nix Archive (NAR)] (arbitrary file system object) serialization
+          用于 [Nix Archive (NAR)]（任意文件系统对象）序列化的哈希
 
         - ```ebnf
           | "git:"
           ```
-          hashes of the [Git blob/tree](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) [Merkel tree](https://en.wikipedia.org/wiki/Merkle_tree) format
+          用于 [Git blob/tree](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects) [Merkle 树](https://en.wikipedia.org/wiki/Merkle_tree)格式的哈希
 
       - ```ebnf
         algo = "md5" | "sha1" | "sha256"
         ```
 
-      - `hash` = base-16 representation of the path or flat hash of the contents of the path (or expected contents of the path for fixed-output derivations).
+      - `hash` = 路径哈希或路径内容扁平哈希的 base-16 表示（对于固定输出 derivation，则是路径的预期内容）。
 
-      Note that `id` = `"out"`, regardless of the name part of the store path.
-      Also note that NAR + SHA-256 must not use this case, and instead must use the `type` = `"source:" ...` case.
+      注意，无论存储路径的名称部分是什么，`id` 都为 `"out"`。
+      还要注意，NAR + SHA-256 不得使用这一情形，而必须使用 `type` = `"source:" ...` 情形。
 
 [Nix Archive (NAR)]: @docroot@/store/file-system-object/content-address.md#serial-nix-archive
 [SHA-256]: https://en.m.wikipedia.org/wiki/SHA-256
 
-### Historical Note
+### 历史说明
 
-The `type` = `"source:" ...` and `type` = `"output:out"` grammars technically overlap in purpose,
-in that both can represent data hashed by its SHA-256 NAR serialization.
+`type` = `"source:" ...` 与 `type` = `"output:out"` 两种文法在目的上存在技术性重叠，
+二者都可以表示经 SHA-256 NAR 序列化哈希的数据。
 
-The original reason for this way of computing names was to prevent name collisions (for security).
-For instance, the thinking was that it shouldn't be feasible to come up with a derivation whose output path collides with the path for a copied source.
-The former would have an `inner-fingerprint` starting with `output:out:`, while the latter would have an `inner-fingerprint` starting with `source:`.
+最初采用这种名称计算方式是为了防止名称冲突（出于安全考虑）。
+例如，当时的想法是：不应该可能构造出一个 derivation，其输出路径与复制的源码路径发生碰撞。
+前者会有以 `output:out:` 开头的 `inner-fingerprint`，而后者会有以 `source:` 开头的 `inner-fingerprint`。
 
-Since `64519cfd657d024ae6e2bb74cb21ad21b886fd2a` (2008), however, it was decided that separating derivation-produced vs manually-hashed content-addressed data like this was not useful.
-Now, data that is content-addressed with SHA-256 + NAR-serialization always uses the `source:...` construction, regardless of how it was produced (manually or by derivation).
-This allows freely switching between using [fixed-output derivations](@docroot@/glossary.md#gloss-fixed-output-derivation) for fetching, and fetching out-of-band and then manually adding.
-It also removes the ambiguity from the grammar.
+然而自 `64519cfd657d024ae6e2bb74cb21ad21b886fd2a`（2008 年）起，人们决定将 derivation 产生的数据与手动哈希的内容寻址数据如此区分开并无用处。
+现在，以 SHA-256 + NAR 序列化进行内容寻址的数据一律使用 `source:...` 构造方式，无论它是如何产生的（手动还是通过 derivation）。
+这使得可以自由地在使用[固定输出 derivation](@docroot@/glossary.md#gloss-fixed-output-derivation) 进行获取，与带外获取后手动添加之间切换。
+这也消除了文法中的歧义。

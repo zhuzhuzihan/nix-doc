@@ -1,4 +1,3 @@
-# Files
+# 文件
 
-This section lists configuration files that you can use when you work
-with Nix.
+本节列出了使用 Nix 时会用到的配置文件。

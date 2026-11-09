@@ -1,28 +1,28 @@
-# `nix-cache-info` Format
+# `nix-cache-info` 格式
 
-The `nix-cache-info` file is a metadata file at the root of a [binary cache](@docroot@/protocols/binary-cache/index.md) (e.g., `https://cache.example.com/nix-cache-info`).
+`nix-cache-info` 文件是位于[二进制缓存](@docroot@/protocols/binary-cache/index.md)根目录下的元数据文件（例如 `https://cache.example.com/nix-cache-info`）。
 
-MIME type: `text/x-nix-cache-info`
+MIME 类型：`text/x-nix-cache-info`
 
-## Format
+## 格式
 
-Line-based key-value format:
+基于行的键值格式：
 
 ```
 Key: value
 ```
 
-Leading and trailing whitespace is trimmed from values.
-Lines without a colon are ignored.
-Unknown keys are silently ignored.
+值的首尾空白会被去除。
+没有冒号的行会被忽略。
+未知的键会被静默忽略。
 
-## Fields
+## 字段
 
 ### `StoreDir`
 
-The Nix store directory path that this cache was built for (e.g., `/nix/store`).
+该缓存构建时所面向的 Nix store 目录路径（例如 `/nix/store`）。
 
-If present, Nix verifies that this matches the client's store directory:
+如果存在，Nix 会验证其与客户端的存储目录是否匹配：
 
 ```
 error: binary cache 'https://example.com' is for Nix stores with prefix '/nix/store', not '/home/user/nix/store'
@@ -30,13 +30,13 @@ error: binary cache 'https://example.com' is for Nix stores with prefix '/nix/st
 
 ### `WantMassQuery`
 
-`1` or `0`. Sets the default for [`want-mass-query`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-want-mass-query).
+`1` 或 `0`。设置 [`want-mass-query`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-want-mass-query) 的默认值。
 
 ### `Priority`
 
-Integer. Sets the default for [`priority`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-priority).
+整数。设置 [`priority`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-priority) 的默认值。
 
-## Example
+## 示例
 
 ```
 StoreDir: /nix/store
@@ -44,12 +44,12 @@ WantMassQuery: 1
 Priority: 30
 ```
 
-## Caching Behavior
+## 缓存行为
 
-Nix caches `nix-cache-info` in the [cache directory](@docroot@/command-ref/env-common.md#env-NIX_CACHE_HOME) with a 7-day TTL.
+Nix 会将 `nix-cache-info` 缓存在[缓存目录](@docroot@/command-ref/env-common.md#env-NIX_CACHE_HOME)中，TTL 为 7 天。
 
-## See Also
+## 另请参阅
 
-- [HTTP Binary Cache Store](@docroot@/store/types/http-binary-cache-store.md)
-- [Serving a Nix store via HTTP](@docroot@/package-management/binary-cache-substituter.md)
+- [HTTP 二进制缓存存储](@docroot@/store/types/http-binary-cache-store.md)
+- [通过 HTTP 提供 Nix store 服务](@docroot@/package-management/binary-cache-substituter.md)
 - [`substituters`](@docroot@/command-ref/conf-file.md#conf-substituters)

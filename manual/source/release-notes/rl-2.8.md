@@ -1,25 +1,14 @@
 # Release 2.8 (2022-04-19)
 
-* New experimental command: `nix fmt`, which applies a formatter
-  defined by the `formatter.<system>` flake output to the Nix
-  expressions in a flake.
+* 新的实验性命令：`nix fmt`，它将 `formatter.<system>` Flakes 输出所定义的格式化工具应用到 Flakes 中的 Nix 表达式上。
 
-* Various Nix commands can now read expressions from standard input
-  using `--file -`.
+* 多种 Nix 命令现在可以使用 `--file -` 从标准输入读取表达式。
 
-* New experimental builtin function `builtins.fetchClosure` that
-  copies a closure from a binary cache at evaluation time and rewrites
-  it to content-addressed form (if it isn't already). Like
-  `builtins.storePath`, this allows importing pre-built store paths;
-  the difference is that it doesn't require the user to configure
-  binary caches and trusted public keys.
+* 新的实验性内置函数 `builtins.fetchClosure`，它在求值时从一个二进制缓存复制闭包，并将其重写为内容寻址形式（如果尚未如此）。与 `builtins.storePath` 类似，它允许导入预先构建好的存储路径；区别在于它不需要用户配置二进制缓存和受信任的公钥。
 
-  This function is only available if you enable the experimental
-  feature `fetch-closure`.
+  只有在启用实验特性 `fetch-closure` 之后，此函数才可用。
 
-* New experimental feature: *impure derivations*. These are
-  derivations that can produce a different result every time they're
-  built. Here is an example:
+* 新的实验特性：*非纯 derivation（派生）*。这类 derivation 每次构建都可能产生不同的结果。以下是一个示例：
 
   ```nix
   stdenv.mkDerivation {
@@ -29,25 +18,14 @@
   }
   ```
 
-  Running `nix build` twice on this expression will build the
-  derivation twice, producing two different content-addressed store
-  paths. Like fixed-output derivations, impure derivations have access
-  to the network. Only fixed-output derivations and impure derivations
-  can depend on an impure derivation.
+  对这个表达式运行两次 `nix build` 会构建该 derivation 两次，产生两个不同的内容寻址存储路径。与固定输出 derivation（fixed-output derivations）类似，非纯 derivation 可以访问网络。只有固定输出 derivation 和非纯 derivation 可以依赖于非纯 derivation。
 
-* `nix store make-content-addressable` has been renamed to `nix store
-  make-content-addressed`.
+* `nix store make-content-addressable` 已更名为 `nix store make-content-addressed`。
 
-* The `nixosModule` flake output attribute has been renamed consistent
-  with the `.default` renames in Nix 2.7.
+* `nixosModule` Flakes 输出属性已按照 Nix 2.7 中 `.default` 的重命名方式进行了更名。
 
   * `nixosModule` → `nixosModules.default`
 
-  As before, the old output will continue to work, but `nix flake check` will
-  issue a warning about it.
+  与之前一样，旧的输出仍可继续使用，但 `nix flake check` 会对此发出警告。
 
-* `nix run` is now stricter in what it accepts: members of the `apps`
-  flake output are now required to be apps (as defined in [the
-  manual](https://nix.dev/manual/nix/stable/command-ref/new-cli/nix3-run.html#apps)),
-  and members of `packages` or `legacyPackages` must be derivations
-  (not apps).
+* `nix run` 现在对可接受的内容更加严格：`apps` Flakes 输出的成员现在必须是应用（app，定义见[手册](https://nix.dev/manual/nix/stable/command-ref/new-cli/nix3-run.html#apps)），而 `packages` 或 `legacyPackages` 的成员必须是 derivation（而非应用）。

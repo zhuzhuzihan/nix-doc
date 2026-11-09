@@ -1,9 +1,9 @@
-# Running tests
+# 运行测试
 
-## Coverage analysis
+## 覆盖率分析
 
-A [coverage analysis report] is available online
-You can build it yourself:
+[覆盖率分析报告]可在线查阅。
+你也可以自行构建：
 
 [coverage analysis report]: https://hydra.nixos.org/job/nix/master/coverage/latest/download-by-type/report/coverage
 
@@ -12,19 +12,19 @@ You can build it yourself:
 # xdg-open ./result/index.html
 ```
 
-[Extensive records of build metrics](https://hydra.nixos.org/job/nix/master/coverage#tabs-charts), such as test coverage over time, are also available online.
+[大量构建指标的记录](https://hydra.nixos.org/job/nix/master/coverage#tabs-charts)，例如随时间变化的测试覆盖率，也可在线查阅。
 
-## Unit-tests
+## 单元测试
 
-The unit tests are defined using the [googletest] and [rapidcheck] frameworks.
+单元测试使用 [googletest] 和 [rapidcheck] 框架定义。
 
 [googletest]: https://google.github.io/googletest/
 [rapidcheck]: https://github.com/emil-e/rapidcheck
 [property testing]: https://en.wikipedia.org/wiki/Property_testing
 
-### Source and header layout
+### 源码与头文件布局
 
-> An example of some files, demonstrating much of what is described below
+> 一些文件的示例，展示了下文描述的大部分内容
 >
 > ```
 > src
@@ -59,79 +59,79 @@ The unit tests are defined using the [googletest] and [rapidcheck] frameworks.
 > …
 > ```
 
-The tests for each Nix library (`libnixexpr`, `libnixstore`, etc..) live inside a directory `src/${library_name_without-nix}-test`.
-Given an interface (header) and implementation pair in the original library, say, `src/libexpr/include/nix/expr/value/context.hh` and `src/libexpr/value/context.cc`, we write tests for it in `src/libexpr-tests/value/context.cc`, and (possibly) declare/define additional interfaces for testing purposes in `src/libexpr-test-support/include/nix/expr/tests/value/context.hh` and `src/libexpr-test-support/tests/value/context.cc`.
+每个 Nix 库（`libnixexpr`、`libnixstore` 等）的测试都位于 `src/${library_name_without-nix}-test` 目录中。
+给定原始库中的一对接口（头文件）与实现，例如 `src/libexpr/include/nix/expr/value/context.hh` 和 `src/libexpr/value/context.cc`，我们在 `src/libexpr-tests/value/context.cc` 中为它编写测试，并（可能）在 `src/libexpr-test-support/include/nix/expr/tests/value/context.hh` 和 `src/libexpr-test-support/tests/value/context.cc` 中为测试目的声明/定义额外的接口。
 
-Data for unit tests is stored in a `data` subdir of the directory for each unit test executable.
-For example, `libnixstore` code is in `src/libstore`, and its test data is in `src/libstore-tests/data`.
-The path to the `src/${library_name_without-nix}-test/data` directory is passed to the unit test executable with the environment variable `_NIX_TEST_UNIT_DATA`.
-Note that each executable only gets the data for its tests.
+单元测试的数据存储在每个单元测试可执行文件所在目录的 `data` 子目录中。
+例如，`libnixstore` 的代码在 `src/libstore`，其测试数据在 `src/libstore-tests/data`。
+`src/${library_name_without-nix}-test/data` 目录的路径通过环境变量 `_NIX_TEST_UNIT_DATA` 传给单元测试可执行文件。
+注意，每个可执行文件只会拿到它自己测试所需的数据。
 
-The unit test libraries are in `src/${library_name_without-nix}-test-support`.
-All headers are in a `tests` subdirectory so they are included with `#include "nix/tests/"`.
+单元测试库位于 `src/${library_name_without-nix}-test-support`。
+所有头文件都放在 `tests` 子目录中，因此可以用 `#include "nix/tests/"` 包含它们。
 
-The use of all these separate directories for the unit tests might seem inconvenient, as for example the tests are not "right next to" the part of the code they are testing.
-But organizing the tests this way has one big benefit:
-there is no risk of any build-system wildcards for the library accidentally picking up test code that should not built and installed as part of the library.
+单元测试使用这些相互独立的目录看起来可能不太方便，例如测试并没有“紧挨着”它们所测试的代码。
+但以这种方式组织测试有一个很大的好处：
+库的构建系统通配符不会有任何风险误拾取那些不应被构建并作为库的一部分安装的测试代码。
 
-### Running tests
+### 运行测试
 
-You can run the whole testsuite with `meson test` from the Meson build directory, or the tests for a specific component with `meson test nix-store-tests`.
-The environment variables that Google Test accepts are also worth knowing:
+你可以在 Meson 构建目录中用 `meson test` 运行整个测试套件，或者用 `meson test nix-store-tests` 运行特定组件的测试。
+Google Test 接受的环境变量也值得了解：
 
 1. [`GTEST_FILTER`](https://google.github.io/googletest/advanced.html#running-a-subset-of-the-tests)
 
-   This is used for finer-grained filtering of which tests to run.
+   用于更细粒度地过滤要运行哪些测试。
 
 
 2. [`GTEST_BRIEF`](https://google.github.io/googletest/advanced.html#suppressing-test-passes)
 
-   This is used to avoid logging passing tests.
+   用于避免记录通过的测试。
 
 3. [`GTEST_BREAK_ON_FAILURE`](https://google.github.io/googletest/advanced.html#turning-assertion-failures-into-break-points)
 
-   This is used to create a debugger breakpoint when an assertion failure occurs.
+   用于在断言失败发生时创建一个调试器断点。
 
-Putting the first two together, one might run
+把前两者结合起来，可以运行
 
 ```bash
 GTEST_BRIEF=1 GTEST_FILTER='ErrorTraceTest.*' meson test nix-expr-tests -v
 ```
 
-for short but comprensive output.
+以获得简短而全面的输出。
 
-### Unit tests requiring root
+### 需要 root 权限的单元测试
 
-In `nix-util-tests`, suites beginning with `Root` require root and are excluded by default.
-To run them on macOS:
+在 `nix-util-tests` 中，以 `Root` 开头的测试套件需要 root 权限，默认被排除。
+在 macOS 上运行它们：
 
 ```bash
 nix build .#nix-util-tests
 sudo ./result/bin/nix-util-tests --gtest_filter='Root*'
 ```
 
-### Debugging tests
+### 调试测试
 
-For debugging, it is useful to combine the third option above with Meson's [`--gdb`](https://mesonbuild.com/Unit-tests.html#other-test-options) flag:
+对于调试，把上面的第三个选项与 Meson 的 [`--gdb`](https://mesonbuild.com/Unit-tests.html#other-test-options) 标志结合起来会很有用：
 
 ```bash
 GTEST_BRIEF=1 GTEST_FILTER='Group.my-failing-test' meson test nix-expr-tests --gdb
 ```
 
-This will:
+这将会：
 
-1. Run the unit test with GDB
+1. 在 GDB 下运行单元测试
 
-2. Run just `Group.my-failing-test`
+2. 只运行 `Group.my-failing-test`
 
-3. Stop the program when the test fails, allowing the user to then issue arbitrary commands to GDB.
+3. 在测试失败时停下程序，让用户随后可以向 GDB 发出任意命令。
 
-### Characterisation testing { #characterisation-testing-unit }
+### 特征化测试（characterisation testing）{ #characterisation-testing-unit }
 
-See [functional characterisation testing](#characterisation-testing-functional) for a broader discussion of characterisation testing.
+关于特征化测试更广泛的讨论，参见[功能特征化测试](#characterisation-testing-functional)。
 
-Like with the functional characterisation, `_NIX_TEST_ACCEPT=1` is also used.
-For example:
+与功能特征化一样，这里也使用 `_NIX_TEST_ACCEPT=1`。
+例如：
 ```shell-session
 $ _NIX_TEST_ACCEPT=1 meson test nix-store-tests -v
 ...
@@ -141,49 +141,49 @@ $ _NIX_TEST_ACCEPT=1 meson test nix-store-tests -v
 [  SKIPPED ] WorkerProtoTest.storePath_write
 ...
 ```
-will regenerate the "golden master" expected result for the `libnixstore` characterisation tests.
-The characterisation tests will mark themselves "skipped" since they regenerated the expected result instead of actually testing anything.
+会重新生成 `libnixstore` 特征化测试的“黄金标准”（golden master）期望结果。
+特征化测试会把自己标记为“跳过”，因为它们重新生成了期望结果，而不是实际测试任何东西。
 
-### JSON Schema testing
+### JSON Schema 测试
 
-In `doc/manual/source/protocols/json/` we have a number of manual pages generated from [JSON Schema](https://json-schema.org/).
-That JSON schema is tested against the JSON file test data used in [characterisation tests](#characterisation-testing-unit ) for JSON (de)serialization, in `src/json-schema-checks`.
-Between the JSON (de)serialization testing, and this testing of the same data against the schema, we make sure that the manual, the implementation, and a machine-readable schema are are all in sync.
+在 `doc/manual/source/protocols/json/` 中，我们有许多由 [JSON Schema](https://json-schema.org/) 生成的手册页。
+这些 JSON schema 会针对 [特征化测试](#characterisation-testing-unit )中用于 JSON (反)序列化的 JSON 文件测试数据进行检验，代码位于 `src/json-schema-checks`。
+通过 JSON (反)序列化测试，以及对同一数据的 schema 检验，我们确保手册、实现和机器可读的 schema 三者保持同步。
 
-### Unit test support libraries
+### 单元测试支持库
 
-There are headers and code which are not just used to test the library in question, but also downstream libraries.
-For example, we do [property testing] with the [rapidcheck] library.
-This requires writing `Arbitrary` "instances", which are used to describe how to generate values of a given type for the sake of running property tests.
-Because types contain other types, `Arbitrary` "instances" for some type are not just useful for testing that type, but also any other type that contains it.
-Downstream types frequently contain upstream types, so it is very important that we share arbitrary instances so that downstream libraries' property tests can also use them.
+有一些头文件和代码不仅用于测试相关库本身，还被下游库使用。
+例如，我们使用 [rapidcheck] 库进行[性质测试]（property testing）。
+这需要编写 `Arbitrary` “实例”，用于描述如何为运行性质测试生成给定类型的值。
+由于类型中包含其他类型，某个类型的 `Arbitrary` “实例”不仅对测试该类型有用，对任何包含它的其他类型也有用。
+下游类型经常包含上游类型，因此共享这些 arbitrary 实例非常重要，这样下游库的性质测试也能使用它们。
 
-It is important that these testing libraries don't contain any actual tests themselves.
-On some platforms they would be run as part of every test executable that uses them, which is redundant.
-On other platforms they wouldn't be run at all.
+重要的是，这些测试支持库自身不得包含任何实际的测试。
+在某些平台上，它们会作为每个使用它们的测试可执行文件的一部分运行，这是冗余的。
+在其他平台上，它们则完全不会运行。
 
-## Functional tests
+## 功能测试
 
-The functional tests reside under the `tests/functional` directory and are listed in `tests/functional/meson.build`.
-Each test is a bash script.
+功能测试位于 `tests/functional` 目录下，并在 `tests/functional/meson.build` 中列出。
+每个测试都是一个 bash 脚本。
 
-Functional tests are run during `installCheck` in the `nix` package build, as well as separately from the build, in VM tests.
+功能测试在 `nix` 软件包构建期间的 `installCheck` 阶段运行，也会独立于构建在 VM 测试中运行。
 
-### Running the whole test suite
+### 运行整个测试套件
 
-The whole test suite (functional and unit tests) can be run with:
+整个测试套件（功能测试和单元测试）可以用以下命令运行：
 
 ```shell-session
 $ checkPhase
 ```
 
-### Grouping tests
+### 测试分组
 
-Sometimes it is useful to group related tests so they can be easily run together without running the entire test suite.
-Each test group is in a subdirectory of `tests`.
-For example, `tests/functional/ca/meson.build` defines a `ca` test group for content-addressing derivation outputs.
+有时把相关的测试编成组很有用，这样无需运行整个测试套件就能轻松地一起运行它们。
+每个测试组位于 `tests` 的一个子目录中。
+例如，`tests/functional/ca/meson.build` 为内容寻址的 derivation 输出定义了一个 `ca` 测试组。
 
-That test group can be run like this:
+该测试组可以这样运行：
 
 ```shell-session
 $ meson test --suite ca
@@ -193,9 +193,9 @@ ninja: no work to do.
 [2-20/20] 🌒 nix-functional-tests:ca / ca/why-depends                                2/20 nix-functional-tests:ca / ca/import-derivation                        OK               0.17s
 ```
 
-### Running individual tests
+### 运行单个测试
 
-Individual tests can be run with `meson`:
+可以用 `meson` 运行单个测试：
 
 ```shell-session
 $ meson test --verbose ${testName}
@@ -213,11 +213,11 @@ Timeout:            0
 Full log written to /home/jcericson/src/nix/master/build/meson-logs/testlog.txt
 ```
 
-The `--verbose` flag will make Meson also show the console output of each test for easier debugging.
-The test script will then be traced with `set -x` and the output displayed as it happens,
-regardless of whether the test succeeds or fails.
+`--verbose` 标志会让 Meson 同时显示每个测试的控制台输出，便于调试。
+测试脚本随后会以 `set -x` 进行跟踪并实时显示输出，
+无论测试成功还是失败。
 
-Tests can be also run directly without `meson`:
+测试也可以不通过 `meson` 直接运行：
 
 ```shell-session
 $ TEST_NAME=${testName} NIX_REMOTE='' PS4='+(${BASH_SOURCE[0]-$0}:$LINENO) tests/functional/${testName}.sh
@@ -228,20 +228,21 @@ output from bar
 ...
 ```
 
-### Debugging failing functional tests
+### 调试失败的功能测试
 
-When a functional test fails, it usually does so somewhere in the middle of the script.
+功能测试失败时，通常失败发生在脚本的中间某处。
 
-To figure out what's wrong, it is convenient to run the test regularly up to the failing `nix` command, and then run that command with a debugger like GDB.
+要弄清哪里出了问题，一个便利的做法是：先照常运行测试直到失败的 `nix` 命令处，然后用 GDB 之类的调试器运行该命令。
 
-For example, if the script looks like:
+例如，如果脚本如下：
 
 ```bash
 foo
 nix blah blub
 bar
 ```
-edit it like so:
+
+把它改成这样：
 
 ```diff
  foo
@@ -250,7 +251,7 @@ edit it like so:
  bar
 ```
 
-Then, running the test with [`--interactive`](https://mesonbuild.com/Unit-tests.html#other-test-options) will prevent Meson from hijacking the terminal so you can drop you into GDB once the script reaches that point:
+然后，用 [`--interactive`](https://mesonbuild.com/Unit-tests.html#other-test-options) 运行测试可以防止 Meson 抢占终端，这样一旦脚本执行到该处，你就会被带入 GDB：
 
 ```shell-session
 $ meson test ${testName} --interactive
@@ -261,66 +262,66 @@ GNU gdb (GDB) 12.1
 (gdb)
 ```
 
-One can debug the Nix invocation in all the usual ways.
-For example, enter `run` to start the Nix invocation.
+你可以用所有惯常的方式调试 Nix 调用。
+例如，输入 `run` 来启动该 Nix 调用。
 
-### Characterisation testing { #characterisation-testing-functional }
+### 特征化测试（characterisation testing）{ #characterisation-testing-functional }
 
-Occasionally, Nix utilizes a technique called [Characterisation Testing](https://en.wikipedia.org/wiki/Characterization_test) as part of the functional tests.
-This technique is to include the exact output/behavior of a former version of Nix in a test in order to check that Nix continues to produce the same behavior going forward.
+偶尔，Nix 会在功能测试中使用一种叫做[特征化测试](https://en.wikipedia.org/wiki/Characterization_test)的技术。
+这种技术是把 Nix 某个旧版本的确切输出/行为纳入测试，以检验 Nix 在未来继续保持相同的行为。
 
-For example, this technique is used for the language tests, to check both the printed final value if evaluation was successful, and any errors and warnings encountered.
+例如，语言测试就使用了这一技术，既检查求值成功时打印的最终值，也检查遇到的任何错误和警告。
 
-It is frequently useful to regenerate the expected output.
-To do that, rerun the failed test(s) with `_NIX_TEST_ACCEPT=1`.
-For example:
+重新生成期望输出往往很有用。
+为此，用 `_NIX_TEST_ACCEPT=1` 重新运行失败的测试即可。
+例如：
 ```bash
 _NIX_TEST_ACCEPT=1 meson test lang
 ```
-This convention is shared with the [characterisation unit tests](#characterisation-testing-unit) too.
+这一约定也与[特征化单元测试](#characterisation-testing-unit)共用。
 
-An interesting situation to document is the case when these tests are "overfitted".
-The language tests are, again, an example of this.
-The expected successful output of evaluation is supposed to be highly stable – we do not intend to make breaking changes to (the stable parts of) the Nix language.
-However, the errors and warnings during evaluation (successful or not) are not stable in this way.
-We are free to change how they are displayed at any time.
+一个值得记录的有趣情形是这些测试被“过拟合”的情况。
+语言测试再次成为了这样的例子。
+求值的期望成功输出应当高度稳定——我们不打算对 Nix 语言的（稳定部分）做破坏性更改。
+然而，求值期间（无论成功与否）的错误和警告并不具有这种稳定性。
+我们可以随时更改它们的展示方式。
 
-It may be surprising that we would test non-normative behavior like diagnostic outputs.
-Diagnostic outputs are indeed not a stable interface, but they still are important to users.
-By recording the expected output, the test suite guards against accidental changes, and ensure the *result* (not just the code that implements it) of the diagnostic code paths are under code review.
-Regressions are caught, and improvements always show up in code review.
+我们竟然要测试诊断输出这类非规范性行为，这也许令人意外。
+诊断输出确实不是稳定接口，但它们对用户仍然很重要。
+通过记录期望输出，测试套件可以防范意外的变更，并确保诊断代码路径的*结果*（而不仅仅是实现它的代码）处于代码评审之下。
+回归会被捕获，改进也总是会在代码评审中显现。
 
-To ensure that characterisation testing doesn't make it harder to intentionally change these interfaces, there always must be an easy way to regenerate the expected output, as we do with `_NIX_TEST_ACCEPT=1`.
+为确保特征化测试不至于让有意更改这些接口变得更困难，必须始终存在一种轻松重新生成期望输出的方式，就像我们用 `_NIX_TEST_ACCEPT=1` 所做的那样。
 
-### Running functional tests on NixOS
+### 在 NixOS 上运行功能测试
 
-We run the functional tests not just in the build, but also in VM tests.
-This helps us ensure that Nix works correctly on NixOS, and environments that have similar characteristics that are hard to reproduce in a build environment.
+我们不仅在构建中运行功能测试，也在 VM 测试中运行。
+这帮助我们确保 Nix 在 NixOS 上正常工作，也在那些在构建环境中难以复现的类似特性环境中正常工作。
 
-These can be run with:
+可以用以下命令运行：
 
 ```shell
 nix build .#hydraJobs.tests.functional_user
 ```
 
-Generally, this build is sufficient, but in nightly or CI we also test the attributes `functional_root` and `functional_trusted`, in which the test suite is run with different levels of authorization.
+通常这个构建就足够了，但在 nightly 或 CI 中我们还会测试 `functional_root` 和 `functional_trusted` 属性，在其中测试套件以不同的授权级别运行。
 
-## Integration tests
+## 集成测试
 
-The integration tests are defined in the Nix flake under the `hydraJobs.tests` attribute.
-These tests include everything that needs to interact with external services or run Nix in a non-trivial distributed setup.
-Because these tests are expensive and require more than what the standard github-actions setup provides, most of them only run on the master branch (on <https://hydra.nixos.org/jobset/nix/master>).
+集成测试定义在 Nix flake 的 `hydraJobs.tests` 属性下。
+这些测试包括一切需要与外部服务交互或在非平凡分布式设置中运行 Nix 的内容。
+由于这些测试代价高昂，且需要的资源超出标准 github-actions 配置所能提供，它们中的大多数只在 master 分支上运行（在 <https://hydra.nixos.org/jobset/nix/master>）。
 
-You can run them manually with `nix build .#hydraJobs.tests.{testName}` or `nix-build -A hydraJobs.tests.{testName}`.
+你可以用 `nix build .#hydraJobs.tests.{testName}` 或 `nix-build -A hydraJobs.tests.{testName}` 手动运行它们。
 
-## Fuzzing
+## 模糊测试（Fuzzing）
 
-The project uses [`libFuzzer`](https://llvm.org/docs/LibFuzzer.html) and LLVM coverage instrumentation to fuzz sensitive pieces of code.
-The harnesses reside in corresponding `-tests` subprojects (e.g. `src/libutil-tests/fuzz`).
-The `fuzzers` option builds the harnesses independently of `unit-tests`; set `unit-tests=false` for a fuzzer-only build.
-The `fuzzing-engine` option accepts one compiler-driver argument for linking an external fuzzing engine.
-If `fuzzing-engine` is empty, Meson requires Clang and `fuzzer-no-link` in `b_sanitize`.
-The compiler driver then links the harnesses with libFuzzer and libstdc++.
+本项目使用 [`libFuzzer`](https://llvm.org/docs/LibFuzzer.html) 和 LLVM 覆盖率插桩来对敏感代码片段进行模糊测试。
+测试驱动（harness）位于对应的 `-tests` 子项目中（例如 `src/libutil-tests/fuzz`）。
+`fuzzers` 选项独立于 `unit-tests` 构建 harness；若要只构建 fuzzer，可设置 `unit-tests=false`。
+`fuzzing-engine` 选项接受一个用于链接外部模糊测试引擎的编译器驱动参数。
+如果 `fuzzing-engine` 为空，Meson 要求使用 Clang 并在 `b_sanitize` 中包含 `fuzzer-no-link`。
+编译器驱动随后会把 harness 与 libFuzzer 和 libstdc++ 链接起来。
 
 ```shell
 nix develop .#native-clangStdenv
@@ -334,7 +335,7 @@ configurePhase
 buildPhase
 ```
 
-To use an external fuzzing engine, set `fuzzing-engine`:
+要使用外部模糊测试引擎，请设置 `fuzzing-engine`：
 
 ```shell
 mesonFlagsArray+=(
@@ -344,20 +345,20 @@ mesonFlagsArray+=(
 )
 ```
 
-Nix passes this value as one compiler-driver argument.
-The caller must also choose a compatible compiler and C++ runtime and provide any required instrumentation and sanitizer flags.
+Nix 将该值作为一个编译器驱动参数传入。
+调用者还必须选择兼容的编译器和 C++ 运行时，并提供任何所需的插桩和 sanitizer 标志。
 
-If you want to collect coverage metrics you also need to specify the following compiler flags before running the `configurePhase`:
+如果你想收集覆盖率指标，还需要在运行 `configurePhase` 之前指定以下编译器标志：
 
 ```shell
 export CXXFLAGS="-fprofile-instr-generate -fcoverage-mapping"
 export CCFLAGS="-fprofile-instr-generate -fcoverage-mapping"
 ```
 
-For now, the testbenches are mostly rudimentary and are supposed to catch memory safety bugs, but fuzzing is also crucial for validating invariants.
-Contributions improving harnesses and corpus/dictionaries are welcome.
+目前，这些测试用例大多还很简陋，主要用于捕获内存安全 bug，但模糊测试对于验证不变量同样至关重要。
+欢迎贡献改进 harness 以及语料库/字典的工作。
 
-To run the harness (e.g. for NAR deserialisation) you can execute the following:
+要运行 harness（例如 NAR 反序列化的），可以执行以下操作：
 
 ```shell
 export LLVM_PROFILE_FILE="default.%p.profraw"
@@ -365,9 +366,9 @@ mkdir /tmp/parse-dump
 build/src/libutil-tests/fuzz/harnesses/fuzz-parse-dump -runs=1000000 -max_len=65536 -dict=./src/libutil-tests/fuzz/data/nars.dict /tmp/parse-dump ./src/libutil-tests/fuzz/data/nars
 ```
 
-Note that to achieve better results, tuning `libFuzzer` parameters or improvements to the initial corpus and dictionaries is likely required. For further information consult the [libFuzzer manual](https://llvm.org/docs/LibFuzzer.html).
+注意，要获得更好的结果，可能需要调整 `libFuzzer` 参数或改进初始语料库和字典。更多信息请查阅 [libFuzzer 手册](https://llvm.org/docs/LibFuzzer.html)。
 
-If you want to inspect the coverage, wait for the harness to run to completion (interrupting it won't produce a non-empty `.profraw` file) and assemble the final coverage report:
+如果你想查看覆盖率，请等待 harness 运行完毕（中途打断不会生成非空的 `.profraw` 文件），然后汇总最终的覆盖率报告：
 
 ```
 llvm-profdata merge -sparse *.profraw -o default.profdata
@@ -375,16 +376,16 @@ llvm-cov show build/src/libutil/libnixutil.so -instr-profile=default.profdata -f
 xdg-open cov-html/index.html
 ```
 
-If you have found a memory safety issue using fuzzing, consider reporting it [privately](https://github.com/NixOS/nix/security/) if you deem the issue to be security relevant.
+如果你通过模糊测试发现了内存安全问题，并认为它与安全相关，请考虑[私下报告](https://github.com/NixOS/nix/security/)。
 
-### Checks that defeat fuzzing
+### 妨碍模糊测试的检查
 
-Fuzzing is crucial for validating invariants, but a few invariants are ones a fuzzer can never satisfy.
-A check that a field equals a cryptographic hash of other fields is the usual case: passing it requires a hash preimage, so the code below the check becomes *unreachable* to the fuzzer rather than merely hard to reach.
-This is different from a check that is only awkward to satisfy --- sorted keys, balanced delimiters, no redundant escapes --- which a coverage-guided fuzzer will learn to get past on its own.
-Only the former should be gated.
+模糊测试对验证不变量至关重要，但有少数不变量是 fuzzer 永远无法满足的。
+检查某字段是否等于其他字段的密码学散列就是典型情况：要通过该检查需要一个哈希原像（preimage），因此该检查之下的代码对 fuzzer 来说变得*不可达*，而不仅仅是难以到达。
+这与那些只是难以满足的检查不同——键已排序、分隔符配对、没有冗余转义——覆盖制导的 fuzzer 会自己学会绕过它们。
+只有前者才应当被门控。
 
-Such checks are compiled out under `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`, e.g.:
+此类检查会在 `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION` 下被编译掉，例如：
 
 ```c++
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
@@ -393,36 +394,36 @@ Such checks are compiled out under `FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION`, e
 #endif
 ```
 
-The macro name is a convention from [OSS-Fuzz](https://google.github.io/oss-fuzz/) and libFuzzer.
-`nix-meson-build-support/common/meson.build` defines it for every subproject when `fuzzer-no-link` is in `b_sanitize`, which is exactly when a fuzzer-instrumented build is being made.
-Builds using an external `fuzzing-engine` are expected to pass it themselves, as OSS-Fuzz does.
+该宏名是 [OSS-Fuzz](https://google.github.io/oss-fuzz/) 和 libFuzzer 的一个约定。
+当 `b_sanitize` 中含有 `fuzzer-no-link` 时——也就是正在构建 fuzzer 插桩版本时——`nix-meson-build-support/common/meson.build` 会为每个子项目定义它。
+使用外部 `fuzzing-engine` 的构建应自行传入该宏，正如 OSS-Fuzz 所做的那样。
 
-Anything gated this way is no longer exercised by the fuzzer, so it must be covered by a unit test instead.
-For an example of both halves, see the fixed-output derivation path check in `parseOutput` (`src/libstore/derivation/aterm.cc`) and its test `CAFixedPathMismatch`.
+以这种方式门控的任何内容都不再被 fuzzer 执行，因此必须改由单元测试覆盖。
+关于这两方面的示例，参见 `parseOutput` 中的 fixed-output derivation 路径检查（`src/libstore/derivation/aterm.cc`）及其测试 `CAFixedPathMismatch`。
 
-## Installer tests
+## 安装器测试
 
-GitHub Actions CI in the Nix repository also tests the installer on PRs. It does not require additional setup and utilises [GHA Artifacts](https://docs.github.com/en/actions/tutorials/store-and-share-data) and can be run in any Nix repository fork.
+Nix 仓库中的 GitHub Actions CI 也会在 PR 上测试安装器。它不需要额外配置，利用 [GHA Artifacts](https://docs.github.com/en/actions/tutorials/store-and-share-data)，并且可以在任何 Nix 仓库 fork 中运行。
 
-- The `tests` job generates installers for the platforms below and uploads them as an artifact:
+- `tests` 任务为以下平台生成安装器并作为 artifact 上传：
   - `x86_64-linux`
   - `aarch64-darwin`
 
-- The `installer_test` job (which runs on Linux and macOS) will try to install Nix with the cached installer and run a trivial Nix command.
-- Both the scripted installer and the [standalone Rust-based installer](https://github.com/NixOS/nix-installer) are tested.
+- `installer_test` 任务（在 Linux 和 macOS 上运行）会尝试用缓存的安装器安装 Nix 并运行一个简单的 Nix 命令。
+- 脚本式安装器和[独立的基于 Rust 的安装器](https://github.com/NixOS/nix-installer)都会被测试。
 
-You can generate the installer tarball and script manually by running `nix build .#hydraJobs.installerScriptForGHA.<system-double>`.
+你可以通过运行 `nix build .#hydraJobs.installerScriptForGHA.<system-double>` 手动生成安装器 tarball 和脚本。
 
-## Working on documentation
+## 编写文档
 
-### Using the CI-generated installer for manual testing
+### 使用 CI 生成的安装器进行手动测试
 
-After the CI run completes, you can check the output to extract the installer artifact:
-1. Click into the detailed view of the CI run.
-2. Scroll down to `Artifacts` section.
-3. Download the corresponding installer artifact (`installer-darwin` for `aarch64-darwin` and `installer-linux` for `x86_64-linux`).
-4. Unpack the downloaded `.zip` artifact.
-5. To generate an install command, plug the path to the unpacked artifact into this template:
+CI 运行完成后，你可以查看其输出以提取安装器 artifact：
+1. 点击进入该 CI 运行的详细视图。
+2. 向下滚动到 `Artifacts` 部分。
+3. 下载相应的安装器 artifact（`aarch64-darwin` 对应 `installer-darwin`，`x86_64-linux` 对应 `installer-linux`）。
+4. 解压下载的 `.zip` artifact。
+5. 要生成安装命令，把解压后 artifact 的路径代入这个模板：
 
     ```console
     sh <path/to/artifact>/install --tarball-url-prefix file://<path/to/artifact>

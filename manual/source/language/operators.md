@@ -1,33 +1,33 @@
-# Operators
+# 运算符
 
-| Name                                   | Syntax                                     | Associativity | Precedence |
+| 名称                                   | 语法                                       | 结合性        | 优先级     |
 |----------------------------------------|--------------------------------------------|---------------|------------|
-| [Attribute selection]                  | *attrset* `.` *attrpath* \[ `or` *expr* \] | none          | 1          |
-| [Function application]                 | *func* *expr*                              | left          | 2          |
-| [Arithmetic negation][arithmetic]      | `-` *number*                               | none          | 3          |
-| [Has attribute]                        | *expr* `?` *attrpath*                      | none          | 4          |
-| List concatenation                     | *list* `++` *list*                         | right         | 5          |
-| [Multiplication][arithmetic]           | *number* `*` *number*                      | left          | 6          |
-| [Division][arithmetic]                 | *number* `/` *number*                      | left          | 6          |
-| [Subtraction][arithmetic]              | *number* `-` *number*                      | left          | 7          |
-| [Addition][arithmetic]                 | *number* `+` *number*                      | left          | 7          |
-| [String concatenation]                 | *string* `+` *string*                      | left          | 7          |
-| [Path concatenation]                   | *path* `+` *path*                          | left          | 7          |
-| [Path and string concatenation]        | *path* `+` *string*                        | left          | 7          |
-| [String and path concatenation]        | *string* `+` *path*                        | left          | 7          |
-| Logical negation (`NOT`)               | `!` *bool*                                 | none          | 8          |
-| [Update]                               | *attrset* `//` *attrset*                   | right         | 9          |
-| [Less than][Comparison]                | *expr* `<` *expr*                          | none          | 10         |
-| [Less than or equal to][Comparison]    | *expr* `<=` *expr*                         | none          | 10         |
-| [Greater than][Comparison]             | *expr* `>` *expr*                          | none          | 10         |
-| [Greater than or equal to][Comparison] | *expr* `>=` *expr*                         | none          | 10         |
-| [Equality]                             | *expr* `==` *expr*                         | none          | 11         |
-| Inequality                             | *expr* `!=` *expr*                         | none          | 11         |
-| [Logical conjunction] (`AND`)          | *bool* `&&` *bool*                         | left          | [12](#precedence-and-disjunctive-normal-form)         |
-| [Logical disjunction] (`OR`)           | *bool* <code>\|\|</code> *bool*            | left          | [13](#precedence-and-disjunctive-normal-form)         |
-| [Logical implication]                  | *bool* `->` *bool*                         | right         | 14         |
-| [Pipe operator] (experimental)         | *expr* `\|>` *func*                        | left          | 15         |
-| [Pipe operator] (experimental)         | *func* `<\|` *expr*                        | right         | 15         |
+| [属性选择]                  | *attrset* `.` *attrpath* \[ `or` *expr* \] | 无            | 1          |
+| [函数应用]                 | *func* *expr*                              | 左            | 2          |
+| [算术取反][arithmetic]      | `-` *number*                               | 无            | 3          |
+| [属性判断]                        | *expr* `?` *attrpath*                      | 无            | 4          |
+| 列表拼接                     | *list* `++` *list*                         | 右            | 5          |
+| [乘法][arithmetic]           | *number* `*` *number*                      | 左            | 6          |
+| [除法][arithmetic]                 | *number* `/` *number*                      | 左            | 6          |
+| [减法][arithmetic]              | *number* `-` *number*                      | 左            | 7          |
+| [加法][arithmetic]                 | *number* `+` *number*                      | 左            | 7          |
+| [字符串拼接]                 | *string* `+` *string*                      | 左            | 7          |
+| [路径拼接]                   | *path* `+` *path*                          | 左            | 7          |
+| [路径与字符串拼接]        | *path* `+` *string*                        | 左            | 7          |
+| [字符串与路径拼接]        | *string* `+` *path*                        | 左            | 7          |
+| 逻辑非（`NOT`）               | `!` *bool*                                 | 无            | 8          |
+| [更新]                               | *attrset* `//` *attrset*                   | 右            | 9          |
+| [小于][Comparison]                | *expr* `<` *expr*                          | 无            | 10         |
+| [小于等于][Comparison]    | *expr* `<=` *expr*                         | 无            | 10         |
+| [大于][Comparison]             | *expr* `>` *expr*                          | 无            | 10         |
+| [大于等于][Comparison] | *expr* `>=` *expr*                         | 无            | 10         |
+| [相等]                             | *expr* `==` *expr*                         | 无            | 11         |
+| 不等                             | *expr* `!=` *expr*                         | 无            | 11         |
+| [逻辑与] (`AND`)          | *bool* `&&` *bool*                         | 左            | [12](#precedence-and-disjunctive-normal-form)         |
+| [逻辑或] (`OR`)           | *bool* <code>\|\|</code> *bool*            | 左            | [13](#precedence-and-disjunctive-normal-form)         |
+| [逻辑蕴含]                  | *bool* `->` *bool*                         | 右            | 14         |
+| [管道运算符] (experimental)         | *expr* `\|>` *func*                        | 左            | 15         |
+| [管道运算符] (experimental)         | *func* `<\|` *expr*                        | 右            | 15         |
 
 [string]: ./types.md#type-string
 [path]: ./types.md#type-path
@@ -37,151 +37,151 @@
 
 <!-- TODO(@rhendric, #10970): ^ rationalize number -> int/float -->
 
-## Attribute selection
+## 属性选择
 
-> **Syntax**
+> **语法**
 >
 > *attrset* `.` *attrpath* \[ `or` *expr* \]
 
-Select the attribute denoted by attribute path *attrpath* from [attribute set] *attrset*.
-If the attribute doesn’t exist, return the *expr* after `or` if provided, otherwise abort evaluation.
+从[属性集][attribute set] *attrset* 中选择由属性路径 *attrpath* 所表示的属性。
+如果该属性不存在，则返回 `or` 之后的 *expr*（如果提供了的话），否则中止求值。
 
-[Attribute selection]: #attribute-selection
+[属性选择]: #attribute-selection
 
-## Function application
+## 函数应用
 
-> **Syntax**
+> **语法**
 >
 > *func* *expr*
 
-Apply the callable value *func* to the argument *expr*. Note the absence of any visible operator symbol.
-A callable value is either:
-- a [user-defined function][function]
-- a [built-in][builtins] function
-- an attribute set with a [`__functor` attribute](./syntax.md#attr-__functor)
+将可调用值 *func* 应用到参数 *expr* 上。注意这里没有任何可见的运算符符号。
+可调用值可以是以下之一：
+- [用户自定义函数][function]
+- [内建][builtins]函数
+- 带有 [`__functor` 属性](./syntax.md#attr-__functor)的属性集
 
-> **Warning**
+> **警告**
 >
-> [List][list] items are also separated by whitespace, which means that function calls in list items must be enclosed by parentheses.
+> [列表][list]的元素同样以空白分隔，这意味着列表元素中的函数调用必须用圆括号括起来。
 
-## Has attribute
+## 属性判断
 
-> **Syntax**
+> **语法**
 >
 > *expr* `?` *attrpath*
 
-Test whether *expr* is an [attribute set] containing the attribute denoted by *[attrpath]*.
-If *attrpath* contains multiple components, and any of its components (other than the last) do not correspond to an attribute set in *expr*, the result is false.
-The result is a [Boolean] value.
+检测 *expr* 是否是一个包含 *[attrpath]* 所表示属性的[属性集][attribute set]。
+如果 *attrpath* 包含多个组成部分，且其中任何组成部分（除最后一个外）不对应 *expr* 中的一个属性集，则结果为 false。
+结果是一个[布尔值][Boolean]。
 
-See also: [`builtins.hasAttr`](@docroot@/language/builtins.md#builtins-hasAttr)
+参见：[`builtins.hasAttr`](@docroot@/language/builtins.md#builtins-hasAttr)
 
 [attrpath]: ./syntax.md#attrpath-literal
 
 [Boolean]: ./types.md#type-bool
 
-[Has attribute]: #has-attribute
+[属性判断]: #has-attribute
 
-After evaluating *attrset* and *attrpath*, the computational complexity is O(log(*n*)) for *n* attributes in the *attrset*.
+在求值 *attrset* 和 *attrpath* 之后，计算复杂度为 O(log(*n*))，其中 *n* 是 *attrset* 中属性的数量。
 
-## Arithmetic
+## 算术运算
 
-Numbers will retain their type unless mixed with other numeric types:
-Pure integer operations will always return integers, whereas any operation involving at least one floating point number returns a floating point number.
+数字会保留其类型，除非与其他数值类型混合运算：
+纯整数运算总是返回整数，而任何涉及至少一个浮点数的运算都会返回浮点数。
 
-Evaluation of the following numeric operations throws an evaluation error:
-- Division by zero
-- Integer overflow, that is, any operation yielding a result outside of the representable range of [Nix language integers](./syntax.md#number-literal)
+以下数值运算在求值时会抛出求值错误：
+- 除以零
+- 整数溢出，即任何运算结果超出 [Nix 语言整数](./syntax.md#number-literal)可表示范围的情况
 
-See also [Comparison] and [Equality].
+另见 [比较运算][Comparison]与[相等][Equality]。
 
-The `+` operator is overloaded to also work on strings and paths.
+`+` 运算符被重载，也可用于字符串和路径。
 
 [arithmetic]: #arithmetic
 
-## String concatenation
+## 字符串拼接
 
-> **Syntax**
+> **语法**
 >
 > *string* `+` *string*
 
-Concatenate two [strings][string] and merge their [string contexts](./string-context.md).
+拼接两个[字符串][string]，并合并它们的[字符串上下文](./string-context.md)。
 
-[String concatenation]: #string-concatenation
+[字符串拼接]: #string-concatenation
 
-## Path concatenation
+## 路径拼接
 
-> **Syntax**
+> **语法**
 >
 > *path* `+` *path*
 
-Concatenate two [paths][path].
-The result is a path.
+拼接两个[路径][path]。
+结果是一个路径。
 
-[Path concatenation]: #path-concatenation
+[路径拼接]: #path-concatenation
 
-## Path and string concatenation
+## 路径与字符串拼接
 
-> **Syntax**
+> **语法**
 >
 > *path* + *string*
 
-Concatenate *[path]* with *[string]*.
-The result is a path.
+将 *[path]* 与 *[string]* 拼接。
+结果是一个路径。
 
-> **Note**
+> **注意**
 >
-> The string must not have a [string context](./string-context.md) that refers to a [store path].
+> 该字符串的[字符串上下文](./string-context.md)中不得引用任何[存储路径]。
 
-[Path and string concatenation]: #path-and-string-concatenation
+[路径与字符串拼接]: #path-and-string-concatenation
 
-## String and path concatenation
+## 字符串与路径拼接
 
-> **Syntax**
+> **语法**
 >
 > *string* + *path*
 
-Concatenate *[string]* with *[path]*.
-The result is a string.
+将 *[string]* 与 *[path]* 拼接。
+结果是一个字符串。
 
-> **Important**
+> **重要**
 >
-> The file or directory at *path* must exist and is copied to the [store].
-> The path appears in the result as the corresponding [store path].
+> *path* 处的文件或目录必须存在，并且会被复制到 [store（存储库）][store]。
+> 该路径在结果中以对应的[存储路径]形式出现。
 
 [store path]: @docroot@/store/store-path.md
 [store]: @docroot@/glossary.md#gloss-store
 
-[String and path concatenation]: #string-and-path-concatenation
+[字符串与路径拼接]: #string-and-path-concatenation
 
-## Update
+## 更新
 
-> **Syntax**
+> **语法**
 >
 > *attrset1* // *attrset2*
 
-Update [attribute set] *attrset1* with names and values from *attrset2*.
+用 *attrset2* 中的名字和值更新[属性集][attribute set] *attrset1*。
 
-The returned attribute set will have all of the attributes in *attrset1* and *attrset2*.
-If an attribute name is present in both, the attribute value from the latter is taken.
+返回的属性集将包含 *attrset1* 和 *attrset2* 中的所有属性。
+如果某个属性名在两者中都存在，则取后者中的属性值。
 
-This operator is [strict](@docroot@/language/evaluation.md#strictness) in both *attrset1* and *attrset2*.
-That means that both arguments are evaluated to [weak head normal form](@docroot@/language/evaluation.md#values), so the attribute sets themselves are evaluated, but their attribute values are not evaluated.
+该运算符对 *attrset1* 和 *attrset2* 都是[严格的](@docroot@/language/evaluation.md#strictness)。
+这意味着两个参数都会被求值到[弱首范式](@docroot@/language/evaluation.md#values)，即属性集本身会被求值，但它们的属性值不会被求值。
 
-[Update]: #update
+[更新]: #update
 
-## Comparison
+## 比较运算
 
-Comparison is
+比较的规则是：
 
-- [arithmetic] for [numbers][number]
-- lexicographic for [strings][string] and [paths][path]
-- item-wise lexicographic for [lists][list]:
-  elements at the same index in both lists are compared according to their type and skipped if they are equal.
+- 对[数字][number]进行算术比较
+- 对[字符串][string]和[路径][path]进行字典序比较
+- 对[列表][list]逐项进行字典序比较：
+  两个列表中相同索引处的元素按其类型进行比较，若相等则跳过。
 
-All comparison operators are implemented in terms of `<`, and the following equivalencies hold:
+所有比较运算符都基于 `<` 实现，并且以下等价关系成立：
 
-| comparison   | implementation        |
+| 比较         | 实现                  |
 |--------------|-----------------------|
 | *a* `<=` *b* | `! (` *b* `<` *a* `)` |
 | *a* `>`  *b* |       *b* `<` *a*     |
@@ -189,38 +189,38 @@ All comparison operators are implemented in terms of `<`, and the following equi
 
 [Comparison]: #comparison
 
-## Equality
+## 相等
 
-- [Attribute sets][attribute set] are compared first by attribute names and then by items until a difference is found.
-- [Lists][list] are compared first by length and then by items until a difference is found.
-- Comparison of distinct [functions][function] returns `false`, but identical functions may be subject to [value identity optimization](#value-identity-optimization).
-- Numbers are type-compatible, see [arithmetic] operators.
-- Floating point numbers only differ up to a limited precision.
+- [属性集][attribute set]先按属性名比较，再逐项比较，直到发现差异为止。
+- [列表][list]先按长度比较，再逐项比较，直到发现差异为止。
+- 对两个不同的[函数][function]进行比较返回 `false`，但相同的函数可能受[值同一性优化](#value-identity-optimization)影响。
+- 数字之间类型兼容，参见[算术运算][arithmetic]符。
+- 浮点数只在有限的精度范围内区分彼此。
 
-The `==` operator is [strict](@docroot@/language/evaluation.md#strictness) in both arguments; when comparing composite types ([attribute sets][attribute set] and [lists][list]), it is partially strict in their contained values: they are evaluated until a difference is found. <!-- this is woefully underspecified, affecting which expressions evaluate correctly; not just "ordering" or error messages. -->
+`==` 运算符对两个参数都是[严格的](@docroot@/language/evaluation.md#strictness)；在比较复合类型（[属性集][attribute set]和[列表][list]）时，对其包含的值是部分严格的：这些值会被求值，直到发现差异为止。 <!-- this is woefully underspecified, affecting which expressions evaluate correctly; not just "ordering" or error messages. -->
 
-### Value identity optimization
+### 值同一性优化
 
-Nix performs equality comparisons of nested values by pointer equality or more abstractly, _identity_.
-Nix semantics ideally do not assign a unique identity to values as they are created, but equality is an exception to this rule.
-The disputable benefit of this is that it is more efficient, and it allows cyclical structures to be compared, e.g. `let x = { x = x; }; in x == x` evaluates to `true`.
-However, as a consequence, it makes a function equal to itself when the comparison is made in a list or attribute set, in contradiction to a simple direct comparison.
+Nix 通过指针相等性来执行嵌套值的相等比较，或者更抽象地说，通过 _同一性_（identity）。
+理想情况下，Nix 语义并不会为创建的值赋予唯一的同一性，但相等比较是这条规则的一个例外。
+这样做有争议的好处是效率更高，并且能够比较循环结构，例如 `let x = { x = x; }; in x == x` 的求值结果为 `true`。
+然而，其后果是，当比较发生在列表或属性集中时，一个函数会与它自身相等，这与简单直接的比较方式相矛盾。
 
 [function]: ./syntax.md#functions
 
 [Equality]: #equality
 
-## Logical conjunction
+## 逻辑与
 
-> **Syntax**
+> **语法**
 >
 > *bool1* `&&` *bool2*
 
-Logical AND. Equivalent to `if` *bool1* `then` *bool2* `else false`.
+逻辑与。等价于 `if` *bool1* `then` *bool2* `else false`。
 
-This operator is [strict](@docroot@/language/evaluation.md#strictness) in *bool1*, but only evaluates *bool2* if *bool1* is `true`.
+该运算符对 *bool1* 是[严格的](@docroot@/language/evaluation.md#strictness)，但只有在 *bool1* 为 `true` 时才会求值 *bool2*。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > true && false
@@ -230,19 +230,19 @@ This operator is [strict](@docroot@/language/evaluation.md#strictness) in *bool1
 > => false
 > ```
 
-[Logical conjunction]: #logical-conjunction
+[逻辑与]: #logical-conjunction
 
-## Logical disjunction
+## 逻辑或
 
-> **Syntax**
+> **语法**
 >
 > *bool1* `||` *bool2*
 
-Logical OR. Equivalent to `if` *bool1* `then true` `else` *bool2*.
+逻辑或。等价于 `if` *bool1* `then true` `else` *bool2*。
 
-This operator is [strict](@docroot@/language/evaluation.md#strictness) in *bool1*, but only evaluates *bool2* if *bool1* is `false`.
+该运算符对 *bool1* 是[严格的](@docroot@/language/evaluation.md#strictness)，但只有在 *bool1* 为 `false` 时才会求值 *bool2*。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > true || false
@@ -252,26 +252,26 @@ This operator is [strict](@docroot@/language/evaluation.md#strictness) in *bool1
 > => true
 > ```
 
-[Logical disjunction]: #logical-disjunction
+[逻辑或]: #logical-disjunction
 
-### Precedence and disjunctive normal form
+### 优先级与析取范式
 
-The precedence of `&&` and `||` aligns with disjunctive normal form.
-Without parentheses, an expression describes multiple "permissible situations" (connected by `||`), where each situation consists of multiple simultaneous conditions (connected by `&&`).
+`&&` 和 `||` 的优先级与析取范式相一致。
+在没有括号的情况下，一个表达式描述了多个「允许的情形」（由 `||` 连接），其中每个情形由多个同时成立的条件组成（由 `&&` 连接）。
 
-For example, `A || B && C || D && E` is parsed as `A || (B && C) || (D && E)`, describing three permissible situations: A holds, or both B and C hold, or both D and E hold.
+例如，`A || B && C || D && E` 会被解析为 `A || (B && C) || (D && E)`，描述了三种允许的情形：A 成立，或者 B 与 C 同时成立，或者 D 与 E 同时成立。
 
-## Logical implication
+## 逻辑蕴含
 
-> **Syntax**
+> **语法**
 >
 > *bool1* `->` *bool2*
 
-Logical implication. Equivalent to `!`*bool1* `||` *bool2* (or `if` *bool1* `then` *bool2* `else true`).
+逻辑蕴含。等价于 `!`*bool1* `||` *bool2*（或 `if` *bool1* `then` *bool2* `else true`）。
 
-This operator is [strict](@docroot@/language/evaluation.md#strictness) in *bool1*, but only evaluates *bool2* if *bool1* is `true`.
+该运算符对 *bool1* 是[严格的](@docroot@/language/evaluation.md#strictness)，但只有在 *bool1* 为 `true` 时才会求值 *bool2*。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > true -> false
@@ -281,14 +281,14 @@ This operator is [strict](@docroot@/language/evaluation.md#strictness) in *bool1
 > => true
 > ```
 
-[Logical implication]: #logical-implication
+[逻辑蕴含]: #logical-implication
 
-## Pipe operators
+## 管道运算符
 
-- *a* `|>` *b* is equivalent to *b* *a*
-- *a* `<|` *b* is equivalent to *a* *b*
+- *a* `|>` *b* 等价于 *b* *a*
+- *a* `<|` *b* 等价于 *a* *b*
 
-> **Example**
+> **示例**
 >
 > ```
 > nix-repl> 1 |> builtins.add 2 |> builtins.mul 3
@@ -298,21 +298,21 @@ This operator is [strict](@docroot@/language/evaluation.md#strictness) in *bool1
 > 7
 > ```
 
-> **Warning**
+> **警告**
 >
-> This syntax is part of an
-> [experimental feature](@docroot@/development/experimental-features.md)
-> and may change in future releases.
+> 该语法属于一项
+> [实验性特性](@docroot@/development/experimental-features.md)，
+> 在未来的版本中可能会发生变化。
 >
-> To use this syntax, make sure the
-> [`pipe-operators` experimental feature](@docroot@/development/experimental-features.md#xp-feature-pipe-operators)
-> is enabled.
-> For example, include the following in [`nix.conf`](@docroot@/command-ref/conf-file.md):
+> 要使用该语法，请确保
+> [`pipe-operators` 实验性特性](@docroot@/development/experimental-features.md#xp-feature-pipe-operators)
+> 已启用。
+> 例如，在 [`nix.conf`](@docroot@/command-ref/conf-file.md) 中加入以下内容：
 >
 > ```
 > extra-experimental-features = pipe-operators
 > ```
 
-[Pipe operator]: #pipe-operators
+[管道运算符]: #pipe-operators
 [builtins]: ./builtins.md
-[Function application]: #function-application
+[函数应用]: #function-application

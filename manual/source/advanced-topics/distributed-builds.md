@@ -1,65 +1,51 @@
-# Remote Builds
+# 远程构建
 
-A local Nix installation can forward Nix builds to other machines,
-this allows multiple builds to be performed in parallel.
+本地 Nix 安装可以把 Nix 构建转发给其他机器，这样多个构建就可以并行执行。
 
-Remote builds also allow Nix to perform multi-platform builds in a
-semi-transparent way. For example, if you perform a build for a
-`aarch64-darwin` on an `i686-linux` machine, Nix can automatically
-forward the build to a `aarch64-darwin` machine, if one is available.
+远程构建还允许 Nix 以半透明的方式执行跨平台构建。例如，如果你在一台 `i686-linux` 机器上为 `aarch64-darwin` 执行构建，只要有一台 `aarch64-darwin` 机器可用，Nix 就可以自动把构建转发过去。
 
-## Requirements
+## 前提条件
 
-For a local machine to forward a build to a remote machine, the remote machine must:
+本地机器要把构建转发给远程机器，远程机器必须：
 
-- Have Nix installed
-- Be running an SSH server, e.g. `sshd`
-- Be accessible via SSH from the local machine over the network
-- Have the local machine's public SSH key in `/etc/ssh/authorized_keys.d/<username>`
-- Have the username of the SSH user in the `trusted-users` setting in `nix.conf`
+- 已安装 Nix
+- 正在运行 SSH 服务器，例如 `sshd`
+- 可以通过网络从本地机器通过 SSH 访问
+- 在 `/etc/ssh/authorized_keys.d/<username>` 中拥有本地机器的公钥
+- 其 SSH 用户名出现在 `nix.conf` 的 `trusted-users` 设置中
 
-## Testing
+## 测试
 
-To test connecting to a remote [Nix instance] (in this case `mac`), run:
+要测试能否连接到远程 [Nix 实例]（此处为 `mac`），运行：
 
 ```console
 nix store info --store ssh://username@mac
 ```
 
-To specify an SSH identity file as part of the remote store URI add a
-query parameter, e.g.
+要在远程 store URI 中指定 SSH 身份文件，请添加一个查询参数，例如：
 
 ```console
 nix store info --store ssh://username@mac?ssh-key=/home/alice/my-key
 ```
 
-Since builds should be non-interactive, the key should not have a
-passphrase. Alternatively, you can load identities ahead of time into
-`ssh-agent` or `gpg-agent`.
+由于构建应当是非交互式的，密钥不应设置密码短语（passphrase）。另外，你也可以提前把身份加载到 `ssh-agent` 或 `gpg-agent` 中。
 
-In a multi-user installation (default), builds are executed by the Nix
-Daemon. The Nix Daemon cannot prompt for a passphrase via the terminal
-or `ssh-agent`, so the SSH key must not have a passphrase.
+在多用户安装（默认）中，构建由 Nix 守护进程执行。Nix 守护进程无法通过终端或 `ssh-agent` 提示输入密码短语，因此 SSH 密钥必须没有密码短语。
 
-In addition, the Nix Daemon's user (typically root) needs to have SSH
-access to the remote builder.
+此外，Nix 守护进程的用户（通常是 root）需要对远程构建机具有 SSH 访问权限。
 
-Access can be verified by running `sudo su`, and then validating SSH
-access, e.g. by running `ssh mac`. SSH identity files for root users
-are usually stored in `/root/.ssh/` (Linux) or `/var/root/.ssh` (MacOS).
+可以通过运行 `sudo su`，然后验证 SSH 访问（例如运行 `ssh mac`）来确认访问权限。root 用户的 SSH 身份文件通常存放在 `/root/.ssh/`（Linux）或 `/var/root/.ssh`（MacOS）。
 
-If you get the error
+如果你遇到错误
 
 ```console
 bash: nix: command not found
 error: cannot connect to 'mac'
 ```
 
-then you need to ensure that the `PATH` of non-interactive login shells
-contains Nix.
+那么你需要确保非交互式登录 shell 的 `PATH` 中包含 Nix。
 
-The [list of remote build machines](@docroot@/command-ref/conf-file.md#conf-builders) can be specified on the command line or in the Nix configuration file.
-For example, the following command allows you to build a derivation for `aarch64-darwin` on a Linux machine:
+[远程构建机列表](@docroot@/command-ref/conf-file.md#conf-builders)可以在命令行或 Nix 配置文件中指定。例如，以下命令让你在一台 Linux 机器上为 `aarch64-darwin` 构建一个 derivation：
 
 ```console
 uname
@@ -87,24 +73,22 @@ cat ./result
 Darwin
 ```
 
-It is possible to specify multiple build machines separated by a semicolon or a newline, e.g.
+可以用分号或换行分隔来指定多台构建机，例如：
 
 ```console
   --builders 'ssh://mac aarch64-darwin ; ssh://beastie x86_64-freebsd'
 ```
 
-Remote build machines can also be configured in [`nix.conf`](@docroot@/command-ref/conf-file.md), e.g.
+远程构建机也可以在 [`nix.conf`](@docroot@/command-ref/conf-file.md) 中配置，例如：
 
     builders = ssh://mac aarch64-darwin ; ssh://beastie x86_64-freebsd
 
-After making changes to `nix.conf`, restart the Nix daemon for changes to take effect.
+修改 `nix.conf` 之后，需要重启 Nix 守护进程才能使更改生效。
 
-Finally, remote build machines can be configured in a separate configuration
-file included in `builders` via the syntax `@/path/to/file`. For example,
+最后，远程构建机还可以在一个单独的配置文件中配置，并通过语法 `@/path/to/file` 在 `builders` 中引入。例如，
 
     builders = @/etc/nix/machines
 
-causes the list of machines in `/etc/nix/machines` to be included.
-(This is the default.)
+会使 `/etc/nix/machines` 中的机器列表被引入。（这是默认行为。）
 
-[Nix instance]: @docroot@/glossary.md#gloss-nix-instance
+[Nix 实例]: @docroot@/glossary.md#gloss-nix-instance

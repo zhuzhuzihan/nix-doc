@@ -1,52 +1,52 @@
-# Build Trace
+# Build Trace（构建痕迹）
 
-> **Warning**
+> **警告**
 >
-> This entire concept is currently
-> [**experimental**](@docroot@/development/experimental-features.md#xp-feature-ca-derivations)
-> and subject to change.
+> 这一整个概念目前处于
+> [**实验性**](@docroot@/development/experimental-features.md#xp-feature-ca-derivations)
+> 阶段，可能发生变化。
 
-The *build trace* is a [memoization table](https://en.wikipedia.org/wiki/Memoization) for builds.
-It maps the inputs of builds to the outputs of builds.
-Each *[entry]{#entry}* in the build trace maps a [derivation][derivation] to a map of [output] names to [store objects][store object].
+*build trace*（构建痕迹）是构建的[备忘表（memoization table）](https://en.wikipedia.org/wiki/Memoization)。
+它将构建的输入映射到构建的输出。
+build trace 中的每个*条目*将一个 [derivation][derivation] 映射到一个由 [output]（输出）名称到[存储对象][store object]的映射。
 
-In general the derivations used as a key should be [*resolved*](./resolution.md).
-A build trace with all-resolved-derivation keys is also called a *base build trace* for extra clarity.
-If all the resolved inputs of a derivation are content-addressed, that means the inputs will be fully determined, leaving no ambiguity for what build was performed.
-(Input-addressed inputs however are still ambiguous. They too should be locked down, but this is left as future work.)
+一般而言，作为键使用的 derivation 应当是已经[*resolved*（已解析）](./resolution.md)的。
+为格外清晰起见，键全部为已解析 derivation 的 build trace 也被称为*基础 build trace*。
+如果一个 derivation 的所有已解析输入都是内容寻址的，那意味着输入将被完全确定，对执行了哪次构建不再有任何歧义。
+（然而以输入寻址的输入仍然有歧义。它们同样应当被锁定，但这被留作未来的工作。）
 
-Accordingly, to look up an unresolved derivation, one must first resolve it to get a resolved derivation.
-Resolving itself involves looking up entries in the build trace, so this is a mutually recursive process that will end up inspecting possibly many entries.
+相应地，要查找一个未解析的 derivation，必须先将其解析为已解析的 derivation。
+解析过程本身又涉及查找 build trace 中的条目，因此这是一个相互递归的过程，最终可能要检查许多条目。
 
-Except for the issue with input-addressed paths called out above, base build traces are trivially *coherent* -- incoherence is not possible.
-That means that the claims that each key-value base build try entry makes are independent, and no mapping invalidates another mapping.
+除了上文指出的输入寻址路径的问题之外，基础 build trace 显然是*连贯的*——不可能出现不连贯。
+也就是说，基础 build trace 各条目所做出的断言彼此独立，任何一个映射都不会使另一个映射失效。
 
-Whether the mappings are *true*, i.e. the faithful recording of actual builds performed, is another matter.
-Coherence is about the multiple claims of the build trace being mutually consistent, not about whether the claims are individually true or false.
+至于这些映射是否*为真*，即是否忠实地记录了实际执行的构建，则是另一回事。
+连贯性关注的是 build trace 的多条断言相互一致，而不关注各条断言本身是真是假。
 
-In general, there is no way to audit a build trace entry except for by performing the build again from scratch.
-And even in that case, a different result doesn't mean the original entry was a "lie", because the derivation being built may be non-deterministic.
-As such, the decision of whether to trust a counterparty's build trace is a fundamentally subject policy choice.
-Build trace entries are typically *signed* in order to enable arbitrary public-key-based trust polices.
+一般而言，除了从头重新执行一次构建之外，没有办法审计一个 build trace 条目。
+而且即便如此，结果不同也并不意味着原来的条目是"谎言"，因为被构建的 derivation 可能是非确定性的。
+因此，是否信任对方的 build trace，从根本上说是一个主观的策略选择。
+build trace 条目通常会被*签名*，以便支持任意的基于公钥的信任策略。
 
-## Derived build traces {#derived}
+## Derived build traces（派生 build trace） {#derived}
 
-Implementations that wish to memoize the above may also keep additional *derived* build trace entries that do map unresolved derivations.
-But if they do so, they *must* also keep the underlying base entries with resolved derivation keys around.
-Firstly, this ensures that the derived entries are merely cache, which could be recomputed from scratch.
-Secondly, this ensures the coherence of the derived build trace.
+希望对上述机制做备忘的实现还可以保存额外的*派生* build trace 条目，它们确实会映射未解析的 derivation。
+但如果这样做，它们*必须*同时保存底层的、以已解析 derivation 为键的基础条目。
+首先，这确保了派生条目仅仅是缓存，可以从头重新计算。
+其次，这确保了派生 build trace 的连贯性。
 
-Unlike with base build traces, incoherence with derived build traces is possible.
-The key ingredient is that derivation resolution is only deterministic with respect to a fixed base build trace.
-Without fixing the base build trace, it inherits the subjectivity of base build traces themselves.
+与基础 build trace 不同，派生 build trace 是可能出现不连贯的。
+关键在于，derivation 的解析只有在固定某个基础 build trace 的前提下才是确定性的。
+不固定基础 build trace 的话，它就会继承基础 build trace 本身的主观性。
 
-Concretely, suppose there are three derivations \\(a\\), \\(b\\), and \\(c\\).
-Let \\(a\\) be a resolved derivation, but let \\(b\\) and \\(c\\) be unresolved and both take as an input an output of \\(a\\).
-Now suppose that derived entries are made for \\(b\\) and \\(c\\) based on two different entries of \\(a\\).
-(This could happen if \\(a\\) is non-deterministic, \\(a\\) and \\(b\\) are built in one store, \\(a\\) and \\(c\\) are built in another store, and then a third store substitutes from both of the first two stores.)
+具体来说，假设有三个 derivation \\(a\\)、\\(b\\) 和 \\(c\\)。
+设 \\(a\\) 是已解析的 derivation，而 \\(b\\) 和 \\(c\\) 未解析，且二者都以 \\(a\\) 的某个输出作为输入。
+再假设针对 \\(b\\) 和 \\(c\\) 的派生条目是基于 \\(a\\) 的两个不同条目建立的。
+（如果 \\(a\\) 是非确定性的，\\(a\\) 与 \\(b\\) 在一个 store 中构建，\\(a\\) 与 \\(c\\) 在另一个 store 中构建，然后第三个 store 从前两个 store 都进行了 substitute（替代），就可能发生这种情况。）
 
-If trusting the derived build trace entries for \\(b\\) and \\(c\\) requires that each's underlying entry for \\(a\\) be also trusted, the two different mappings for \\(a\\) will be caught.
-However, if \\(b\\) and \\(c\\)'s entries can be combined in isolation, there will be nothing to catch the contradiction in their hidden assumptions about \\(a\\)'s output.
+如果信任 \\(b\\) 和 \\(c\\) 的派生 build trace 条目要求同时也信任它们各自底层的 \\(a\\) 条目，那么 \\(a\\) 的两个不同映射就会被发现。
+然而，如果 \\(b\\) 和 \\(c\\) 的条目可以各自孤立地组合使用，就没有任何东西能发现它们关于 \\(a\\) 输出的隐含假设中的矛盾。
 
 [derivation]: ./derivation/index.md
 [output]: ./derivation/outputs/index.md

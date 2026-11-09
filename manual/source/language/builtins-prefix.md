@@ -1,9 +1,9 @@
-# Built-ins
+# 内置函数
 
-This section lists the values and functions built into the Nix language evaluator.
-All built-ins are available through the global [`builtins`](#builtins-builtins) constant.
+本节列出 Nix 语言求值器中内置的值和函数。
+所有内置函数（built-in）都可以通过全局 [`builtins`](#builtins-builtins) 常量访问。
 
-Some built-ins are also exposed directly in the global scope:
+一些内置函数也直接暴露在全局作用域中：
 
 - [`derivation`](#builtins-derivation)
 - `derivationStrict`
@@ -30,24 +30,24 @@ Some built-ins are also exposed directly in the global scope:
 
 <!-- This tip (use `lib` instead) is a "layer violation", but serves an important social role. -->
 
-> **Tip**
+> **提示**
 >
-> **Should I use `builtins` or `lib`?**
+> **应该使用 `builtins` 还是 `lib`？**
 >
-> The built-ins are designed to be a stable interface that expressions can depend on over time,
-> so that, for instance, old Nixpkgs versions continue to evaluate reproducibly.
+> 内置函数被设计为一个稳定的接口，表达式可以长期依赖它，
+> 例如，旧版本的 Nixpkgs 能够持续可复现地求值。
 >
-> On the flip side, this means they have accumulated a few quirks that Nix is unable to change,
-> but a library like Nixpkgs `lib` *can* improve, replace or deprecate those behaviors,
-> because its sources are pinned where reproducibility matters.
+> 另一方面，这也意味着它们积累了一些 Nix 无法改变的古怪行为，
+> 但像 Nixpkgs `lib` 这样的函数库*可以*改进、替换或弃用这些行为，
+> 因为在需要可复现性的地方，它的源代码是固定的。
 >
-> So while it is not wrong to use `builtins` directly,
-> for instance in small Nixpkgs-independent projects,
-> you will have a better experience using a library like `lib` as your primary source of functions,
-> as it hides problematic functions, fixes up others,
-> and helps you improve your code by means of future deprecations, which are still sufficiently rare.
+> 因此，虽然直接使用 `builtins` 并没有错，
+> 例如在小型的、不依赖 Nixpkgs 的项目中，
+> 但如果使用像 `lib` 这样的函数库作为函数的主要来源，你会获得更好的体验，
+> 因为它会隐藏有问题的函数、修复其他函数，
+> 并通过未来的弃用（这仍然相当少见）帮助你改进代码。
 
 <dl>
   <dt id="builtins-derivation"><a href="#builtins-derivation"><code>derivation <var>attrs</var></code></a></dt>
-  <dd><p><var>derivation</var> is described in
-         <a href="derivations.md">its own section</a>.</p></dd>
+  <dd><p><var>derivation（派生）</var>在
+         <a href="derivations.md">其专门的章节</a>中描述。</p></dd>

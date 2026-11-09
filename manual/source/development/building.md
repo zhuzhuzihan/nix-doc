@@ -1,41 +1,41 @@
-# Building Nix
+# 构建 Nix
 
-This section provides some notes on how to start hacking on Nix.
-To get the latest version of Nix from GitHub:
+本节提供一些关于如何着手开发 Nix 的说明。
+要从 GitHub 获取最新版本的 Nix：
 
-> **Note**
+> **注意**
 >
-> When checking out the repo on Windows, make sure you have the git setting `core.symlinks` enabled, before cloning, as there are symlinks in the repo.
+> 在 Windows 上检出该仓库时，请确保在克隆之前已启用 git 设置 `core.symlinks`，因为仓库中包含符号链接。
 
 ```console
 $ git clone https://github.com/NixOS/nix.git
 $ cd nix
 ```
 
-> **Note**
+> **注意**
 >
-> The following instructions assume you already have some version of Nix installed locally, so that you can use it to set up the development environment.
-> If you don't have it installed, follow the [installation instructions](../installation/index.md).
+> 以下说明假设你本地已安装某个版本的 Nix，以便用它来搭建开发环境。
+> 如果尚未安装，请按照[安装说明](../installation/index.md)操作。
 
 
-To build all dependencies and start a shell in which all environment variables are set up so that those dependencies can be found:
+要构建所有依赖并启动一个已设置好所有环境变量（以便能找到这些依赖）的 shell：
 
 ```console
 $ nix-shell
 ```
 
-To get a shell with one of the other [supported compilation environments](#compilation-environments):
+要获取其他[受支持编译环境](#compilation-environments)之一的 shell：
 
 ```console
 $ nix-shell --attr devShells.x86_64-linux.native-clangStdenv
 ```
 
-> **Note**
+> **注意**
 >
-> You can use `native-ccacheStdenv` to drastically improve rebuild time.
-> By default, [ccache](https://ccache.dev) keeps artifacts in `~/.cache/ccache/`.
+> 你可以使用 `native-ccacheStdenv` 来大幅缩短重新构建的时间。
+> 默认情况下，[ccache](https://ccache.dev) 将产物保存在 `~/.cache/ccache/` 中。
 
-To build Nix itself in this shell:
+要在该 shell 中构建 Nix 本身：
 
 ```console
 [nix-shell]$ out="$(pwd)/outputs/out" dev=$out debug=$out mesonFlags+=" --prefix=${out}"
@@ -43,13 +43,13 @@ To build Nix itself in this shell:
 [nix-shell]$ buildPhase
 ```
 
-To test it:
+要测试它：
 
 ```console
 [nix-shell]$ checkPhase
 ```
 
-To install it in `$(pwd)/outputs`:
+要将它安装到 `$(pwd)/outputs`：
 
 ```console
 [nix-shell]$ installPhase
@@ -57,54 +57,54 @@ To install it in `$(pwd)/outputs`:
 nix (Nix) 2.12
 ```
 
-To build a release version of Nix for the current operating system and CPU architecture:
+要为当前操作系统和 CPU 架构构建 Nix 的 release 版本：
 
 ```console
 $ nix-build
 ```
 
-You can also build Nix for one of the [supported platforms](#platforms).
+你也可以为[受支持的平台](#platforms)之一构建 Nix。
 
-## Building Nix with flakes
+## 使用 flakes 构建 Nix
 
-This section assumes you are using Nix with the [`flakes`] and [`nix-command`] experimental features enabled.
+本节假设你使用启用了 [`flakes`] 和 [`nix-command`] 实验性特性的 Nix。
 
 [`flakes`]: @docroot@/development/experimental-features.md#xp-feature-flakes
 [`nix-command`]: @docroot@/development/experimental-features.md#xp-feature-nix-command
 
-To build all dependencies and start a shell in which all environment variables are set up so that those dependencies can be found:
+要构建所有依赖并启动一个已设置好所有环境变量（以便能找到这些依赖）的 shell：
 
 ```console
 $ nix develop
 ```
 
-This shell also adds `./outputs/bin/nix` to your `$PATH` so you can run `nix` immediately after building it.
+该 shell 还会将 `./outputs/bin/nix` 添加到你的 `$PATH`，这样你可以在构建完成后立即运行 `nix`。
 
-To get a shell with one of the other [supported compilation environments](#compilation-environments):
+要获取其他[受支持编译环境](#compilation-environments)之一的 shell：
 
 ```console
 $ nix develop .#native-clangStdenv
 ```
 
-> **Note**
+> **注意**
 >
-> Use `ccacheStdenv` to drastically improve rebuild time.
-> By default, [ccache](https://ccache.dev) keeps artifacts in `~/.cache/ccache/`.
+> 使用 `ccacheStdenv` 来大幅缩短重新构建的时间。
+> 默认情况下，[ccache](https://ccache.dev) 将产物保存在 `~/.cache/ccache/` 中。
 
-To build Nix itself in this shell:
+要在该 shell 中构建 Nix 本身：
 
 ```console
 [nix-shell]$ configurePhase
 [nix-shell]$ buildPhase
 ```
 
-To test it:
+要测试它：
 
 ```console
 [nix-shell]$ checkPhase
 ```
 
-To install it in `$(pwd)/outputs`:
+要将它安装到 `$(pwd)/outputs`：
 
 ```console
 [nix-shell]$ installPhase
@@ -112,20 +112,20 @@ To install it in `$(pwd)/outputs`:
 nix (Nix) 2.12
 ```
 
-For more information on running and filtering tests, see
-[`testing.md`](./testing.md).
+关于运行和过滤测试的更多信息，请参见
+[`testing.md`](./testing.md)。
 
-To build a release version of Nix for the current operating system and CPU architecture:
+要为当前操作系统和 CPU 架构构建 Nix 的 release 版本：
 
 ```console
 $ nix build
 ```
 
-You can also build Nix for one of the [supported platforms](#platforms).
+你也可以为[受支持的平台](#platforms)之一构建 Nix。
 
-## Platforms
+## 平台
 
-Nix can be built for various platforms, as specified in [`flake.nix`]:
+Nix 可以在多种平台上构建，如 [`flake.nix`] 中所指定：
 
 [`flake.nix`]: https://github.com/nixos/nix/blob/master/flake.nix
 
@@ -139,72 +139,67 @@ Nix can be built for various platforms, as specified in [`flake.nix`]:
 - `powerpc64le-linux`
 - `riscv64-linux`
 
-In order to build Nix for a different platform than the one you're currently
-on, you need a way for your current Nix installation to build code for that
-platform. Common solutions include [remote build machines] and [binary format emulation]
-(only supported on NixOS).
+要为不同于当前平台的平台构建 Nix，你需要有一种方式让当前的 Nix 安装为该平台构建代码。常见方案包括[远程构建机器]和[二进制格式模拟]（仅在 NixOS 上受支持）。
 
 [remote builders]: @docroot@/language/derivations.md#attr-builder
 [binary format emulation]: https://nixos.org/manual/nixos/stable/options.html#opt-boot.binfmt.emulatedSystems
 
-Given such a setup, executing the build only requires selecting the respective attribute.
-For example, to compile for `aarch64-linux`:
+在具备这样的环境之后，执行构建只需要选择相应的属性即可。
+例如，要为 `aarch64-linux` 编译：
 
 ```console
 $ nix-build --attr packages.aarch64-linux.default
 ```
 
-or for Nix with the [`flakes`] and [`nix-command`] experimental features enabled:
+或者，对于启用了 [`flakes`] 和 [`nix-command`] 实验性特性的 Nix：
 
 ```console
 $ nix build .#packages.aarch64-linux.default
 ```
 
-Cross-compiled builds are available for:
+交叉编译构建可用于：
 - `armv6l-linux`
 - `armv7l-linux`
 - `powerpc64-linux` (ELFv1 ABI)
 - `powerpc64le-linux`
 - `riscv64-linux`
-Add more [system types](#system-type) to `crossSystems` in `flake.nix` to bootstrap Nix on unsupported platforms.
+在 `flake.nix` 的 `crossSystems` 中添加更多[系统类型](#system-type)，即可在不受支持的平台上引导构建 Nix。
 
-### Building for multiple platforms at once
+### 同时为多个平台构建
 
-It is useful to perform multiple cross and native builds on the same source tree,
-for example to ensure that better support for one platform doesn't break the build for another.
-Meson thankfully makes this very easy by confining all build products to the build directory --- one simple shares the source directory between multiple build directories, each of which contains the build for Nix to a different platform.
+在同一个源码树上执行多个交叉构建和原生构建是很有用的，例如确保对一个平台的更好支持不会破坏另一个平台的构建。好在 Meson 让这一点变得非常简单——它将所有构建产物限制在构建目录中，只需在多个构建目录之间共享同一个源码目录，每个目录各自包含面向不同平台的 Nix 构建。
 
-Here's how to do that:
+具体做法如下：
 
-1. Instruct Nixpkgs's infra where we want Meson to put its build directory
+1. 告诉 Nixpkgs 的基础设施我们希望 Meson 把构建目录放在哪里
 
    ```bash
    mesonBuildDir=build-my-variant-name
    ```
 
-1. Configure as usual
+1. 像往常一样配置
 
    ```bash
    configurePhase
    ```
 
-3. Build as usual
+3. 像往常一样构建
 
    ```bash
    buildPhase
    ```
 
-## System type
+## 系统类型
 
-Nix uses a string with the following format to identify the *system type* or *platform* it runs on:
+Nix 使用如下格式的字符串来标识它所运行的*系统类型*或*平台*：
 
 ```
 <cpu>-<os>[-<abi>]
 ```
 
-It is set when Nix is compiled for the given system, and based on the output of Meson's [`host_machine` information](https://mesonbuild.com/Reference-manual_builtin_host_machine.html).
+它在 Nix 针对给定系统编译时被设定，其依据是 Meson 的 [`host_machine` 信息](https://mesonbuild.com/Reference-manual_builtin_host_machine.html)的输出。
 
-For historic reasons and backward-compatibility, some CPU and OS identifiers are translated as follows:
+由于历史原因和向后兼容性，一些 CPU 和 OS 标识符会按如下方式转换：
 
 | `host_machine.cpu_family()` | `host_machine.endian()` | Nix                 |
 |-----------------------------|-------------------------|---------------------|
@@ -220,9 +215,9 @@ For historic reasons and backward-compatibility, some CPU and OS identifiers are
 | `mips64`                    | `big`                   | `mips64`            |
 
 
-When cross-compiling Nix with Meson for local development, you need to specify a [cross-file](https://mesonbuild.com/Cross-compilation.html) using the `--cross-file` option. Cross-files define the target architecture and toolchain. When cross-compiling Nix with Nix, Nixpkgs takes care of this for you.
+在本地开发中使用 Meson 交叉编译 Nix 时，需要通过 `--cross-file` 选项指定一个[交叉文件](https://mesonbuild.com/Cross-compilation.html)。交叉文件定义目标架构和工具链。而使用 Nix 本身交叉编译 Nix 时，Nixpkgs 会替你处理好这些。
 
-In the nix flake we also have some cross-compilation targets available:
+在 nix flake 中，我们还提供了一些交叉编译目标：
 
 ```
 nix build .#nix-everything-riscv64-unknown-linux-gnu
@@ -232,77 +227,75 @@ nix build .#nix-everything-x86_64-unknown-freebsd
 nix build .#nix-everything-x86_64-w64-mingw32
 ```
 
-## Compilation environments
+## 编译环境
 
-Nix can be compiled using multiple environments:
+Nix 可以使用多种环境编译：
 
-- `stdenv`: default;
-- `gccStdenv`: force the use of `gcc` compiler;
-- `clangStdenv`: force the use of `clang` compiler;
-- `ccacheStdenv`: enable [ccache], a compiler cache to speed up compilation.
+- `stdenv`：默认；
+- `gccStdenv`：强制使用 `gcc` 编译器；
+- `clangStdenv`：强制使用 `clang` 编译器；
+- `ccacheStdenv`：启用 [ccache]，这是一种用于加速编译的编译器缓存。
 
-To build with one of those environments, you can use
+要使用其中某种环境构建，对于支持 flake 的 Nix，可以使用
 
 ```console
 $ nix build .#nix-cli-ccacheStdenv
 ```
 
-for flake-enabled Nix, or
+对于经典 Nix，可以使用
 
 ```console
 $ nix-build --attr nix-cli-ccacheStdenv
 ```
 
-for classic Nix.
+你可以用其他任何受支持的环境替换 `nix-cli-ccacheStdenv`。
 
-You can use any of the other supported environments in place of `nix-cli-ccacheStdenv`.
+## 编辑器集成
 
-## Editor integration
+`clangd` LSP 服务器默认安装在基于 `clang` 的 `devShell` 中。
+参见[受支持的编译环境](#compilation-environments)，以及[使用 flakes](#building-nix-with-flakes) 或[经典 Nix](#building-nix) 设置 shell 的说明。
 
-The `clangd` LSP server is installed by default on the `clang`-based `devShell`s.
-See [supported compilation environments](#compilation-environments) and instructions how to set up a shell [with flakes](#building-nix-with-flakes) or in [classic Nix](#building-nix).
+要在编辑器中使用 LSP，你需要一个 `compile_commands.json` 文件来告诉 `clangd` 我们是如何编译代码的。
+Meson 的 configure 始终会在构建目录内生成该文件。
 
-To use the LSP with your editor, you will want a `compile_commands.json` file telling `clangd` how we are compiling the code.
-Meson's configure always produces this inside the build directory.
+将你的编辑器配置为使用 `.#native-clangStdenv` shell 中的 `clangd`。
+你可以在开发 shell 中运行它，或者使用 [nix-direnv](https://github.com/nix-community/nix-direnv) 和[相应的编辑器插件](https://github.com/direnv/direnv/wiki#editor-integration)来实现。
 
-Configure your editor to use the `clangd` from the `.#native-clangStdenv` shell.
-You can do that either by running it inside the development shell, or by using [nix-direnv](https://github.com/nix-community/nix-direnv) and [the appropriate editor plugin](https://github.com/direnv/direnv/wiki#editor-integration).
-
-> **Note**
+> **注意**
 >
-> For some editors (e.g. Visual Studio Code), you may need to install a [special extension](https://open-vsx.org/extension/llvm-vs-code-extensions/vscode-clangd) for the editor to interact with `clangd`.
-> Some other editors (e.g. Emacs, Vim) need a plugin to support LSP servers in general (e.g. [lsp-mode](https://github.com/emacs-lsp/lsp-mode) for Emacs and [vim-lsp](https://github.com/prabirshrestha/vim-lsp) for vim).
-> Editor-specific setup is typically opinionated, so we will not cover it here in more detail.
+> 对于某些编辑器（例如 Visual Studio Code），你可能需要安装一个[专用扩展](https://open-vsx.org/extension/llvm-vs-code-extensions/vscode-clangd)，编辑器才能与 `clangd` 交互。
+> 其他一些编辑器（例如 Emacs、Vim）需要插件才能支持 LSP 服务器（例如 Emacs 的 [lsp-mode](https://github.com/emacs-lsp/lsp-mode) 和 vim 的 [vim-lsp](https://github.com/prabirshrestha/vim-lsp)）。
+> 各编辑器的具体配置往往见仁见智，因此我们在此不做更详细的介绍。
 
-## Formatting and pre-commit hooks
+## 格式化与 pre-commit 钩子
 
-You may run the formatters as a one-off using:
+你可以通过以下命令一次性运行格式化工具：
 
 ```console
 ./maintainers/format.sh
 ```
 
-### Pre-commit hooks
+### Pre-commit 钩子
 
-If you'd like to run the formatters before every commit, install the hooks:
+如果你希望在每次提交前都运行格式化工具，请安装钩子：
 
 ```
 pre-commit-hooks-install
 ```
 
-This installs [pre-commit](https://pre-commit.com) using [cachix/git-hooks.nix](https://github.com/cachix/git-hooks.nix).
+这会通过 [cachix/git-hooks.nix](https://github.com/cachix/git-hooks.nix) 安装 [pre-commit](https://pre-commit.com)。
 
-When making a commit, pay attention to the console output.
-If it fails, run `git add --patch` to approve the suggestions _and commit again_.
+提交时请留意控制台输出。
+如果提交失败，请运行 `git add --patch` 采纳建议*并再次提交*。
 
-To refresh pre-commit hook's config file, do the following:
-1. Exit the development shell and start it again by running `nix develop`.
-2. If you also use the pre-commit hook, also run `pre-commit-hooks-install` again.
+要刷新 pre-commit 钩子的配置文件，请执行以下操作：
+1. 退出开发 shell，然后通过运行 `nix develop` 重新进入。
+2. 如果你也使用了 pre-commit 钩子，请再次运行 `pre-commit-hooks-install`。
 
 ### VSCode
 
-Insert the following json into your `.vscode/settings.json` file to configure `nixfmt`.
-This will be picked up by the _Format Document_ command, `"editor.formatOnSave"`, etc.
+将以下 json 插入你的 `.vscode/settings.json` 文件来配置 `nixfmt`。
+它会被 _Format Document_ 命令、`"editor.formatOnSave"` 等功能采用。
 
 ```json
 {

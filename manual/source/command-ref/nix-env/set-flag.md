@@ -1,36 +1,29 @@
 # Name
 
-`nix-env --set-flag` - modify meta attributes of installed packages
+`nix-env --set-flag` - 修改已安装软件包的 meta 属性
 
-# Synopsis
+概要
 
 `nix-env` `--set-flag` *name* *value* *drvnames*
 
-# Description
+# 描述
 
-The `--set-flag` operation allows meta attributes of installed packages
-to be modified. There are several attributes that can be usefully
-modified, because they affect the behaviour of `nix-env` or the user
-environment build script:
+`--set-flag` 操作允许修改已安装软件包的 meta 属性。
+有几个属性可以有效地修改，因为它们会影响 `nix-env` 或用户环境构建脚本的行为：
 
-- `priority` can be changed to resolve filename clashes. The user
-  environment build script uses the `meta.priority` attribute of
-  derivations to resolve filename collisions between packages. Lower
-  priority values denote a higher priority. For instance, the GCC
-  wrapper package and the Binutils package in Nixpkgs both have a file
-  `bin/ld`, so previously if you tried to install both you would get a
-  collision. Now, on the other hand, the GCC wrapper declares a higher
-  priority than Binutils, so the former’s `bin/ld` is symlinked in the
-  user environment.
+- `priority` 可以修改以解决文件名冲突。
+  用户环境构建脚本使用 derivation（派生）的 `meta.priority` 属性来解决软件包之间的文件名冲突。
+  优先级值越小表示优先级越高。
+  例如，Nixpkgs 中的 GCC wrapper 软件包和 Binutils 软件包都包含文件
+  `bin/ld`，因此以前如果同时安装两者就会产生冲突。
+  而现在，GCC wrapper 声明的优先级高于 Binutils，因此前者的 `bin/ld` 会被符号链接到用户环境中。
 
-- `keep` can be set to `true` to prevent the package from being
-  upgraded or replaced. This is useful if you want to hang on to an
-  older version of a package.
+- `keep` 可以设置为 `true`，以防止该软件包被升级或替换。
+  当你想保留软件包的旧版本时，这很有用。
 
-- `active` can be set to `false` to “disable” the package. That is, no
-  symlinks will be generated to the files of the package, but it
-  remains part of the profile (so it won’t be garbage-collected). It
-  can be set back to `true` to re-enable the package.
+- `active` 可以设置为 `false` 来"禁用"该软件包。
+  也就是说，不会为该软件包的文件生成符号链接，但它仍然是 profile 的一部分（因此不会被垃圾回收）。
+  可以重新设置为 `true` 来重新启用该软件包。
 
 {{#include ./opt-common.md}}
 
@@ -38,18 +31,17 @@ environment build script:
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
-To prevent the currently installed Firefox from being upgraded:
+防止当前安装的 Firefox 被升级：
 
 ```console
 $ nix-env --set-flag keep true firefox
 ```
 
-After this, `nix-env --upgrade ` will ignore Firefox.
+此后，`nix-env --upgrade ` 会忽略 Firefox。
 
-To disable the currently installed Firefox, then install a new Firefox
-while the old remains part of the profile:
+禁用当前安装的 Firefox，然后安装一个新的 Firefox，同时旧版本仍然是 profile 的一部分：
 
 ```console
 $ nix-env --query
@@ -73,10 +65,9 @@ firefox-2.0.0.11 (the enabled one)
 firefox-2.0.0.9 (the disabled one)
 ```
 
-To make files from `binutils` take precedence over files from `gcc`:
+让来自 `binutils` 的文件优先于来自 `gcc` 的文件：
 
 ```console
 $ nix-env --set-flag priority 5 binutils
 $ nix-env --set-flag priority 10 gcc
 ```
-

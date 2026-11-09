@@ -1,26 +1,20 @@
 # Name
 
-`nix --repair-path` - re-download path from substituter
+`nix --repair-path` - 从 substituter 重新下载路径
 
-# Synopsis
+# 概要
 
 `nix-store` `--repair-path` *paths…*
 
-# Description
+# 描述
 
-The operation `--repair-path` attempts to “repair” the specified paths
-by redownloading them using the available substituters. If no
-substitutes are available, then repair is not possible.
+`--repair-path` 操作尝试通过可用的 substituter 重新下载指定路径来"修复"它们。如果没有可用的 substitute，则无法进行修复。
 
-> **Warning**
+> **警告**
 >
-> During repair, there is a very small time window during which the old
-> path (if it exists) is moved out of the way and replaced with the new
-> path. If repair is interrupted in between, then the system may be left
-> in a broken state (e.g., if the path contains a critical system
-> component like the GNU C Library).
+> 在修复期间，存在一个极小的时间窗口：旧路径（如果存在）被移开并用新路径替换。如果修复在中间被中断，系统可能会处于损坏状态（例如，如果路径包含像 GNU C 库这样的关键系统组件）。
 
-# Example
+# 示例
 
 ```console
 $ nix-store --verify-path /nix/store/dj7a81wsm1ijwwpkks3725661h3263p5-glibc-2.13
@@ -32,4 +26,3 @@ $ nix-store --repair-path /nix/store/dj7a81wsm1ijwwpkks3725661h3263p5-glibc-2.13
 fetching path `/nix/store/d7a81wsm1ijwwpkks3725661h3263p5-glibc-2.13'...
 …
 ```
-

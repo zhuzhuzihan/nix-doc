@@ -1,68 +1,33 @@
 # Release 1.0 (2012-05-11)
 
-There have been numerous improvements and bug fixes since the previous
-release. Here are the most significant:
+自上一个版本以来有大量改进和缺陷修复。以下是最重要的几项：
 
-  - Nix can now optionally use the Boehm garbage collector. This
-    significantly reduces the Nix evaluator’s memory footprint,
-    especially when evaluating large NixOS system configurations. It can
-    be enabled using the `--enable-gc` configure option.
+  - Nix 现在可以选择使用 Boehm 垃圾回收器。这显著降低了 Nix 求值器的内存占用，尤其是在对大型 NixOS 系统配置求值时。可以使用 `--enable-gc` configure 选项启用它。
 
-  - Nix now uses SQLite for its database. This is faster and more
-    flexible than the old *ad hoc* format. SQLite is also used to cache
-    the manifests in `/nix/var/nix/manifests`, resulting in a
-    significant speedup.
+  - Nix 现在将 SQLite 用作其数据库。这比旧的*ad hoc*格式更快、更灵活。SQLite 还被用来缓存 `/nix/var/nix/manifests` 中的 manifest，带来了显著的提速。
 
-  - Nix now has an search path for expressions. The search path is set
-    using the environment variable `NIX_PATH` and the `-I` command line
-    option. In Nix expressions, paths between angle brackets are used to
-    specify files that must be looked up in the search path. For
-    instance, the expression `<nixpkgs/default.nix>` looks for a file
-    `nixpkgs/default.nix` relative to every element in the search path.
+  - Nix 现在有了表达式的搜索路径。搜索路径通过环境变量 `NIX_PATH` 和命令行选项 `-I` 设置。在 Nix 表达式中，尖括号之间的路径用于指定必须在搜索路径中查找的文件。例如，表达式 `<nixpkgs/default.nix>` 会相对于搜索路径中的每个元素查找文件 `nixpkgs/default.nix`。
 
-  - The new command `nix-build --run-env` builds all dependencies of a
-    derivation, then starts a shell in an environment containing all
-    variables from the derivation. This is useful for reproducing the
-    environment of a derivation for development.
+  - 新命令 `nix-build --run-env` 构建 derivation（派生）的所有依赖，然后在一个包含 derivation 中所有变量的环境中启动 shell。这对在开发中复现某个 derivation 的环境很有用。
 
-  - The new command `nix-store --verify-path` verifies that the contents
-    of a store path have not changed.
+  - 新命令 `nix-store --verify-path` 验证存储路径的内容未被改变。
 
-  - The new command `nix-store --print-env` prints out the environment
-    of a derivation in a format that can be evaluated by a shell.
+  - 新命令 `nix-store --print-env` 以 shell 可求值的格式打印出 derivation 的环境。
 
-  - Attribute names can now be arbitrary strings. For instance, you can
-    write `{ "foo-1.2" = …; "bla bla" = …; }."bla
-                    bla"`.
+  - 属性名现在可以是任意字符串。例如，你可以写 `{ "foo-1.2" = …; "bla bla" = …; }."bla
+                    bla"`。
 
-  - Attribute selection can now provide a default value using the `or`
-    operator. For instance, the expression `x.y.z or e` evaluates to the
-    attribute `x.y.z` if it exists, and `e` otherwise.
+  - 属性选择现在可以使用 `or` 运算符提供默认值。例如，表达式 `x.y.z or e` 在属性 `x.y.z` 存在时求值为该属性，否则求值为 `e`。
 
-  - The right-hand side of the `?` operator can now be an attribute
-    path, e.g., `attrs ?
-                    a.b.c`.
+  - `?` 运算符的右侧现在可以是属性路径，例如 `attrs ?
+                    a.b.c`。
 
-  - On Linux, Nix will now make files in the Nix store immutable on
-    filesystems that support it. This prevents accidental modification
-    of files in the store by the root user.
+  - 在 Linux 上，Nix 现在会在支持的文件系统上将 Nix store 中的文件设为不可变。这可以防止 root 用户意外修改 store 中的文件。
 
-  - Nix has preliminary support for derivations with multiple outputs.
-    This is useful because it allows parts of a package to be deployed
-    and garbage-collected separately. For instance, development parts of
-    a package such as header files or static libraries would typically
-    not be part of the closure of an application, resulting in reduced
-    disk usage and installation time.
+  - Nix 对具有多个输出的 derivation 提供了初步支持。这很有用，因为它允许软件包的各个部分被分别部署和垃圾回收。例如，软件包的开发部分（如头文件或静态库）通常不属于某个应用程序的闭包，从而降低磁盘占用并缩短安装时间。
 
-  - The Nix store garbage collector is faster and holds the global lock
-    for a shorter amount of time.
+  - Nix store 垃圾回收器更快了，并且持有全局锁的时间更短。
 
-  - The option `--timeout` (corresponding to the configuration setting
-    `build-timeout`) allows you to set an absolute timeout on builds —
-    if a build runs for more than the given number of seconds, it is
-    terminated. This is useful for recovering automatically from builds
-    that are stuck in an infinite loop but keep producing output, and
-    for which `--max-silent-time` is ineffective.
+  - 选项 `--timeout`（对应配置项 `build-timeout`）允许你对构建设置一个绝对超时——如果构建运行超过给定的秒数，它会被终止。这对从陷入无限循环却持续产生输出、因而 `--max-silent-time` 不起作用的构建中自动恢复很有用。
 
-  - Nix development has moved to GitHub
-    (<https://github.com/NixOS/nix>).
+  - Nix 的开发已迁移到 GitHub（<https://github.com/NixOS/nix>）。

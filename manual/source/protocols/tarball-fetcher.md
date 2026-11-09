@@ -1,33 +1,16 @@
-# Lockable HTTP Tarball Protocol
+# 可锁定 HTTP Tarball 协议
 
-Tarball flakes can be served as regular tarballs via HTTP or the file
-system (for `file://` URLs). Unless the server implements the Lockable
-HTTP Tarball protocol, it is the responsibility of the user to make sure that
-the URL always produces the same tarball contents.
+Tarball flake 可以作为普通 tarball 通过 HTTP 或文件系统（针对 `file://` URL）提供。除非服务器实现了可锁定 HTTP Tarball 协议，否则确保 URL 始终产生相同 tarball 内容是用户自己的责任。
 
-An HTTP server can return an "immutable" HTTP URL appropriate for lock
-files. This allows users to specify a tarball flake input in
-`flake.nix` that requests the latest version of a flake
-(e.g. `https://example.org/hello/latest.tar.gz`), while `flake.lock`
-will record a URL whose contents will not change
-(e.g. `https://example.org/hello/<revision>.tar.gz`). To do so, the
-server must return an [HTTP `Link` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link) with the `rel` attribute set to
-`immutable`, as follows:
+HTTP 服务器可以返回一个适用于 lock 文件的「不可变」（immutable）HTTP URL。这使得用户可以在 `flake.nix` 中指定一个请求 flake 最新版本的 tarball flake 输入（例如 `https://example.org/hello/latest.tar.gz`），而 `flake.lock` 会记录一个内容不会变化的 URL（例如 `https://example.org/hello/<revision>.tar.gz`）。为此，服务器必须返回一个 `rel` 属性设置为 `immutable` 的 [HTTP `Link` 头](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link)，如下所示：
 
 ```
 Link: <flakeref>; rel="immutable"
 ```
 
-(Note the required `<` and `>` characters around *flakeref*.)
+（注意 *flakeref* 两侧必需的 `<` 和 `>` 字符。）
 
-*flakeref* must be a tarball flakeref. It can contain the tarball flake attributes
-`narHash`, `rev`, `revCount` and `lastModified`. If `narHash` is included, its
-value must be the [NAR hash][Nix Archive] of the unpacked tarball (as computed via
-`nix hash path`). Nix checks the contents of the returned tarball
-against the `narHash` attribute. The `rev` and `revCount` attributes
-are useful when the tarball flake is a mirror of a fetcher type that
-has those attributes, such as Git or GitHub. They are not checked by
-Nix.
+*flakeref* 必须是一个 tarball flakeref。它可以包含 tarball flake 属性 `narHash`、`rev`、`revCount` 和 `lastModified`。如果包含 `narHash`，其值必须是解包后 tarball 的 [NAR 哈希][Nix Archive]（通过 `nix hash path` 计算）。Nix 会依据 `narHash` 属性检查返回的 tarball 内容。当 tarball flake 是某个具备这些属性的 fetcher 类型（如 Git 或 GitHub）的镜像时，`rev` 和 `revCount` 属性很有用。Nix 不会检查它们。
 
 ```
 Link: <https://example.org/hello/442793d9ec0584f6a6e82fa253850c8085bb150a.tar.gz
@@ -36,20 +19,19 @@ Link: <https://example.org/hello/442793d9ec0584f6a6e82fa253850c8085bb150a.tar.gz
   &narHash=sha256-GUm8Uh/U74zFCwkvt9Mri4DSM%2BmHj3tYhXUkYpiv31M%3D>; rel="immutable"
 ```
 
-(The linebreaks in this example are for clarity and must not be included in the actual response.)
+（本示例中的换行仅为清晰起见，实际响应中不得包含。）
 
-For tarball flakes, the value of the `lastModified` flake attribute is
-defined as the timestamp of the newest file inside the tarball.
+对于 tarball flake，flake 属性 `lastModified` 的值定义为 tarball 内最新文件的时间戳。
 
-## Gitea and Forgejo support
+## Gitea 与 Forgejo 支持
 
-This protocol is supported by Gitea since v1.22.1 and by Forgejo since v7.0.4/v8.0.0 and can be used with the following flake URL schema:
+Gitea 自 v1.22.1 起、Forgejo 自 v7.0.4/v8.0.0 起支持该协议，并可与以下 flake URL 模式配合使用：
 
 ```
 https://<domain name>/<owner>/<repo>/archive/<reference or revision>.tar.gz
 ```
 
-> **Example**
+> **示例**
 >
 >
 > ```nix

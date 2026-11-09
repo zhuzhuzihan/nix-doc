@@ -1,28 +1,28 @@
-# `.narinfo` Format
+# `.narinfo` 格式
 
-A `.narinfo` file contains the [metadata of a store object](@docroot@/store/store-object.md#metadata) in the [binary cache](@docroot@/protocols/binary-cache/index.md) format.
-It is a simple line-oriented format where each line is a `Key: Value` pair.
-Some keys (e.g. `Sig`) may appear multiple times.
+`.narinfo` 文件以[二进制缓存](@docroot@/protocols/binary-cache/index.md)格式包含[存储对象的元数据](@docroot@/store/store-object.md#metadata)。
+它是一种简单的面向行的格式，每行是一个 `Key: Value`（键: 值）对。
+某些键（例如 `Sig`）可能出现多次。
 
-The file is named `<hash>.narinfo`, where `<hash>` is the [hash part](@docroot@/store/store-path.md#digest) of the store object's [store path](@docroot@/store/store-path.md).
+文件名为 `<hash>.narinfo`，其中 `<hash>` 是该存储对象的[存储路径](@docroot@/store/store-path.md)的[哈希部分](@docroot@/store/store-path.md#digest)。
 
-The fields correspond to those documented in the [store object info](@docroot@/protocols/json/store-object-info.md) JSON format:
+这些字段与 [store object info](@docroot@/protocols/json/store-object-info.md) JSON 格式中记录的字段相对应：
 
-| `.narinfo` field | JSON field | Differences |
+| `.narinfo` 字段 | JSON 字段 | 差异 |
 |---|---|---|
-| `StorePath` | [`path`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_path) | Full [store path](@docroot@/store/store-path.md) rather than [store path base name](@docroot@/store/store-path.md#base-name) |
+| `StorePath` | [`path`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_path) | 完整的[存储路径](@docroot@/store/store-path.md)而非[存储路径基本名称](@docroot@/store/store-path.md#base-name) |
 | `URL` | [`url`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_url) | |
-| `Compression` | [`compression`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_compression) | Defaults to `bzip2` if omitted |
-| `FileHash` | [`downloadHash`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_downloadHash) | String-encoded hash rather than structured |
+| `Compression` | [`compression`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_compression) | 若省略则默认为 `bzip2` |
+| `FileHash` | [`downloadHash`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_downloadHash) | 字符串编码的哈希而非结构化形式 |
 | `FileSize` | [`downloadSize`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_downloadSize) | |
-| `NarHash` | [`narHash`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_narHash) | String-encoded hash rather than structured |
+| `NarHash` | [`narHash`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_narHash) | 字符串编码的哈希而非结构化形式 |
 | `NarSize` | [`narSize`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_narSize) | |
-| `References` | [`references`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_references) | Space-separated [store path base names](@docroot@/store/store-path.md#base-name) rather than a JSON array |
-| `Deriver` | [`deriver`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_deriver) | [Store path base name](@docroot@/store/store-path.md#base-name); `unknown-deriver` instead of `null` |
-| `Sig` | [`signatures`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_signatures) | May appear multiple times rather than using an array |
-| `CA` | [`ca`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_ca) | String-encoded [content address](@docroot@/store/store-object/content-address.md) rather than structured |
+| `References` | [`references`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_references) | 以空格分隔的[存储路径基本名称](@docroot@/store/store-path.md#base-name)列表而非 JSON 数组 |
+| `Deriver` | [`deriver`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_deriver) | [存储路径基本名称](@docroot@/store/store-path.md#base-name)；以 `unknown-deriver` 代替 `null` |
+| `Sig` | [`signatures`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_signatures) | 可出现多次而非使用数组 |
+| `CA` | [`ca`](@docroot@/protocols/json/store-object-info.md#oneOf_i2_ca) | 字符串编码的[内容地址](@docroot@/store/store-object/content-address.md)而非结构化形式 |
 
-## Example
+## 示例
 
 <!-- TODO make this include a test file instead of being manually written once we have one -->
 

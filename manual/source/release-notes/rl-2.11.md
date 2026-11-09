@@ -1,5 +1,3 @@
 # Release 2.11 (2022-08-24)
 
-* `nix copy` now copies the store paths in parallel as much as possible (again).
-  This doesn't apply for the `daemon` and `ssh-ng` stores which copy everything
-  in one batch to avoid latencies issues.
+* `nix copy` 现在（重新）会尽可能并行地复制存储路径。这一改进不适用于 `daemon` 和 `ssh-ng` store，它们为避免延迟问题会把所有内容一次性批量复制。

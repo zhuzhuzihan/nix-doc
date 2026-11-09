@@ -1,15 +1,14 @@
 # Name
 
-`nix-env --set` - set profile to contain a specified derivation
+`nix-env --set` - 将 profile 设置为只包含指定的 derivation（派生）
 
-## Synopsis
+概要
 
 `nix-env` `--set` *drvname*
 
-## Description
+## 描述
 
-The `--set` operation modifies the current generation of a profile so
-that it contains exactly the specified derivation, and nothing else.
+`--set` 操作修改 profile 的当前 generation，使其恰好包含指定的 derivation，而不包含其他任何内容。
 
 {{#include ./opt-common.md}}
 
@@ -19,12 +18,10 @@ that it contains exactly the specified derivation, and nothing else.
 
 {{#include ../env-common.md}}
 
-## Examples
+## 示例
 
-The following updates a profile such that its current generation will
-contain just Firefox:
+以下命令更新一个 profile，使其当前 generation 只包含 Firefox：
 
 ```console
 $ nix-env --profile /nix/var/nix/profiles/browser --set firefox
 ```
-

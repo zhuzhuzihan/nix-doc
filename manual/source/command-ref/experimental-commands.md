@@ -1,8 +1,7 @@
-# Experimental Commands
+# 实验性命令
 
-This section lists [experimental commands](@docroot@/development/experimental-features.md#xp-feature-nix-command).
+本节列出了[实验性命令](@docroot@/development/experimental-features.md#xp-feature-nix-command)。
 
-> **Warning**
+> **警告**
 >
-> These commands may be removed in the future, or their syntax may
-> change in incompatible ways.
+> 这些命令将来可能被移除，或者其语法可能以不兼容的方式发生变更。

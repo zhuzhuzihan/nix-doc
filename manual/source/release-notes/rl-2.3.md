@@ -1,44 +1,25 @@
 # Release 2.3 (2019-09-04)
 
-This is primarily a bug fix release. However, it makes some incompatible
-changes:
+这主要是一个缺陷修复版本，但也包含了一些不兼容的变更：
 
-  - Nix now uses BSD file locks instead of POSIX file locks. Because of
-    this, you should not use Nix 2.3 and previous releases at the same
-    time on a Nix store.
+  - Nix 现在使用 BSD 文件锁而不是 POSIX 文件锁。因此，请不要在同一个 Nix store 上同时使用 Nix 2.3 与更早的版本。
 
-It also has the following changes:
+它还包含以下变更：
 
-  - `builtins.fetchGit`'s `ref` argument now allows specifying an
-    absolute remote ref. Nix will automatically prefix `ref` with
-    `refs/heads` only if `ref` doesn't already begin with `refs/`.
+  - `builtins.fetchGit` 的 `ref` 参数现在允许指定远程的绝对 ref。只有当 `ref` 不以 `refs/` 开头时，Nix 才会自动为 `ref` 加上 `refs/heads` 前缀。
 
-  - The installer now enables sandboxing by default on Linux when the
-    system has the necessary kernel support.
+  - 在 Linux 上，当系统具备必要的内核支持时，安装程序现在默认启用沙箱。
 
-  - The `max-jobs` setting now defaults to 1.
+  - `max-jobs` 设置现在默认为 1。
 
-  - New builtin functions: `builtins.isPath`, `builtins.hashFile`.
+  - 新增内建函数：`builtins.isPath`、`builtins.hashFile`。
 
-  - The `nix` command has a new `--print-build-logs` (`-L`) flag to
-    print build log output to stderr, rather than showing the last log
-    line in the progress bar. To distinguish between concurrent builds,
-    log lines are prefixed by the name of the package.
+  - `nix` 命令新增 `--print-build-logs`（`-L`）标志，用于将构建日志输出到 stderr，而不是在进度条中只显示最后一行日志。为了区分并发进行的多个构建，日志行会以软件包名称作为前缀。
 
-  - Builds are now executed in a pseudo-terminal, and the `TERM`
-    environment variable is set to `xterm-256color`. This allows many
-    programs (e.g. `gcc`, `clang`, `cmake`) to print colorized log
-    output.
+  - 构建现在在伪终端中执行，并且 `TERM` 环境变量会被设置为 `xterm-256color`。这使得许多程序（例如 `gcc`、`clang`、`cmake`）能够打印带颜色的日志输出。
 
-  - Add `--no-net` convenience flag. This flag disables substituters;
-    sets the `tarball-ttl` setting to infinity (ensuring that any
-    previously downloaded files are considered current); and disables
-    retrying downloads and sets the connection timeout to the minimum.
-    This flag is enabled automatically if there are no configured
-    non-loopback network interfaces.
+  - 新增 `--no-net` 便捷标志。该标志会禁用 substituter；将 `tarball-ttl` 设置设为无穷大（确保任何先前下载的文件都被视为最新）；禁用下载重试，并将连接超时设为最小值。当不存在任何已配置的非回环网络接口时，该标志会自动启用。
 
-  - Add a `post-build-hook` setting to run a program after a build has
-    succeeded.
+  - 新增 `post-build-hook` 设置，用于在构建成功后运行一个程序。
 
-  - Add a `trace-function-calls` setting to log the duration of Nix
-    function calls to stderr.
+  - 新增 `trace-function-calls` 设置，用于将 Nix 函数调用的耗时记录到 stderr。

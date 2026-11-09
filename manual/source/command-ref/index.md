@@ -1,2 +1,1 @@
-This section lists commands and options that you can use when you work
-with Nix.
+本节列出了使用 Nix 时可以使用的命令和选项。

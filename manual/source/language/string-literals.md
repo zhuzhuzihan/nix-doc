@@ -1,8 +1,8 @@
-# String literals
+# 字符串字面量
 
-A *string literal* represents a [string](types.md#type-string) value.
+*字符串字面量（string literal）*表示一个[字符串](types.md#type-string)值。
 
-> **Syntax**
+> **语法**
 >
 > *expression* → *string*
 >
@@ -18,19 +18,19 @@ A *string literal* represents a [string](types.md#type-string) value.
 >
 > *uri* ~ `[A-Za-z][+\-.0-9A-Za-z]*:[!$%&'*+,\-./0-9:=?@A-Z_a-z~]+`
 
-Strings can be written in three ways.
+字符串有三种写法。
 
-The most common way is to enclose the string between double quotes, e.g., `"foo bar"`.
-Strings can span multiple lines.
-The results of other expressions can be included into a string by enclosing them in `${ }`, a feature known as [string interpolation].
+最常见的方式是用双引号把字符串括起来，例如 `"foo bar"`。
+字符串可以跨多行。
+其他表达式的结果可以通过把它们括在 `${ }` 中而包含进字符串，这一特性称为[字符串插值]。
 
 [string interpolation]: ./string-interpolation.md
 
-The following must be escaped to represent them within a string, by prefixing with a backslash (`\`):
+以下字符必须通过在前面加反斜杠（`\`）转义才能在字符串中表示：
 
-- Double quote (`"`)
+- 双引号（`"`）
 
-> **Example**
+> **示例**
 >
 > ```nix
 > "\""
@@ -38,9 +38,9 @@ The following must be escaped to represent them within a string, by prefixing wi
 >
 >     "\""
 
-- Backslash (`\`)
+- 反斜杠（`\`）
 
-> **Example**
+> **示例**
 >
 > ```nix
 > "\\"
@@ -48,9 +48,9 @@ The following must be escaped to represent them within a string, by prefixing wi
 >
 >     "\\"
 
-- Dollar sign followed by an opening curly bracket (`${`) – "dollar-curly"
+- 美元符号后跟一个左花括号（`${`）——即 "dollar-curly"
 
-> **Example**
+> **示例**
 >
 > ```nix
 > "\${"
@@ -58,11 +58,11 @@ The following must be escaped to represent them within a string, by prefixing wi
 >
 >     "\${"
 
-The newline, carriage return, and tab characters can be written as `\n`, `\r` and `\t`, respectively.
+换行符、回车符和制表符可以分别写作 `\n`、`\r` 和 `\t`。
 
-A "double-dollar-curly" (`$${`) can be written literally.
+"双美元花括号"（`$${`）可以直接按字面书写。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > "$${"
@@ -70,10 +70,10 @@ A "double-dollar-curly" (`$${`) can be written literally.
 >
 >     "$\${"
 
-String values are output on the terminal with Nix-specific escaping.
-Strings written to files will contain the characters encoded by the escaping.
+字符串值输出到终端时会使用 Nix 特有的转义方式。
+写入文件的字符串将包含转义所编码的字符。
 
-The second way to write string literals is as an *indented string*, which is enclosed between pairs of *double single-quotes* (`''`), like so:
+书写字符串字面量的第二种方式是*缩进字符串（indented string）*，它由成对的*双单引号*（`''`）括起来，如下所示：
 
 ```nix
 ''
@@ -83,29 +83,26 @@ This is the second line.
 ''
 ```
 
-This kind of string literal intelligently strips indentation from
-the start of each line. To be precise, it strips from each line a
-number of spaces equal to the minimal indentation of the string as a
-whole (disregarding the indentation of empty lines). For instance,
-the first and second line are indented two spaces, while the third
-line is indented four spaces. Thus, two spaces are stripped from
-each line, so the resulting string is
+这种字符串字面量会智能地剥离每行开头的缩进。
+准确地说，它会从每一行中剥离与整个字符串的最小缩进量相等的空格数（空行的缩进不计入）。
+例如，第一行和第二行缩进了两个空格，而第三行缩进了四个空格。
+因此，每行都会被剥离两个空格，得到的字符串是
 
 ```nix
 "This is the first line.\nThis is the second line.\n  This is the third line.\n"
 ```
 
-> **Note**
+> **注意**
 >
-> Whitespace and newline following the opening `''` is ignored if there is no non-whitespace text on the initial line.
+> 如果起始的 `''` 所在行没有非空白文本，那么 `''` 之后的空白和换行符会被忽略。
 
-> **Warning**
+> **警告**
 >
-> Prefixed tab characters are not stripped.
+> 作为前缀的制表符不会被剥离。
 >
-> > **Example**
+> > **示例**
 > >
-> > The following indented string is prefixed with tabs:
+> > 下面的缩进字符串以制表符作为前缀：
 > >
 > > <pre><code class="nohighlight">''
 > > 	all:
@@ -115,13 +112,13 @@ each line, so the resulting string is
 > >
 > >     "\tall:\n\t\t@echo hello\n"
 
-Indented strings support [string interpolation].
+缩进字符串支持[字符串插值]。
 
-The following must be escaped to represent them in an indented string:
+以下内容必须转义才能在缩进字符串中表示：
 
-- `$` is escaped by prefixing it with two single quotes (`''`)
+- `$` 通过在前面加两个单引号（`''`）来转义
 
-> **Example**
+> **示例**
 >
 > ```nix
 > ''
@@ -131,9 +128,9 @@ The following must be escaped to represent them in an indented string:
 >
 >     "$\n"
 
-- `''` is escaped by prefixing it with one single quote (`'`)
+- `''` 通过在前面加一个单引号（`'`）来转义
 
-> **Example**
+> **示例**
 >
 > ```nix
 > ''
@@ -143,15 +140,15 @@ The following must be escaped to represent them in an indented string:
 >
 >     "''\n"
 
-These special characters are escaped as follows:
-- Linefeed (`\n`): `''\n`
-- Carriage return (`\r`): `''\r`
-- Tab (`\t`): `''\t`
+这些特殊字符按如下方式转义：
+- 换行符（`\n`）：`''\n`
+- 回车符（`\r`）：`''\r`
+- 制表符（`\t`）：`''\t`
 
-`''\` escapes any other character.
+`''\` 可以转义任何其他字符。
 
-A "dollar-curly" (`${`) can be written as follows: 
-> **Example**
+"dollar-curly"（`${`）可以按如下方式书写：
+> **示例**
 >
 > ```nix
 > ''
@@ -161,13 +158,13 @@ A "dollar-curly" (`${`) can be written as follows:
 >
 >     "echo ${PATH}\n"
 
-> **Note**
+> **注意**
 >
-> This differs from the syntax for escaping a dollar-curly within double quotes (`"\${"`). Be aware of which one is needed at a given moment.
+> 这与在双引号字符串中转义 dollar-curly 的语法（`"\${"`）不同。请留意当前需要的是哪一种。
 
-A "double-dollar-curly" (`$${`) can be written literally.
+"双美元花括号"（`$${`）可以直接按字面书写。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > ''
@@ -177,12 +174,8 @@ A "double-dollar-curly" (`$${`) can be written literally.
 >
 >     "$\${\n"
 
-Indented strings are primarily useful in that they allow multi-line
-string literals to follow the indentation of the enclosing Nix
-expression, and that less escaping is typically necessary for
-strings representing languages such as shell scripts and
-configuration files because `''` is much less common than `"`.
-Example:
+缩进字符串的主要用处在于：它允许多行字符串字面量遵循其外围 Nix 表达式的缩进；而且对于表示 shell 脚本、配置文件等语言的字符串来说，通常需要更少的转义，因为 `''` 远比 `"` 少见。
+示例：
 
 ```nix
 stdenv.mkDerivation {
@@ -198,8 +191,6 @@ postInstall =
 }
 ```
 
-Finally, as a convenience, *URIs* as defined in appendix B of
-[RFC 2396](http://www.ietf.org/rfc/rfc2396.txt) can be written *as
-is*, without quotes. For instance, the string
-`"http://example.org/foo.tar.bz2"` can also be written as
-`http://example.org/foo.tar.bz2`.
+最后，作为一种便利，[RFC 2396](http://www.ietf.org/rfc/rfc2396.txt) 附录 B 中定义的 *URI* 可以*原样*书写，无需加引号。
+例如，字符串 `"http://example.org/foo.tar.bz2"` 也可以写作
+`http://example.org/foo.tar.bz2`。

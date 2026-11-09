@@ -1,32 +1,16 @@
-# Multi-User Mode
+# 多用户模式
 
-To allow a Nix store to be shared safely among multiple users, it is
-important that users are not able to run builders that modify the Nix
-store or database in arbitrary ways, or that interfere with builds
-started by other users. If they could do so, they could install a Trojan
-horse in some package and compromise the accounts of other users.
+为了允许多个用户安全地共享 Nix store，必须确保用户无法运行会以任意方式修改 Nix store 或数据库的构建器（builder），也无法干扰其他用户启动的构建。否则，用户可能在某个软件包中植入木马，从而危及其他用户的账户。
 
-To prevent this, the Nix store and database are owned by some privileged
-user (usually `root`) and builders are executed under special user
-accounts (usually named `nixbld1`, `nixbld2`, etc.). When a unprivileged
-user runs a Nix command, actions that operate on the Nix store (such as
-builds) are forwarded to a *Nix daemon* running under the owner of the
-Nix store/database that performs the operation.
+为防止这种情况，Nix store 及其数据库由某个特权用户（通常是 `root`）所有，而构建器则在特殊的用户账户下执行（通常名为 `nixbld1`、`nixbld2` 等）。当非特权用户运行 Nix 命令时，作用于 Nix store 的操作（例如构建）会被转发给一个以 Nix store/数据库所有者身份运行的 *Nix daemon（守护进程）*，由它执行该操作。
 
-> **Note**
+> **注意**
 > 
-> Multi-user mode has one important limitation: only root and a set of
-> trusted users specified in `nix.conf` can specify arbitrary binary
-> caches. So while unprivileged users may install packages from
-> arbitrary Nix expressions, they may not get pre-built binaries.
+> 多用户模式有一个重要限制：只有 root 和 `nix.conf` 中指定的一组受信任用户才能指定任意的二进制缓存。因此，虽然非特权用户可以从任意的 Nix 表达式安装软件包，但他们可能无法获取预构建的二进制文件。
 
-## Setting up the build users
+## 设置构建用户
 
-The *build users* are the special UIDs under which builds are performed.
-They should all be members of the *build users group* `nixbld`. This
-group should have no other members. The build users should not be
-members of any other group. On Linux, you can create the group and users
-as follows:
+*构建用户*是执行构建时所使用的特殊 UID。它们应当都是*构建用户组* `nixbld` 的成员。该组不应有其他成员，构建用户也不应是任何其他组的成员。在 Linux 上，可以按如下方式创建该组和用户：
 
 ```console
 $ groupadd -r nixbld
@@ -35,43 +19,31 @@ $ for n in $(seq 1 10); do useradd -c "Nix build user $n" \
     nixbld$n; done
 ```
 
-This creates 10 build users. There can never be more concurrent builds
-than the number of build users, so you may want to increase this if you
-expect to do many builds at the same time.
+这将创建 10 个构建用户。并发构建的数量永远不会超过构建用户的数量，因此如果你预期会同时进行大量构建，可能需要增加这一数量。
 
-## Running the daemon
+## 运行 daemon
 
-The [Nix daemon](../command-ref/nix-daemon.md) should be started as
-follows (as `root`):
+[Nix daemon](../command-ref/nix-daemon.md) 应按如下方式启动（以 `root` 身份）：
 
 ```console
 $ nix-daemon
 ```
 
-You’ll want to put that line somewhere in your system’s boot scripts.
+你可能希望把这一行放到系统启动脚本中的某个位置。
 
-To let unprivileged users use the daemon, they should set the
-[`NIX_REMOTE` environment variable](../command-ref/env-common.md) to
-`daemon`. So you should put a line like
+要让非特权用户使用 daemon，他们应将 [`NIX_REMOTE` 环境变量](../command-ref/env-common.md)设置为 `daemon`。因此，你应在用户的登录脚本中加入类似下面的一行：
 
 ```console
 export NIX_REMOTE=daemon
 ```
 
-into the users’ login scripts.
+## 限制访问
 
-## Restricting access
-
-To limit which users can perform Nix operations, you can use the
-permissions on the directory `/nix/var/nix/daemon-socket`. For instance,
-if you want to restrict the use of Nix to the members of a group called
-`nix-users`, do
+要限制哪些用户可以执行 Nix 操作，可以使用目录 `/nix/var/nix/daemon-socket` 的权限。例如，如果想把 Nix 的使用限制在名为 `nix-users` 的组的成员内，执行：
 
 ```console
 $ chgrp nix-users /nix/var/nix/daemon-socket
 $ chmod ug=rwx,o= /nix/var/nix/daemon-socket
 ```
 
-This way, users who are not in the `nix-users` group cannot connect to
-the Unix domain socket `/nix/var/nix/daemon-socket/socket`, so they
-cannot perform Nix operations.
+这样，不在 `nix-users` 组中的用户就无法连接到 Unix 域套接字 `/nix/var/nix/daemon-socket/socket`，因此无法执行 Nix 操作。

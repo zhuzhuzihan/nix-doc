@@ -1,52 +1,52 @@
-# File System Object
+# 文件系统对象（File System Object）
 
-Nix uses a simplified model of the file system, which consists of file system objects.
-Every file system object is one of the following:
+Nix 使用一个简化的文件系统模型，它由文件系统对象构成。
+每个文件系统对象都是以下之一：
 
- - [**Regular File**]{#regular}
+ - [**普通文件**]{#regular}
 
-   - A possibly empty sequence of bytes for contents
-   - A single boolean representing the [executable](https://en.m.wikipedia.org/wiki/File-system_permissions#Permissions) permission
+   - 内容是一个可能为空的字节序列
+   - 一个布尔值，表示[可执行](https://en.m.wikipedia.org/wiki/File-system_permissions#Permissions)权限
 
- - [**Directory**]{#directory}
+ - [**目录**]{#directory}
 
-   Mapping of names to child file system objects
+   从名称到子文件系统对象的映射
 
- - [**Symbolic link**]{#symlink}
+ - [**符号链接**]{#symlink}
 
-   An arbitrary string, known as the *target* of the symlink.
+   一个任意字符串，称为符号链接的*目标（target）*。
 
-   In general, Nix does not assign any semantics to symbolic links.
-   Certain operations however, may make additional assumptions and attempt to use the target to find another file system object.
+   一般而言，Nix 不给符号链接赋予任何语义。
+   然而某些操作可能会做出额外的假设，并尝试利用目标来找到另一个文件系统对象。
 
-   > See [the Wikipedia article on symbolic links](https://en.m.wikipedia.org/wiki/Symbolic_link) for background information if you are unfamiliar with this Unix concept.
+   > 如果你不熟悉这个 Unix 概念，请参阅[维基百科关于符号链接的文章](https://en.m.wikipedia.org/wiki/Symbolic_link)了解背景信息。
 
-File system objects and their children form a tree.
-A bare file or symlink can be a root file system object.
+文件系统对象及其子对象构成一棵树。
+一个孤立的文件或符号链接也可以作为根文件系统对象。
 
-Nix does not encode any other file system notions such as [hard links](https://en.m.wikipedia.org/wiki/Hard_link), [permissions](https://en.m.wikipedia.org/wiki/File-system_permissions), timestamps, or other metadata.
+Nix 不编码任何其他文件系统概念，例如[硬链接](https://en.m.wikipedia.org/wiki/Hard_link)、[权限](https://en.m.wikipedia.org/wiki/File-system_permissions)、时间戳或其他元数据。
 
-## Examples of file system objects
+## 文件系统对象的示例
 
-A plain file:
+一个普通文件：
 
 ```
 50 B, executable: false
 ```
 
-An executable file:
+一个可执行文件：
 
 ```
 122 KB, executable: true
 ```
 
-A symlink:
+一个符号链接：
 
 ```
 -> /usr/bin/sh
 ```
 
-A directory with contents:
+一个有内容的目录：
 
 ```
 ├── bin
@@ -59,7 +59,7 @@ A directory with contents:
             └── hello.1.gz: 790 B, executable: false
 ```
 
-A directory that contains a symlink and other directories:
+一个包含符号链接和其他目录的目录：
 
 ```
 ├── bin -> share/go/bin

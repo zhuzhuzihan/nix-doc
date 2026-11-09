@@ -1,5 +1,3 @@
 # Release 0.10.1 (2006-10-11)
 
-This release fixes two somewhat obscure bugs that occur when evaluating
-Nix expressions that are stored inside the Nix store (`NIX-67`). These
-do not affect most users.
+本版本修复了两个较为冷门的缺陷，它们出现在对存储于 Nix store 中的 Nix 表达式进行求值时（`NIX-67`）。这些问题不影响大多数用户。

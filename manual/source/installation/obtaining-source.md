@@ -1,13 +1,9 @@
-# Obtaining the Source
+# 获取源码
 
-The most recent sources of Nix can be obtained from its [Git
-repository](https://github.com/NixOS/nix). For example, the following
-command will check out the latest revision into a directory called
-`nix`:
+Nix 的最新源码可以从其 [Git 仓库](https://github.com/NixOS/nix)获取。例如，以下命令会把最新修订版检出到名为 `nix` 的目录中：
 
 ```console
 $ git clone https://github.com/NixOS/nix
 ```
 
-Likewise, specific releases can be obtained from the
-[tags](https://github.com/NixOS/nix/tags) of the repository.
+同样，特定的发布版本可以从仓库的[标签](https://github.com/NixOS/nix/tags)获取。

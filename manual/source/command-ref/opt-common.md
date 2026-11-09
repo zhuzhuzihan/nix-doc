@@ -2,160 +2,160 @@
      src/libcmd/common-eval-args.cc
 -->
 
-# Common Options
+# 通用选项
 
-Most Nix commands accept the following command-line options:
+大多数 Nix 命令接受以下命令行选项：
 
 - <span id="opt-help">[`--help`](#opt-help)</span>
 
-  Prints out a summary of the command syntax and exits.
+  打印命令语法摘要并退出。
 
 - <span id="opt-version">[`--version`](#opt-version)</span>
 
-  Prints out the Nix version number on standard output and exits.
+  将 Nix 版本号打印到标准输出并退出。
 
-  For machine-readable output, including versions of the libraries Nix
-  links against, see the [`nix version`](@docroot@/command-ref/new-cli/nix3-version.md) command.
+  关于机器可读的输出（包括 Nix 所链接
+  库的版本），请参见 [`nix version`](@docroot@/command-ref/new-cli/nix3-version.md) 命令。
 
 - <span id="opt-verbose">[`--verbose`](#opt-verbose)</span> / `-v`
 
-  Increases the level of verbosity of diagnostic messages printed on standard error.
-  For each Nix operation, the information printed on standard output is well-defined;
-  any diagnostic information is printed on standard error, never on standard output.
+  提高打印到标准错误的诊断消息的详细程度。
+  对于每个 Nix 操作，打印到标准输出的信息是有明确定义的；
+  任何诊断信息都打印到标准错误，绝不会打印到标准输出。
 
-  This option may be specified repeatedly.
-  Currently, the following verbosity levels exist:
+  此选项可以重复指定。
+  目前存在以下详细程度级别：
 
-  - `0` “Errors only”
+  - `0` “Errors only”（仅错误）
 
-    Only print messages explaining why the Nix invocation failed.
+    只打印解释 Nix 调用为何失败的消息。
 
-  - `1` “Informational”
+  - `1` “Informational”（信息性）
 
-    Print *useful* messages about what Nix is doing.
-    This is the default.
+    打印关于 Nix 正在做什么的*有用*消息。
+    这是默认级别。
 
   - `2` “Talkative”
 
-    Print more informational messages.
+    打印更多的信息性消息。
 
   - `3` “Chatty”
 
-    Print even more informational messages.
+    打印更多的信息性消息。
 
   - `4` “Debug”
 
-    Print debug information.
+    打印调试信息。
 
   - `5` “Vomit”
 
-    Print vast amounts of debug information.
+    打印海量的调试信息。
 
 - <span id="opt-quiet">[`--quiet`](#opt-quiet)</span>
 
-  Decreases the level of verbosity of diagnostic messages printed on standard error.
-  This is the inverse option to `-v` / `--verbose`.
+  降低打印到标准错误的诊断消息的详细程度。
+  它是 `-v` / `--verbose` 的反向选项。
 
-  This option may be specified repeatedly.
-  See the previous verbosity levels list.
+  此选项可以重复指定。
+  参见上一条详细程度级别列表。
 
 - <span id="opt-log-format">[`--log-format`](#opt-log-format)</span> *format*
 
-  This option can be used to change the output of the log format, with *format* being one of:
+  此选项可用于更改日志格式的输出，*format* 为以下之一：
 
   - `raw`
 
-    This is the raw format, as outputted by nix-build.
+    这是原始格式，如同 nix-build 输出的那样。
 
   - `internal-json`
 
-    Outputs the logs in a structured manner.
+    以结构化方式输出日志。
 
-    > **Warning**
+    > **警告**
     >
-    > While the schema itself is relatively stable, the format of
-    > the error-messages (namely of the `msg`-field) can change
-    > between releases.
+    > 虽然 schema 本身相对稳定，但错误消息
+    > 的格式（即 `msg` 字段）在各个
+    > 版本之间可能发生变化。
 
   - `bar`
 
-    Only display a progress bar during the builds.
+    在构建期间只显示进度条。
 
   - `bar-with-logs`
 
-    Display the raw logs, with the progress bar at the bottom.
+    显示原始日志，进度条位于底部。
 
 - <span id="opt-no-build-output">[`--no-build-output`](#opt-no-build-output)</span> / `-Q`
 
-  By default, output written by builders to standard output and standard error is echoed to the Nix command's standard error.
-  This option suppresses this behaviour.
-  Note that the builder's standard output and error are always written to a log file in `prefix/nix/var/log/nix`.
+  默认情况下，构建器写到标准输出和标准错误的内容会被转发到 Nix 命令的标准错误。
+  此选项抑制这种行为。
+  请注意，构建器的标准输出和标准错误始终会写入 `prefix/nix/var/log/nix` 中的一个日志文件。
 
 - <span id="opt-max-jobs">[`--max-jobs`](#opt-max-jobs)</span> / `-j` *number*
 
-  Sets the maximum number of build jobs that Nix will perform in parallel to the specified number.
-  Specify `auto` to use the number of CPUs in the system.
-  The default is specified by the `max-jobs` configuration setting, which itself defaults to `1`.
-  A higher value is useful on SMP systems or to exploit I/O latency.
+  将 Nix 并行执行的构建任务的最大数量设置为指定数值。
+  指定 `auto` 可使用系统中的 CPU 数量。
+  默认值由 `max-jobs` 配置设置指定，而它本身默认为 `1`。
+  在 SMP 系统上或为了利用 I/O 延迟时，更大的值很有用。
 
-  Setting it to `0` disallows building on the local machine, which is useful when you want builds to happen only on remote builders.
+  将其设为 `0` 禁止在本地机器上构建，当你希望构建只在远程构建器上发生时很有用。
 
 - <span id="opt-cores">[`--cores`](#opt-cores)</span>
 
-  Sets the value of the `NIX_BUILD_CORES` environment variable in the invocation of builders.
-  Builders can use this variable at their discretion to control the maximum amount of parallelism.
-  For instance, in Nixpkgs, if the derivation attribute `enableParallelBuilding` is set to `true`, the builder passes the `-jN` flag to GNU Make.
-  It defaults to the value of the `cores` configuration setting, if set, or `1` otherwise.
-  The value `0` means that the builder should use all available CPU cores in the system.
+  在调用构建器时设置 `NIX_BUILD_CORES` 环境变量的值。
+  构建器可自行决定使用该变量来控制最大并行度。
+  例如，在 Nixpkgs 中，如果 derivation 属性 `enableParallelBuilding` 被设置为 `true`，构建器会将 `-jN` 标志传给 GNU Make。
+  它默认为 `cores` 配置设置的值（如果设置了），否则为 `1`。
+  值 `0` 表示构建器应使用系统中所有可用的 CPU 核心。
 
 - <span id="opt-max-silent-time">[`--max-silent-time`](#opt-max-silent-time)</span>
 
-  Sets the maximum number of seconds that a builder can go without producing any data on standard output or standard error.
-  The default is specified by the `max-silent-time` configuration setting.
-  `0` means no time-out.
+  设置构建器在标准输出或标准错误上不产生任何数据的最长秒数。
+  默认值由 `max-silent-time` 配置设置指定。
+  `0` 表示没有超时。
 
 - <span id="opt-timeout">[`--timeout`](#opt-timeout)</span>
 
-  Sets the maximum number of seconds that a builder can run.
-  The default is specified by the `timeout` configuration setting.
-  `0` means no timeout.
+  设置构建器可以运行的最长秒数。
+  默认值由 `timeout` 配置设置指定。
+  `0` 表示没有超时。
 
 - <span id="opt-keep-going">[`--keep-going`](#opt-keep-going)</span> / `-k`
 
-  Keep going in case of failed builds, to the greatest extent possible.
-  That is, if building an input of some derivation fails, Nix will still build the other inputs, but not the derivation itself.
-  Without this option, Nix stops if any build fails (except for builds of substitutes), possibly killing builds in progress (in case of parallel or distributed builds).
+  在构建失败时尽可能地继续进行。
+  也就是说，如果某个 derivation 的某个输入构建失败，Nix 仍会构建其他输入，但不构建该 derivation 本身。
+  没有此选项时，任何构建失败都会使 Nix 停止（substitute 的构建除外），可能杀死正在进行中的构建（在并行或分布式构建的情况下）。
 
 - <span id="opt-keep-failed">[`--keep-failed`](#opt-keep-failed)</span> / `-K`
 
-  Specifies that in case of a build failure, the temporary directory (usually in `/tmp`) in which the build takes place should not be deleted.
-  The path of the build directory is printed as an informational message.
+  指定在构建失败的情况下，构建所在的临时目录（通常位于 `/tmp`）不应被删除。
+  构建目录的路径会作为信息性消息打印出来。
 
 - <span id="opt-fallback">[`--fallback`](#opt-fallback)</span>
 
-  Whenever Nix attempts to build a derivation for which substitutes are known for each output path, but realising the output paths through the substitutes fails, fall back on building the derivation.
+  每当 Nix 尝试构建一个其每个输出路径都已知有 substitute（替代）的 derivation，但通过这些 substitute 实现输出路径失败时，回退为直接构建该 derivation。
 
-  The most common scenario in which this is useful is when we have registered substitutes in order to perform binary distribution from, say, a network repository.
-  If the repository is down, the realisation of the derivation will fail.
-  When this option is specified, Nix will build the derivation instead.
-  Thus, installation from binaries falls back on installation from source.
-  This option is not the default since it is generally not desirable for a transient failure in obtaining the substitutes to lead to a full build from source (with the related consumption of resources).
+  这种做法最有用的最常见场景是：我们注册了 substitute 以便从某个（例如）网络仓库执行二进制分发。
+  如果该仓库不可用，derivation 的实现（realisation）就会失败。
+  指定此选项后，Nix 将改为构建该 derivation。
+  这样，从二进制安装就回退为从源码安装。
+  此选项不是默认行为，因为 substitute 获取过程中的瞬时故障一般不应导致完整的源码构建（以及相关的资源消耗）。
 
 - <span id="opt-readonly-mode">[`--readonly-mode`](#opt-readonly-mode)</span>
 
-  When this option is used, no attempt is made to open the Nix database.
-  Most Nix operations do need database access, so those operations will fail.
+  使用此选项时，不会尝试打开 Nix 数据库。
+  大多数 Nix 操作确实需要访问数据库，因此这些操作会失败。
 
 - <span id="opt-arg">[`--arg`](#opt-arg)</span> *name* *value*
 
-  This option is accepted by `nix-env`, `nix-instantiate`, `nix-shell` and `nix-build`.
-  When evaluating Nix expressions, the expression evaluator will automatically try to call functions that it encounters.
-  It can automatically call functions for which every argument has a [default value](@docroot@/language/syntax.md#functions) (e.g., `{ argName ?  defaultValue }: ...`).
+  此选项被 `nix-env`、`nix-instantiate`、`nix-shell` 和 `nix-build` 接受。
+  在对 Nix 表达式求值时，求值器会自动尝试调用它遇到的函数。
+  它可以自动调用每个参数都有[默认值](@docroot@/language/syntax.md#functions)的函数（例如 `{ argName ?  defaultValue }: ...`）。
 
-  With `--arg`, you can also call functions that have arguments without a default value (or override a default value).
-  That is, if the evaluator encounters a function with an argument named *name*, it will call it with value *value*.
+  使用 `--arg`，你还可以调用带有无默认值参数的函数（或覆盖默认值）。
+  也就是说，如果求值器遇到一个带有名为 *name* 的参数的函数，它会以值 *value* 调用它。
 
-  For instance, the top-level `default.nix` in Nixpkgs is actually a function:
+  例如，Nixpkgs 中的顶层 `default.nix` 实际上是一个函数：
 
   ```nix
   { # The system (e.g., `i686-linux') for which to build the packages.
@@ -164,70 +164,70 @@ Most Nix commands accept the following command-line options:
   }: ...
   ```
 
-  So if you call this Nix expression (e.g., when you do `nix-env --install --attr pkgname`), the function will be called automatically using the value [`builtins.currentSystem`](@docroot@/language/builtins.md) for the `system` argument.
-  You can override this using `--arg`, e.g., `nix-env --install --attr pkgname --arg system \"i686-freebsd\"`.
-  (Note that since the argument is a Nix string literal, you have to escape the quotes.)
+  因此，如果你调用这个 Nix 表达式（例如执行 `nix-env --install --attr pkgname` 时），该函数会被自动调用，`system` 参数取值 [`builtins.currentSystem`](@docroot@/language/builtins.md)。
+  你可以使用 `--arg` 覆盖它，例如 `nix-env --install --attr pkgname --arg system \"i686-freebsd\"`。
+  （注意，由于参数是 Nix 字符串字面量，你必须转义引号。）
 
 - <span id="opt-arg-from-file">[`--arg-from-file`](#opt-arg-from-file)</span> *name* *path*
 
-  Pass the contents of file *path* as the argument *name* to Nix functions.
+  将文件 *path* 的内容作为参数 *name* 传递给 Nix 函数。
 
 - <span id="opt-arg-from-stdin">[`--arg-from-stdin`](#opt-arg-from-stdin)</span> *name*
 
-  Pass the contents of stdin as the argument *name* to Nix functions.
+  将标准输入的内容作为参数 *name* 传递给 Nix 函数。
 
 - <span id="opt-argstr">[`--argstr`](#opt-argstr)</span> *name* *value*
 
-  This option is like `--arg`, only the value is not a Nix expression but a string.
-  So instead of `--arg system \"i686-linux\"` (the outer quotes are to keep the shell happy) you can say `--argstr system i686-linux`.
+  此选项类似于 `--arg`，只是值不是一个 Nix 表达式而是一个字符串。
+  因此你可以用 `--argstr system i686-linux` 代替 `--arg system \"i686-linux\"`（外层引号是为了让 shell 满意）。
 
 - <span id="opt-attr">[`--attr`](#opt-attr)</span> / `-A` *attrPath*
 
-  Select an attribute from the top-level Nix expression being evaluated.
-  (`nix-env`, `nix-instantiate`, `nix-build` and `nix-shell` only.)
-  The *attribute path* *attrPath* is a sequence of attribute names separated by dots.
-  For instance, given a top-level Nix expression *e*, the attribute path `xorg.xorgserver` would cause the expression `e.xorg.xorgserver` to be used.
-  See [`nix-env --install`](@docroot@/command-ref/nix-env/install.md) for some concrete examples.
+  从被求值的顶层 Nix 表达式中选择一个属性。
+  （仅限 `nix-env`、`nix-instantiate`、`nix-build` 和 `nix-shell`。）
+  *属性路径* *attrPath* 是一个以点分隔的属性名序列。
+  例如，给定顶层 Nix 表达式 *e*，属性路径 `xorg.xorgserver` 会导致使用表达式 `e.xorg.xorgserver`。
+  具体示例请参见 [`nix-env --install`](@docroot@/command-ref/nix-env/install.md)。
 
-  In addition to attribute names, you can also specify array indices.
-  For instance, the attribute path `foo.3.bar` selects the `bar`
-  attribute of the fourth element of the array in the `foo` attribute
-  of the top-level expression.
+  除了属性名，你还可以指定数组索引。
+  例如，属性路径 `foo.3.bar` 选择顶层表达式
+  的 `foo` 属性中数组第四个元素的 `bar`
+  属性。
 
 - <span id="opt-eval-store">[`--eval-store`](#opt-eval-store)</span> *store-url*
 
-  The [URL to the Nix store](@docroot@/store/types/index.md#store-url-format) to use for evaluation, i.e. where to store derivations (`.drv` files) and inputs referenced by them.
+  用于求值的[指向 Nix store 的 URL](@docroot@/store/types/index.md#store-url-format)，即存放 derivation（`.drv` 文件）及其引用的输入的位置。
 
 - <span id="opt-expr">[`--expr`](#opt-expr)</span> / `-E`
 
-  Interpret the command line arguments as a list of Nix expressions to be parsed and evaluated, rather than as a list of file names of Nix expressions.
-  (`nix-instantiate`, `nix-build` and `nix-shell` only.)
+  将命令行参数解释为要解析和求值的 Nix 表达式列表，而不是 Nix 表达式的文件名列表。
+  （仅限 `nix-instantiate`、`nix-build` 和 `nix-shell`。）
 
-  For `nix-shell`, this option is commonly used to give you a shell in which you can build the packages returned by the expression.
-  If you want to get a shell which contain the *built* packages ready for use, give your expression to the `nix-shell --packages ` convenience flag instead.
+  对于 `nix-shell`，此选项通常用于给你一个可以在其中构建表达式所返回软件包的 shell。
+  如果你想要一个包含*已构建*软件包、可直接使用的 shell，请将表达式传给 `nix-shell --packages ` 这一便捷标志。
 
 - <span id="opt-I">[`-I` / `--include`](#opt-I)</span> *path*
 
-  Add an entry to the list of search paths used to resolve [lookup paths](@docroot@/language/constructs/lookup-path.md).
-  This option may be given multiple times.
+  向用于解析 [lookup paths](@docroot@/language/constructs/lookup-path.md) 的搜索路径列表添加一个条目。
+  此选项可以多次给出。
 
-  Paths added through `-I` take precedence over the [`nix-path` configuration setting](@docroot@/command-ref/conf-file.md#conf-nix-path) and the [`NIX_PATH` environment variable](@docroot@/command-ref/env-common.md#env-NIX_PATH).
+  通过 `-I` 添加的路径优先于 [`nix-path` 配置设置](@docroot@/command-ref/conf-file.md#conf-nix-path)和 [`NIX_PATH` 环境变量](@docroot@/command-ref/env-common.md#env-NIX_PATH)。
 
 - <span id="opt-impure">[`--impure`](#opt-impure)</span>
 
-  Allow access to mutable paths and repositories.
+  允许访问可变路径和仓库。
 
 - <span id="opt-option">[`--option`](#opt-option)</span> *name* *value*
 
-  Set the Nix configuration option *name* to *value*.
-  This overrides settings in the Nix configuration file (see nix.conf5).
+  将 Nix 配置选项 *name* 设置为 *value*。
+  这会覆盖 Nix 配置文件中的设置（见 nix.conf5）。
 
 - <span id="opt-repair">[`--repair`](#opt-repair)</span>
 
-  Fix corrupted or missing store paths by redownloading or rebuilding them.
-  Note that this is slow because it requires computing a cryptographic hash of the contents of every path in the closure of the build.
-  Also note the warning under `nix-store --repair-path`.
+  通过重新下载或重新构建来修复损坏或缺失的存储路径。
+  请注意这很慢，因为它需要计算构建闭包中每个路径内容的密码学哈希。
+  另请注意 `nix-store --repair-path` 下的警告。
 
-> **Note**
+> **注意**
 >
-> See [`man nix.conf`](@docroot@/command-ref/conf-file.md#command-line-flags) for overriding configuration settings with command line flags.
+> 关于用命令行标志覆盖配置设置，请参见 [`man nix.conf`](@docroot@/command-ref/conf-file.md#command-line-flags)。

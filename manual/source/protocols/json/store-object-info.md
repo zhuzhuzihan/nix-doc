@@ -1,38 +1,38 @@
 {{#include store-object-info-v3-fixed.md}}
 
-## Examples
+## 示例
 
-### Minimal store object (content-addressed)
+### 最小存储对象（内容寻址）
 
 ```json
 {{#include schema/store-object-info-v3/pure.json}}
 ```
 
-### Store object with impure fields
+### 带非纯字段的存储对象
 
 ```json
 {{#include schema/store-object-info-v3/impure.json}}
 ```
 
-### Minimal store object (empty)
+### 最小存储对象（空）
 
 ```json
 {{#include schema/store-object-info-v3/empty_pure.json}}
 ```
 
-### Store object with all impure fields
+### 带所有非纯字段的存储对象
 
 ```json
 {{#include schema/store-object-info-v3/empty_impure.json}}
 ```
 
-### NAR info (minimal)
+### NAR 信息（最小）
 
 ```json
 {{#include schema/nar-info-v3/pure.json}}
 ```
 
-### NAR info (with binary cache fields)
+### NAR 信息（含二进制缓存字段）
 
 ```json
 {{#include schema/nar-info-v3/impure.json}}

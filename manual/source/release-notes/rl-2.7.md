@@ -1,11 +1,8 @@
 # Release 2.7 (2022-03-07)
 
-* Nix will now make some helpful suggestions when you mistype
-  something on the command line. For instance, if you type `nix build
-  nixpkgs#thunderbrd`, it will suggest `thunderbird`.
+* 当你在命令行上输入错误时，Nix 现在会给出一些有用的提示。例如，如果你输入 `nix build nixpkgs#thunderbrd`，它会建议你使用 `thunderbird`。
 
-* A number of "default" flake output attributes have been
-  renamed. These are:
+* 若干「默认」Flakes 输出属性已被重命名。具体如下：
 
   * `defaultPackage.<system>` → `packages.<system>.default`
   * `defaultApps.<system>` → `apps.<system>.default`
@@ -14,20 +11,12 @@
   * `overlay` → `overlays.default`
   * `devShell.<system>` → `devShells.<system>.default`
 
-  The old flake output attributes still work, but `nix flake check`
-  will warn about them.
+  旧的 Flakes 输出属性仍然可用，但 `nix flake check` 会对它们发出警告。
 
-* Breaking API change: `nix bundle` now supports bundlers of the form
-  `bundler.<system>.<name>= derivation: another-derivation;`. This
-  supports additional functionality to inspect evaluation information
-  during bundling. A new
-  [repository](https://github.com/NixOS/bundlers) has various bundlers
-  implemented.
+* 破坏性 API 变更：`nix bundle` 现在支持形如 `bundler.<system>.<name>= derivation: another-derivation;` 的 bundler。这为在打包过程中检查求值信息提供了额外的功能支持。一个新的[代码仓库](https://github.com/NixOS/bundlers)中实现了多种 bundler。
 
-* `nix store ping` now reports the version of the remote Nix daemon.
+* `nix store ping` 现在会报告远程 Nix daemon（守护进程）的版本。
 
-* `nix flake {init,new}` now display information about which files have been
-  created.
+* `nix flake {init,new}` 现在会显示哪些文件已被创建的信息。
 
-* Templates can now define a `welcomeText` attribute, which is printed out by
-  `nix flake {init,new} --template <template>`.
+* 模板现在可以定义 `welcomeText` 属性，它会在执行 `nix flake {init,new} --template <template>` 时打印出来。

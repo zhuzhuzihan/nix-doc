@@ -1,45 +1,45 @@
-This section describes the notion of *experimental features*, and how it fits into the big picture of the development of Nix.
+本节描述*实验性特性*的概念，以及它如何融入 Nix 开发的整体图景。
 
-# What are experimental features?
+# 什么是实验性特性？
 
-Experimental features are considered unstable, which means that they can be changed or removed at any time.
-Users must explicitly enable them by toggling the associated [experimental feature flags](@docroot@/command-ref/conf-file.md#conf-experimental-features).
-This allows accessing unstable functionality without unwittingly relying on it.
+实验性特性被视为不稳定，这意味着它们可能随时被更改或移除。
+用户必须通过切换相应的[实验性特性开关](@docroot@/command-ref/conf-file.md#conf-experimental-features)来显式启用它们。
+这使得人们可以在不盲目依赖的前提下访问不稳定的功能。
 
-Experimental feature flags were first introduced in [Nix 2.4](@docroot@/release-notes/rl-2.4.md).
-Before that, Nix did have experimental features, but they were not guarded by flags and were merely documented as unstable.
-This was a source of confusion and controversy.
+实验性特性开关最早在 [Nix 2.4](@docroot@/release-notes/rl-2.4.md) 中引入。
+在此之前，Nix 也有实验性特性，但它们没有受到开关的保护，只是被标注为不稳定。
+这曾是混乱和争议的根源。
 
-# When should a new feature be marked experimental?
+# 什么时候应当把新特性标记为实验性？
 
-A change in the Nix codebase should be guarded by an experimental feature flag if it is considered likely to be reverted or adapted in a backwards-incompatible manner after gathering more experience with it in practice.
+如果根据预判，某项 Nix 代码库的变更在积累更多实践经验之后有可能被回退或以向后不兼容的方式调整，那么它应当受实验性特性开关保护。
 
-Examples:
+例如：
 
-- Changes to the Nix language, such as new built-ins, syntactic or semantic changes, etc.
-- Changes to the command-line interface
+- 对 Nix 语言的更改，例如新的内建函数、语法或语义更改等。
+- 对命令行界面的更改
 
-# Lifecycle of an experimental feature
+# 实验性特性的生命周期
 
-Experimental features have to be treated on a case-by-case basis.
-However, the standard workflow for an experimental feature is as follows:
+实验性特性必须逐案对待。
+不过，实验性特性的标准工作流如下：
 
-- A new feature is implemented in a *pull request*
-  - It is guarded by an experimental feature flag that is disabled by default
-- The pull request is merged, the *experimental* feature ends up in a release
-    - Using the feature requires explicitly enabling it, signifying awareness of the potential risks
-    - Being experimental, the feature can still be changed arbitrarily
-- The feature can be *removed*
-  - The associated experimental feature flag is also removed
-- The feature can be declared *stable*
-  - The associated experimental feature flag is removed
-  - There should be enough evidence of users having tried the feature, such as feedback, fixed bugs, demonstrations of how it is put to use
-  - Maintainers must feel confident that:
-    - The feature is designed and implemented sensibly, that it is fit for purpose
-    - Potential interactions are well-understood
-    - Stabilising the feature will not incur an outsized maintenance burden in the future
+- 新特性在*pull request*中实现
+  - 它由一个默认关闭的实验性特性开关保护
+- pull request 被合并，*实验性*特性进入发布版本
+    - 使用该特性需要显式启用，表明用户已知晓潜在风险
+    - 由于处于实验阶段，该特性仍可以被任意更改
+- 该特性可以被*移除*
+  - 相应的实验性特性开关也被移除
+- 该特性可以被宣布*稳定*
+  - 相应的实验性特性开关被移除
+  - 应当有足够的证据表明用户尝试过该特性，例如反馈、修复的 bug、展示其实际用法的案例
+  - 维护者必须确信：
+    - 该特性的设计与实现是合理的，适合其用途
+    - 潜在的交互已被充分理解
+    - 使该特性稳定化不会在未来带来过大的维护负担
 
-The following diagram illustrates the process:
+下图展示了这一过程：
 
 ```
                   .------.
@@ -77,19 +77,19 @@ decision to stabilise      decision against
        +--------+             +---------+
 ```
 
-# Relation to the RFC process
+# 与 RFC 流程的关系
 
-Experimental features and [RFCs](https://github.com/NixOS/rfcs/) both allow approaching substantial changes while minimizing the risk.
-However they serve different purposes:
+实验性特性和 [RFC](https://github.com/NixOS/rfcs/) 都允许在尽量降低风险的前提下推进重大变更。
+但它们的目的不同：
 
-- An experimental feature enables developers to iterate on and deliver a new idea without committing to it or requiring a costly long-running fork.
-  It is primarily an issue of *implementation*, targeting Nix developers and early testers.
-- The goal of an RFC is to make explicit all the implications of a change:
-  Explain why it is wanted, which new use-cases it enables, which interface changes it requires, etc.
-  It is primarily an issue of *design* and *communication*, targeting the broader community.
+- 实验性特性使开发者能够迭代并交付新想法，而不必承诺采用它，也不需要代价高昂的长期分叉。
+  它主要是一个*实现*层面的问题，面向 Nix 开发者和早期测试者。
+- RFC 的目标是把一项变更的所有影响都明确化：
+  解释为什么需要它、它带来哪些新用例、它要求哪些接口变更等等。
+  它主要是*设计*和*沟通*层面的问题，面向更广泛的社区。
 
-This means that experimental features and RFCs are orthogonal mechanisms, and can be used independently or together as needed.
+这意味着实验性特性和 RFC 是正交的机制，可以根据需要独立使用或结合使用。
 
-# Currently available experimental features
+# 当前可用的实验性特性
 
 {{#include ./experimental-feature-descriptions.md}}

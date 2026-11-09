@@ -1,160 +1,160 @@
-# Contributing documentation
+# 贡献文档
 
-Improvements to documentation are very much appreciated, and a good way to start out with contributing to Nix.
+对文档的改进非常受欢迎，也是着手为 Nix 做贡献的好方式。
 
-This is how you can help:
-- Address [open issues with documentation](https://github.com/NixOS/nix/issues?q=is%3Aissue+is%3Aopen+label%3Adocumentation)
-- Review [pull requests concerning documentation](https://github.com/NixOS/nix/pulls?q=is%3Apr+is%3Aopen+label%3Adocumentation)
+你可以通过以下方式提供帮助：
+- 处理[与文档相关的未关闭 issue](https://github.com/NixOS/nix/issues?q=is%3Aissue+is%3Aopen+label%3Adocumentation)
+- 评审[与文档相关的 pull request](https://github.com/NixOS/nix/pulls?q=is%3Apr+is%3Aopen+label%3Adocumentation)
 
-Incremental refactorings of the documentation build setup to make it faster or easier to understand and maintain are also welcome.
+对文档构建配置进行渐进式重构，使其更快或更易于理解和维护，同样受欢迎。
 
-## Building the manual
+## 构建手册
 
-Build the manual from scratch:
+从头构建手册：
 
 ```console
 nix-build -E '(import ./.).packages.${builtins.currentSystem}.nix.doc'
 ```
 
-or
+或者
 
 ```console
 nix build .#nix-manual
 ```
 
-and open `./result/share/doc/nix/manual/index.html`.
+然后打开 `./result/share/doc/nix/manual/index.html`。
 
 
-To build the manual incrementally, [enter the development shell](./building.md) and configure with `doc-gen` enabled:
+要增量构建手册，请[进入开发 shell](./building.md) 并在配置时启用 `doc-gen`：
 
-**If using interactive `nix develop`:**
+**如果使用交互式 `nix develop`：**
 
 ```console
 $ nix develop
 $ mesonFlags="$mesonFlags -Ddoc-gen=true" mesonConfigurePhase
 ```
 
-**If using direnv:**
+**如果使用 direnv：**
 
 ```console
 $ direnv allow
 $ bash -c 'source $stdenv/setup && mesonFlags="$mesonFlags -Ddoc-gen=true" mesonConfigurePhase'
 ```
 
-Then build the manual:
+然后构建手册：
 
 ```console
 $ cd build
 $ meson compile manual
 ```
 
-The HTML manual will be generated at `build/src/nix-manual/manual/index.html`.
+HTML 手册将生成在 `build/src/nix-manual/manual/index.html`。
 
-## Style guide
+## 风格指南
 
-The goal of this style guide is to make it such that
-- The manual is easy to search and skim for relevant information
-- Documentation sources are easy to edit
-- Changes to documentation are easy to review
+本风格指南的目标是使得
+- 手册易于搜索和浏览以获取相关信息
+- 文档源码易于编辑
+- 文档变更易于评审
 
-You will notice that this is not implemented consistently yet.
-Please follow the guide when making additions or changes to existing documentation.
-Do not make sweeping changes, unless they are programmatic and can be validated easily.
+你会发现目前这套规范还没有被一致地贯彻。
+在对现有文档进行增改时，请遵循本指南。
+除非变更可以通过程序化手段实施且易于验证，否则不要进行大规模改动。
 
-### Language
+### 语言
 
-This manual is [reference documentation](https://diataxis.fr/reference/).
-The typical usage pattern is to look up isolated pieces of information.
-It should therefore aim to be correct, consistent, complete, and easy to navigate at a glance.
+本手册是[参考文档](https://diataxis.fr/reference/)。
+其典型使用模式是查找孤立的信息片段。
+因此，它应当力求正确、一致、完整，并且一目了然、易于导航。
 
-- Aim for clarity and brevity.
+- 力求清晰和简洁。
 
-  Please take the time to read the [plain language guidelines](https://www.plainlanguage.gov/guidelines/) for details.
+  请花时间阅读[平实语言指南](https://www.plainlanguage.gov/guidelines/)以了解细节。
 
-- Describe the subject factually.
+- 如实描述主题。
 
-  In particular, do not make value judgements or recommendations.
-  Check the code or add tests if in doubt.
+  尤其是，不要做价值判断或推荐。
+  如有疑问，请检查代码或添加测试。
 
-- Provide complete, minimal examples, and explain them.
+- 提供完整且精简的示例，并对它们加以解释。
 
-  Readers should be able to try examples verbatim and get the same results as shown in the manual.
-  Always describe in words what a given example does.
+  读者应当能够原样尝试示例，并得到与手册中所示相同的结果。
+  始终用文字描述给定示例做了什么。
 
-  Non-trivial examples may need additional explanation, especially if they use concepts from outside the given context.
+  非平凡的示例可能需要额外的解释，尤其是当它们用到了给定上下文之外的概念时。
 
-- Always explain code examples in the text.
+- 始终在正文中解释代码示例。
 
-  Use comments in code samples very sparingly, for instance to highlight a particular aspect.
-  Readers tend to glance over large amounts of code when scanning for information.
+  代码示例中的注释要非常节制地使用，例如仅用于突出某个特定方面。
+  读者在浏览查找信息时往往只是扫视大量代码。
 
-  Especially beginners will likely find reading more complex-looking code strenuous and may therefore avoid it altogether.
+  尤其是初学者，会觉得阅读看起来复杂的代码很费力，因此可能干脆避开它。
 
-  If a code sample appears to require a lot of inline explanation, consider replacing it with a simpler one.
-  If that's not possible, break the example down into multiple parts, explain them separately, and then show the combined result at the end.
-  This should be a last resort, as that would amount to writing a [tutorial](https://diataxis.fr/tutorials/) on the given subject.
+  如果一段代码示例似乎需要大量行内解释，请考虑换成更简单的示例。
+  如果做不到，就把示例拆分为多个部分，分别解释，最后再展示合并后的结果。
+  这应当是最后手段，因为那相当于就该主题写一篇[教程](https://diataxis.fr/tutorials/)。
 
-- Use British English.
+- 使用英式英语。
 
-  This is a somewhat arbitrary choice to force consistency, and accounts for the fact that a majority of Nix users and developers are from Europe.
+  这是一个有些武断的选择，目的是强制保持一致性，同时考虑到大多数 Nix 用户和开发者来自欧洲。
 
-### Links and anchors
+### 链接与锚点
 
-Reference documentation must be readable in arbitrary order.
-Readers cannot be expected to have any particular prerequisite knowledge about Nix.
-While the table of contents can provide guidance and full-text search can help, they are most likely to find what they need by following sensible cross-references.
+参考文档必须可以按任意顺序阅读。
+不能指望读者具备关于 Nix 的任何特定前置知识。
+虽然目录可以提供指引、全文搜索可以提供帮助，但他们最有可能通过合理的交叉引用找到所需内容。
 
-- Link to technical terms
+- 链接到技术术语
 
-  When mentioning Nix-specific concepts, commands, options, settings, etc., link to appropriate documentation.
-  Also link to external tools or concepts, especially if their meaning may be ambiguous.
-  You may also want to link to definitions of less common technical terms.
+  当提到 Nix 特有的概念、命令、选项、设置项等时，请链接到相应的文档。
+  也要链接到外部工具或概念，尤其是当其含义可能有歧义时。
+  你可能还想链接到较不常见的技术术语的定义。
 
-  Then readers won't have to actively search for definitions and are more likely to discover relevant information on their own.
+  这样读者就不必主动搜索定义，也更有可能自行发现相关信息。
 
-  > **Note**
+  > **注意**
   >
-  > `man` and `--help` pages don't display links.
-  > Use appropriate link texts such that readers of terminal output can infer search terms.
+  > `man` 和 `--help` 页面不会显示链接。
+  > 请使用恰当的链接文字，使阅读终端输出的读者能够推断出搜索关键词。
 
-- Do not break existing URLs between releases.
+- 不要在发布之间破坏现有的 URL。
 
-  There are countless links in the wild pointing to old versions of the manual.
-  We want people to find up-to-date documentation when following popular advice.
+  互联网上存在无数指向手册旧版本的链接。
+  我们希望人们在遵循流行建议时能够找到最新的文档。
 
-  - When moving files, update [redirects on nixos.org](https://github.com/NixOS/nixos-homepage/blob/master/netlify.toml).
+  - 移动文件时，更新 [nixos.org 上的重定向](https://github.com/NixOS/nixos-homepage/blob/master/netlify.toml)。
 
-    This is especially important when moving information out of the Nix manual to other resources.
+    当把信息从 Nix 手册迁移到其他资源时，这一点尤为重要。
 
-  - When changing anchors, update [client-side redirects](https://github.com/NixOS/nix/blob/master/doc/manual/redirects.js)
+  - 更改锚点时，更新[客户端侧重定向](https://github.com/NixOS/nix/blob/master/doc/manual/redirects.js)
 
-  The current setup is cumbersome, and help making better automation is appreciated.
+  目前的配置方式很繁琐，欢迎大家帮忙改进自动化流程。
 
-The build checks for broken internal links with.
-This happens late in the process, so [building the whole manual](#building-the-manual) is not suitable for iterating quickly.
-[`mdbook-linkcheck`] does not implement checking [URI fragments] yet.
+构建过程会检查失效的内部链接。
+这发生在流程的后期，因此[构建整个手册](#building-the-manual)并不适合快速迭代。
+[`mdbook-linkcheck`] 尚未实现 [URI 片段]的检查。
 
 [`mdbook-linkcheck`]: https://github.com/Michael-F-Bryan/mdbook-linkcheck
 [URI fragments]: https://en.wikipedia.org/wiki/URI_fragment
 
-### Markdown conventions
+### Markdown 约定
 
-The manual is written in markdown, and rendered with [mdBook](https://github.com/rust-lang/mdBook) for the web and with [lowdown](https://github.com/kristapsdz/lowdown) for `man` pages and `--help` output.
+手册以 markdown 编写，在 Web 上用 [mdBook](https://github.com/rust-lang/mdBook) 渲染，在 `man` 页面和 `--help` 输出中用 [lowdown](https://github.com/kristapsdz/lowdown) 渲染。
 
-For supported markdown features, refer to:
-- [mdBook documentation](https://rust-lang.github.io/mdBook/format/markdown.html)
-- [lowdown documentation](https://kristaps.bsd.lv/lowdown/)
+关于受支持的 markdown 特性，请参考：
+- [mdBook 文档](https://rust-lang.github.io/mdBook/format/markdown.html)
+- [lowdown 文档](https://kristaps.bsd.lv/lowdown/)
 
-Please observe these guidelines to ease reviews:
+请遵守以下约定以便于评审：
 
-- Write one sentence per line.
+- 每行写一句话。
 
-  This makes long sentences immediately visible, and makes it easier to review changes and make direct suggestions.
+  这能让长句立刻显现出来，也便于评审变更和直接提出修改建议。
 
-- Use reference links – sparingly – to ease source readability.
-  Put definitions close to their first use.
+- 少量使用引用式链接，以提高源码可读性。
+  把定义放在其首次使用位置的附近。
 
-  Example:
+  示例：
 
   ```
   A [store object] contains a [file system object] and [references] to other store objects.
@@ -164,7 +164,7 @@ Please observe these guidelines to ease reviews:
   [references]: @docroot@/glossary.md#gloss-reference
   ```
 
-- Use admonitions of the following form:
+- 使用如下形式的 admonition（提示块）：
 
   ```
   > **Note**
@@ -172,7 +172,7 @@ Please observe these guidelines to ease reviews:
   > This is a note.
   ```
 
-  Highlight examples as such:
+  按如下方式突出示例：
 
   ````
   > **Example**
@@ -182,7 +182,7 @@ Please observe these guidelines to ease reviews:
   > ```
   ````
 
-  Highlight syntax definitions as such, using [EBNF](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form) notation:
+  按如下方式突出语法定义，使用 [EBNF](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form) 记法：
 
   ````
   > **Syntax**
@@ -190,20 +190,20 @@ Please observe these guidelines to ease reviews:
   > *attribute-set* = `{` [ *attribute-name* `=` *expression* `;` ... ] `}`
   ````
 
-### The `@docroot@` variable
+### `@docroot@` 变量
 
-`@docroot@` provides a base path for links that occur in reusable snippets or other documentation that doesn't have a base path of its own.
+`@docroot@` 为出现在可复用片段或其他没有自身基础路径的文档中的链接提供基础路径。
 
-If a broken link occurs in a snippet that was inserted into multiple generated files in different directories, use `@docroot@` to reference the `doc/manual/source` directory.
+如果一个失效链接出现在被插入到不同目录下多个生成文件中的片段里，请使用 `@docroot@` 来引用 `doc/manual/source` 目录。
 
-If the `@docroot@` literal appears in an error message from the [`mdbook-linkcheck`] tool, the `@docroot@` replacement needs to be applied to the generated source file that mentions it.
-See existing `@docroot@` logic in the [Makefile for the manual].
-Regular markdown files used for the manual have a base path of their own and they can use relative paths instead of `@docroot@`.
+如果 `@docroot@` 字面量出现在 [`mdbook-linkcheck`] 工具的错误信息中，则需要将 `@docroot@` 替换应用到提及它的那个生成源文件上。
+参见[手册的 Makefile] 中现有的 `@docroot@` 逻辑。
+用于手册的常规 markdown 文件有自己的基础路径，它们可以使用相对路径来代替 `@docroot@`。
 
-## API documentation
+## API 文档
 
-[Doxygen API documentation] is available online.
-You can also build and view it yourself:
+[Doxygen API 文档]可在线查阅。
+你也可以自行构建并查看：
 
 [Doxygen API documentation]: https://hydra.nixos.org/job/nix/master/internal-api-docs/latest/download-by-type/doc/internal-api-docs
 
@@ -212,7 +212,7 @@ $ nix build .#hydraJobs.internal-api-docs
 $ xdg-open ./result/share/doc/nix/internal-api/html/index.html
 ```
 
-or inside `nix-shell` or `nix develop`:
+或者在 `nix-shell` 或 `nix develop` 内部：
 
 ```console
 $ configurePhase
@@ -220,11 +220,11 @@ $ ninja src/internal-api-docs/html
 $ xdg-open src/internal-api-docs/html/index.html
 ```
 
-## C API documentation
+## C API 文档
 
-Note that the C API is not yet stable.
-[C API documentation] is available online.
-You can also build and view it yourself:
+注意，C API 尚未稳定。
+[C API 文档]可在线查阅。
+你也可以自行构建并查看：
 
 [C API documentation]: https://hydra.nixos.org/job/nix/master/external-api-docs/latest/download-by-type/doc/external-api-docs
 
@@ -233,7 +233,7 @@ $ nix build .#hydraJobs.external-api-docs
 $ xdg-open ./result/share/doc/nix/external-api/html/index.html
 ```
 
-or inside `nix-shell` or `nix develop`:
+或者在 `nix-shell` 或 `nix develop` 内部：
 
 ```
 $ configurePhase
@@ -241,7 +241,7 @@ $ ninja src/external-api-docs/html
 $ xdg-open src/external-api-docs/html/index.html
 ```
 
-If you use direnv, or otherwise want to run `configurePhase` in a transient shell, use:
+如果你使用 direnv，或者想在临时 shell 中运行 `configurePhase`，请使用：
 
 ```bash
 nix-shell -A devShells.x86_64-linux.native-clangStdenv --command 'appendToVar mesonFlags "-Ddoc-gen=true"; mesonConfigurePhase'

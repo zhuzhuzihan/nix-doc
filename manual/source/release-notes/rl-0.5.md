@@ -1,3 +1,3 @@
-# Release 0.5 and earlier
+# Release 0.5 及更早版本
 
-Please refer to the Subversion commit log messages.
+请参阅 Subversion 提交日志中的消息。

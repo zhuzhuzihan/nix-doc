@@ -1,10 +1,10 @@
-# Import From Derivation
+# 从 derivation 导入（Import From Derivation）
 
-The value of a Nix expression can depend on the contents of a [store object].
+Nix 表达式的值可以依赖于某个 [store object] 的内容。
 
 [store object]: @docroot@/store/store-object.md
 
-Passing an expression `expr` that evaluates to a [store path](@docroot@/store/store-path.md) to any built-in function which reads from the filesystem constitutes Import From Derivation (IFD):
+把一个求值为[存储路径](@docroot@/store/store-path.md)的表达式 `expr` 传给任何会读取文件系统的内置函数，即构成 Import From Derivation（IFD，从 derivation 导入）：
 
 - [`import`](./builtins.md#builtins-import)` expr`
 - [`builtins.readFile`](./builtins.md#builtins-readFile)` expr`
@@ -16,21 +16,21 @@ Passing an expression `expr` that evaluates to a [store path](@docroot@/store/st
 - [`builtins.hashFile`](./builtins.md#builtins-hashFile)` t expr`
 - `builtins.scopedImport x drv`
 
-When the store path needs to be accessed, evaluation will be paused, the corresponding store object [realised], and then evaluation resumed.
+当需要访问该存储路径时，求值会被暂停，对应的 store object 会被[实现（realise）]，然后求值继续进行。
 
 [realised]: @docroot@/glossary.md#gloss-realise
 
-This has performance implications:
-Evaluation can only finish when all required store objects are realised.
-Since the Nix language evaluator is sequential, it only finds store paths to read from one at a time.
-While realisation is always parallel, in this case it cannot be done for all required store paths at once, and is therefore much slower than otherwise.
+这会带来性能上的影响：
+只有当所有需要的 store object 都被实现之后，求值才能完成。
+由于 Nix 语言求值器是顺序执行的，它一次只能发现一个需要读取的存储路径。
+虽然实现（realisation）本身总是并行的，但在这种情况下，它无法对所有需要的存储路径一次性并行进行，因此比其他情况慢得多。
 
-Realising store objects during evaluation can be disabled by setting [`allow-import-from-derivation`](../command-ref/conf-file.md#conf-allow-import-from-derivation) to `false`.
-Without IFD it is ensured that evaluation is complete and Nix can produce a build plan before starting any realisation.
+在求值期间实现 store object 的行为可以通过把 [`allow-import-from-derivation`](../command-ref/conf-file.md#conf-allow-import-from-derivation) 设为 `false` 来禁用。
+在没有 IFD 的情况下，可以确保求值是完整的，并且 Nix 能在开始任何实现之前生成构建计划。
 
-## Example
+## 示例
 
-In the following Nix expression, the inner derivation `drv` produces a file with contents `hello`.
+在下面的 Nix 表达式中，内层的 derivation `drv` 会生成一个内容为 `hello` 的文件。
 
 ```nix
 # IFD.nix
@@ -53,13 +53,13 @@ building '/nix/store/348q1cal6sdgfxs8zqi9v8llrsn4kqkq-hello.drv'...
 "hello world"
 ```
 
-The contents of the derivation's output have to be [realised] before they can be read with [`readFile`](./builtins.md#builtins-readFile).
-Only then evaluation can continue to produce the final result.
+derivation 的输出内容必须先被[实现]，之后才能用 [`readFile`](./builtins.md#builtins-readFile) 读取。
+只有这样，求值才能继续并产生最终结果。
 
-## Illustration
+## 图示
 
-As a first approximation, the following data flow graph shows how evaluation and building are interleaved, if the value of a Nix expression depends on realising a [store object].
-Boxes are data structures, arrow labels are transformations.
+作为初步近似，下面的数据流图展示了当 Nix 表达式的值依赖于实现某个 [store object] 时，求值和构建是如何交替进行的。
+方框是数据结构，箭头上的标注是转换过程。
 
 ```
 +----------------------+             +------------------------+
@@ -92,7 +92,7 @@ Boxes are data structures, arrow labels are transformations.
 +----------------------+             +------------------------+
 ```
 
-In more detail, the following sequence diagram shows how the expression is evaluated step by step, and where evaluation is blocked to wait for the build output to appear.
+更详细地说，下面的时序图展示了表达式是如何被逐步求值的，以及求值在哪些地方被阻塞以等待构建产物的出现。
 
 ```
 .-------.     .-------------.                        .---------.

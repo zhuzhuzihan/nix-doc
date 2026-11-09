@@ -1,22 +1,22 @@
 # Name
 
-`nix-store --import` - import [Nix Archive] into the store
+`nix-store --import` - 将 [Nix Archive] 导入 store
 
 [Nix Archive]: @docroot@/store/file-system-object/content-address.md#serial-nix-archive
 
-# Synopsis
+# 概要
 
 `nix-store` `--import`
 
-# Description
+# 描述
 
-The operation `--import` reads a serialisation of a set of [store objects](@docroot@/glossary.md#gloss-store-object) produced by [`nix-store --export`](./export.md) from standard input, and adds those store objects to the specified [Nix store](@docroot@/store/index.md).
-Paths that already exist in the target Nix store are ignored.
-If a path [refers](@docroot@/glossary.md#gloss-reference) to another path that doesn’t exist in the target Nix store, the import fails.
+`--import` 操作从标准输入读取由 [`nix-store --export`](./export.md) 生成的一组 [store 对象](@docroot@/glossary.md#gloss-store-object)的序列化结果，并将这些 store 对象添加到指定的 [Nix store](@docroot@/store/index.md) 中。
+目标 Nix store 中已存在的路径会被忽略。
+如果某个路径[引用](@docroot@/glossary.md#gloss-reference)了目标 Nix store 中不存在的另一个路径，导入将失败。
 
-> **Note**
+> **注意**
 >
-> For efficient transfer of closures to remote machines over SSH, use [`nix-copy-closure`](@docroot@/command-ref/nix-copy-closure.md).
+> 若要通过 SSH 高效地向远程机器传输闭包，请使用 [`nix-copy-closure`](@docroot@/command-ref/nix-copy-closure.md)。
 
 {{#include ./opt-common.md}}
 
@@ -24,20 +24,19 @@ If a path [refers](@docroot@/glossary.md#gloss-reference) to another path that d
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
-> **Example**
+> **示例**
 >
-> Given a closure of GNU Hello as a file:
+> 假设已将 GNU Hello 的闭包保存为一个文件：
 >
 > ```shell-session
 > $ storePath="$(nix-build '<nixpkgs>' -I nixpkgs=channel:nixpkgs-unstable -A hello --no-out-link)"
 > $ nix-store --export $(nix-store --query --requisites $storePath) > hello.closure
 > ```
 >
-> Import the closure into a [remote SSH store](@docroot@/store/types/ssh-store.md) using the [`--store`](@docroot@/command-ref/conf-file.md#conf-store) option:
+> 使用 [`--store`](@docroot@/command-ref/conf-file.md#conf-store) 选项将该闭包导入一个[远程 SSH store](@docroot@/store/types/ssh-store.md)：
 >
 > ```console
 > $ nix-store --import --store ssh://alice@itchy.example.org < hello.closure
 > ```
-

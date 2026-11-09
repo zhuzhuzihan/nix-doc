@@ -1,28 +1,22 @@
 # Name
 
-`nix-store --add-fixed` - add paths to store using given hashing algorithm
+`nix-store --add-fixed` - 使用指定的哈希算法将路径添加到 store
 
-## Synopsis
+## 概要
 
 `nix-store` `--add-fixed` [`--recursive`] *algorithm* *paths…*
 
-## Description
+## 描述
 
-The operation `--add-fixed` adds the specified paths to the Nix store.
-Unlike `--add` paths are registered using the specified hashing
-algorithm, resulting in the same output path as a fixed-output
-derivation. This can be used for sources that are not available from a
-public url or broke since the download expression was written.
+`--add-fixed` 操作将指定路径添加到 Nix store。与 `--add` 不同，路径会以指定的哈希算法注册，从而得到与固定输出 derivation（派生）相同的输出路径。这可用于那些无法从公开 URL 获取、或自下载表达式编写以来已失效的源码。
 
-This operation has the following options:
+该操作具有以下选项：
 
 - `--recursive`
 
-  Use recursive instead of flat hashing mode, used when adding
-  directories to the store.
+  使用递归模式而非扁平哈希模式，用于将目录添加到 store。
 
-  *paths* that refer to symlinks are not dereferenced, but added to the store
-  as symlinks with the same target.
+  指向符号链接的 *paths* 不会被解引用，而是以符号链接的形式添加到 store 中，其目标保持不变。
 
 {{#include ./opt-common.md}}
 
@@ -30,10 +24,9 @@ This operation has the following options:
 
 {{#include ../env-common.md}}
 
-## Example
+## 示例
 
 ```console
 $ nix-store --add-fixed sha256 ./hello-2.10.tar.gz
 /nix/store/8alrpdaasjd1x6g1fczchmzbpqm936a3-hello-2.10.tar.gz
 ```
-

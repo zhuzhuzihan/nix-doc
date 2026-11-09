@@ -1,8 +1,8 @@
 # Name
 
-`nix-shell` - start an interactive shell based on a Nix expression
+`nix-shell` - 基于 Nix 表达式启动一个交互式 shell
 
-# Synopsis
+# 概要
 
 `nix-shell`
   [`--arg` *name* *value*]
@@ -15,33 +15,32 @@
   [`--keep` *name*]
   {{`--packages` | `-p`} {*packages* | *expressions*} … | [*path*]}
 
-# Disambiguation
+# 消歧
 
-This man page describes the command `nix-shell`, which is distinct from `nix
-shell`. For documentation on the latter, run `nix shell --help` or see `man
-nix3-env-shell`.
+本手册页描述的是命令 `nix-shell`，它与 `nix
+shell` 不同。关于后者的文档，请运行 `nix shell --help` 或查看 `man
+nix3-env-shell`。
 
-# Description
+# 描述
 
-The command `nix-shell` will build the dependencies of the specified
-derivation, but not the derivation itself. It will then start an
-interactive shell in which all environment variables defined by the
-derivation *path* have been set to their corresponding values, and the
-script `$stdenv/setup` has been sourced. This is useful for reproducing
-the environment of a derivation for development.
+命令 `nix-shell` 会构建指定的
+derivation（派生）的依赖，但不构建该 derivation 本身。然后它会启动一个
+交互式 shell，其中 derivation *path* 定义的所有环境变量都已被设置为其对应的值，并且
+脚本 `$stdenv/setup` 已被 source。这对于重现
+derivation 的开发环境很有用。
 
-If *path* is not given, `nix-shell` defaults to `shell.nix` if it
-exists, and `default.nix` otherwise.
+如果未给出 *path*，`nix-shell` 默认使用 `shell.nix`（如果它
+存在），否则使用 `default.nix`。
 
-If *path* starts with `http://` or `https://`, it is interpreted as the
-URL of a tarball that will be downloaded and unpacked to a temporary
-location. The tarball must include a single top-level directory
-containing at least a file named `default.nix`.
+如果 *path* 以 `http://` 或 `https://` 开头，它会被解释为
+一个 tarball 的 URL，该 tarball 将被下载并解压到临时
+位置。tarball 必须包含一个单一的顶层目录，
+其中至少要有一个名为 `default.nix` 的文件。
 
-If the derivation defines the variable `shellHook`, it will be run
-after `$stdenv/setup` has been sourced. Since this hook is not executed
-by regular Nix builds, it allows you to perform initialisation specific
-to `nix-shell`. For example, the derivation attribute
+如果 derivation 定义了变量 `shellHook`，它会在
+`$stdenv/setup` 被 source 之后运行。由于常规 Nix 构建不会执行
+这个 hook，它允许你执行 `nix-shell` 特有的
+初始化操作。例如，derivation 属性
 
 ```nix
 shellHook =
@@ -51,83 +50,80 @@ shellHook =
   '';
 ```
 
-will cause `nix-shell` to print `Hello shell` and set the `SOME_API_TOKEN`
-environment variable to a user-configured value.
+会使 `nix-shell` 打印 `Hello shell` 并将 `SOME_API_TOKEN`
+环境变量设置为一个用户配置的值。
 
-# Options
+# 选项
 
-All options not listed here are passed to `nix-store
---realise`, except for `--arg` and `--attr` / `-A` which are passed to
-`nix-instantiate`.
+此处未列出的所有选项都会传递给 `nix-store
+--realise`，但 `--arg` 和 `--attr` / `-A` 除外，它们会传递给
+`nix-instantiate`。
 
 - `--command` *cmd*
 
-  In the environment of the derivation, run the shell command *cmd*.
-  This command is executed in an interactive shell. (Use `--run` to
-  use a non-interactive shell instead.) However, a call to `exit` is
-  implicitly added to the command, so the shell will exit after
-  running the command. To prevent this, add `return` at the end;
-  e.g.  `--command "echo Hello; return"` will print `Hello` and then
-  drop you into the interactive shell. This can be useful for doing
-  any additional initialisation.
+  在 derivation 的环境中，运行 shell 命令 *cmd*。
+  此命令在交互式 shell 中执行。（使用 `--run`
+  可改用非交互式 shell。）不过，对 `exit` 的调用会被
+  隐式添加到命令中，因此 shell 会在
+  运行完命令后退出。要避免这一点，请在末尾添加 `return`；
+  例如 `--command "echo Hello; return"` 会打印 `Hello`，然后
+  让你留在交互式 shell 中。这对于执行
+  任何额外的初始化很有用。
 
 - `--run` *cmd*
 
-  Like `--command`, but executes the command in a non-interactive
-  shell. This means (among other things) that if you hit Ctrl-C while
-  the command is running, the shell exits.
+  类似于 `--command`，但它在非交互式
+  shell 中执行命令。这意味着（除其他外）如果你在
+  命令运行期间按 Ctrl-C，shell 会退出。
 
 - `--exclude` *regexp*
 
-  Do not build any dependencies whose store path matches the regular
-  expression *regexp*. This option may be specified multiple times.
+  不构建任何存储路径匹配正则
+  表达式 *regexp* 的依赖。此选项可以多次指定。
 
 - `--pure`
 
-  If this flag is specified, the environment is almost entirely
-  cleared before the interactive shell is started, so you get an
-  environment that more closely corresponds to the “real” Nix build. A
-  few variables, in particular `HOME`, `USER` and `DISPLAY`, are
-  retained.  Note that the shell used to run commands is obtained from
-  [`NIX_BUILD_SHELL`](#env-NIX_BUILD_SHELL) / `<nixpkgs>` from
-  `NIX_PATH`, and therefore not affected by `--pure`.
+  如果指定此标志，环境会在交互式 shell 启动之前被
+  几乎完全清空，因此你会得到一个
+  更接近于“真实”Nix 构建的环境。少数几个变量，特别是 `HOME`、`USER` 和 `DISPLAY`，
+  会被保留。请注意，用于运行命令的 shell 来自
+  [`NIX_BUILD_SHELL`](#env-NIX_BUILD_SHELL) / `NIX_PATH` 中的 `<nixpkgs>`，因此
+  不受 `--pure` 影响。
 
 - `--packages` / `-p` *packages*…
 
-  Set up an environment in which the specified packages are present.
-  The command line arguments are interpreted as attribute names inside
-  the Nix Packages collection. Thus, `nix-shell --packages libjpeg openjdk`
-  will start a shell in which the packages denoted by the attribute
-  names `libjpeg` and `openjdk` are present.
+  建立一个包含指定软件包的环境。
+  命令行参数被解释为 Nix Packages 集合中的属性名。因此，`nix-shell --packages libjpeg openjdk`
+  会启动一个包含属性名
+  `libjpeg` 和 `openjdk` 所表示软件包的 shell。
 
 - `-i` *interpreter*
 
-  The chained script interpreter to be invoked by `nix-shell`. Only
-  applicable in `#!`-scripts (described below).
+  要由 `nix-shell` 调用的链式脚本解释器。仅
+  适用于 `#!` 脚本（见下文描述）。
 
 - `--keep` *name*
 
-  When a `--pure` shell is started, keep the listed environment
-  variables.
+  当启动 `--pure` shell 时，保留列出的环境变量。
 
 {{#include ./opt-common.md}}
 
-# Environment variables
+# 环境变量
 
 - <span id="env-NIX_BUILD_SHELL">[`NIX_BUILD_SHELL`](#env-NIX_BUILD_SHELL)</span>
 
-  Shell used to start the interactive environment.
-  Defaults to the `bash` from `bashInteractive` found in `<nixpkgs>`, falling back to the `bash` found in `PATH` if not found.
+  用于启动交互式环境的 shell。
+  默认为 `<nixpkgs>` 中 `bashInteractive` 的 `bash`，如果找不到，则回退到 `PATH` 中的 `bash`。
 
-  > **Note**
+  > **注意**
   >
-  > The shell obtained using this method may not necessarily be the same as any shells requested in *path*.
+  > 用这种方式获得的 shell 不一定与 *path* 中请求的任何 shell 相同。
 
   <!-- -->
 
   > **Example
   >
-  >  Despite `--pure`, this invocation will not result in a fully reproducible shell environment:
+  >  尽管使用了 `--pure`，以下调用不会产生完全可重现的 shell 环境：
   >
   > ```nix
   > #!/usr/bin/env -S nix-shell --pure
@@ -141,10 +137,10 @@ All options not listed here are passed to `nix-store
 
 {{#include ./env-common.md}}
 
-# Examples
+# 示例
 
-To build the dependencies of the package Pan, and start an interactive
-shell in which to build it:
+构建软件包 Pan 的依赖，并启动一个
+用于构建它的交互式 shell：
 
 ```console
 $ nix-shell '<nixpkgs>' --attr pan
@@ -156,29 +152,26 @@ $ nix-shell '<nixpkgs>' --attr pan
 [nix-shell]$ ./pan/gui/pan
 ```
 
-The reason we use form `eval ${configurePhase:-configurePhase}` here is because
-those packages that override these phases do so by exporting the overridden
-values in the environment variable of the same name.
-Here bash is being told to either evaluate the contents of 'configurePhase',
-if it exists as a variable, otherwise evaluate the configurePhase function.
+我们在这里使用 `eval ${configurePhase:-configurePhase}` 这种形式的原因是：那些覆盖这些 phase 的软件包是通过在同名环境变量中导出覆盖后的值来实现的。
+这里 bash 被告知：如果 'configurePhase' 作为变量存在，就求值其内容，否则求值 configurePhase 函数。
 
-To clear the environment first, and do some additional automatic
-initialisation of the interactive shell:
+先清空环境，并对交互式 shell 做一些额外的自动
+初始化：
 
 ```console
 $ nix-shell '<nixpkgs>' --attr pan --pure \
     --command 'export NIX_DEBUG=1; export NIX_CORES=8; return'
 ```
 
-Nix expressions can also be given on the command line using the `-E` and
-`-p` flags. For instance, the following starts a shell containing the
-packages `sqlite` and `libX11`:
+Nix 表达式也可以使用 `-E` 和
+`-p` 标志在命令行上给出。例如，以下命令会启动一个包含
+软件包 `sqlite` 和 `libX11` 的 shell：
 
 ```console
 $ nix-shell --expr 'with import <nixpkgs> { }; runCommand "dummy" { buildInputs = [ sqlite xorg.libX11 ]; } ""'
 ```
 
-A shorter way to do the same is:
+一种更简短的写法是：
 
 ```console
 $ nix-shell --packages sqlite xorg.libX11
@@ -186,18 +179,16 @@ $ nix-shell --packages sqlite xorg.libX11
 … -L/nix/store/j1zg5v…-sqlite-3.8.0.2/lib -L/nix/store/0gmcz9…-libX11-1.6.1/lib …
 ```
 
-Note that `-p` accepts multiple full nix expressions that are valid in
-the `buildInputs = [ ... ]` shown above, not only package names. So the
-following is also legal:
+请注意，`-p` 接受多个完整的、在上面所示的 `buildInputs = [ ... ]` 中有效的 Nix 表达式，而不仅仅是软件包名称。因此
+下面这也是合法的：
 
 ```console
 $ nix-shell --packages sqlite 'git.override { withManual = false; }'
 ```
 
-The `-p` flag looks up Nixpkgs in the Nix search path. You can override
-it by passing `-I` or setting `NIX_PATH`. For example, the following
-gives you a shell containing the Pan package from a specific revision of
-Nixpkgs:
+`-p` 标志在 Nix 搜索路径中查找 Nixpkgs。你可以通过传递 `-I` 或设置 `NIX_PATH` 来覆盖它。例如，以下命令
+给你一个包含来自 Nixpkgs 特定版本的
+Pan 软件包的 shell：
 
 ```console
 $ nix-shell --packages pan -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/8a3eea054838b55aca962c3fbde9c83c102b8bf2.tar.gz
@@ -206,28 +197,23 @@ $ nix-shell --packages pan -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/8
 Pan 0.139
 ```
 
-# Use as a `#!`-interpreter
+# 用作 `#!` 解释器
 
-You can use `nix-shell` as a script interpreter to allow scripts written
-in arbitrary languages to obtain their own dependencies via Nix. This is
-done by starting the script with the following lines:
+你可以将 `nix-shell` 用作脚本解释器，使以任意语言编写的脚本能够通过 Nix 获取自己的依赖。做法是在脚本开头加上以下行：
 
 ```bash
 #! /usr/bin/env nix-shell
 #! nix-shell -i real-interpreter --packages packages
 ```
 
-where *real-interpreter* is the “real” script interpreter that will be
-invoked by `nix-shell` after it has obtained the dependencies and
-initialised the environment, and *packages* are the attribute names of
-the dependencies in Nixpkgs.
+其中 *real-interpreter* 是在 `nix-shell` 获取依赖并初始化环境之后将由它调用的“真正的”脚本解释器，而 *packages* 是这些依赖在 Nixpkgs 中的属性名。
 
-The lines starting with `#! nix-shell` specify `nix-shell` options (see
-above). Note that you cannot write `#! /usr/bin/env nix-shell -i ...`
-because many operating systems only allow one argument in `#!` lines.
+以 `#! nix-shell` 开头的行指定 `nix-shell` 选项（见
+上文）。注意，你不能写 `#! /usr/bin/env nix-shell -i ...`，
+因为许多操作系统在 `#!` 行中只允许一个参数。
 
-For example, here is a Python script that depends on Python and the
-`prettytable` package:
+例如，下面是一个依赖 Python 和
+`prettytable` 软件包的 Python 脚本：
 
 ```python
 #! /usr/bin/env nix-shell
@@ -241,9 +227,9 @@ for n in range(1, 10): t.add_row([n, n * n])
 print(t)
 ```
 
-Similarly, the following is a Perl script that specifies that it
-requires Perl and the `HTML::TokeParser::Simple`, `LWP` and
-`LWP::Protocol::Https` packages:
+类似地，下面是一个 Perl 脚本，它声明自己需要 Perl 以及
+`HTML::TokeParser::Simple`、`LWP` 和
+`LWP::Protocol::Https` 软件包：
 
 ```perl
 #! /usr/bin/env nix-shell
@@ -264,8 +250,7 @@ while (my $token = $p->get_tag("a")) {
 }
 ```
 
-Sometimes you need to pass a simple Nix expression to customize a
-package like Terraform:
+有时你需要传入一个简单的 Nix 表达式来自定义像 Terraform 这样的软件包：
 
 ```bash
 #! /usr/bin/env nix-shell
@@ -274,14 +259,13 @@ package like Terraform:
 terraform apply
 ```
 
-> **Note**
+> **注意**
 >
-> You must use single or double quotes (`'`, `"`) when passing a simple Nix expression
-> in a nix-shell shebang.
+> 在 nix-shell shebang 中传入简单 Nix 表达式时，必须使用单引号或双引号（`'`、`"`）。
 
-Finally, using the merging of multiple nix-shell shebangs the following
-Haskell script uses a specific branch of Nixpkgs/NixOS (the 20.03 stable
-branch):
+最后，利用多个 nix-shell shebang 的合并功能，下面这个
+Haskell 脚本使用 Nixpkgs/NixOS 的特定分支（20.03 稳定
+分支）：
 
 ```haskell
 #! /usr/bin/env nix-shell
@@ -301,22 +285,19 @@ main = do
   mapM_ putStrLn $ filter (/= "") tags'
 ```
 
-If you want to be even more precise, you can specify a specific revision
-of Nixpkgs:
+如果你想更精确，可以指定 Nixpkgs 的特定版本：
 
     #! nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/0672315759b3e15e2121365f067c1c8c56bb4722.tar.gz
 
-The examples above all used `-p` to get dependencies from Nixpkgs. You
-can also use a Nix expression to build your own dependencies. For
-example, the Python example could have been written as:
+上面的示例都使用 `-p` 从 Nixpkgs 获取依赖。你也可以
+使用 Nix 表达式来构建自己的依赖。例如，Python 示例也可以写成：
 
 ```python
 #! /usr/bin/env nix-shell
 #! nix-shell deps.nix -i python
 ```
 
-where the file `deps.nix` in the same directory as the `#!`-script
-contains:
+其中与 `#!` 脚本同目录下的文件 `deps.nix` 包含：
 
 ```nix
 with import <nixpkgs> {};
@@ -324,7 +305,7 @@ with import <nixpkgs> {};
 runCommand "dummy" { buildInputs = [ python3 python3Packages.prettytable ]; } ""
 ```
 
-The script's file name is passed as the first argument to the interpreter specified by the `-i` flag.
+脚本的文件名会作为第一个参数传递给由 `-i` 标志指定的解释器。
 
-Aside from the very first line, which is a directive to the operating system, the additional `#! nix-shell` lines do not need to be at the beginning of the file.
-This allows wrapping them in block comments for languages where `#` does not start a comment, such as ECMAScript, Erlang, or PHP.
+除了向操作系统发出指令的非常第一行之外，其余的 `#! nix-shell` 行不需要位于文件开头。
+这使得在 `#` 不表示注释开始的语言（例如 ECMAScript、Erlang 或 PHP）中，可以把它们包裹在块注释里。

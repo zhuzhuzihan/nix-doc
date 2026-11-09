@@ -1,36 +1,23 @@
 # Name
 
-`nix-store --dump` - write a single path to a [Nix Archive]
+`nix-store --dump` - 将单个路径写入 [Nix Archive]
 
-## Synopsis
+## 概要
 
 `nix-store` `--dump` *path*
 
-## Description
+## 描述
 
-The operation `--dump` produces a [Nix archive](@docroot@/glossary.md#gloss-nar) (NAR) file containing the
-contents of the file system tree rooted at *path*. The archive is
-written to standard output.
+`--dump` 操作生成一个 [Nix 归档](@docroot@/glossary.md#gloss-nar)（NAR）文件，其中包含以 *path* 为根的文件系统树的内容。该归档被写入标准输出。
 
-A NAR archive is like a TAR or Zip archive, but it contains only the
-information that Nix considers important. For instance, timestamps are
-elided because all files in the Nix store have their timestamp set to 0
-anyway. Likewise, all permissions are left out except for the execute
-bit, because all files in the Nix store have 444 or 555 permission.
+NAR 归档类似于 TAR 或 Zip 归档，但它只包含 Nix 认为重要的信息。例如，时间戳会被省略，因为 Nix store 中所有文件的时间戳本来就被设为 0。同样，除了可执行位之外，所有权限都会被省略，因为 Nix store 中所有文件的权限都是 444 或 555。
 
-Also, a NAR archive is *canonical*, meaning that “equal” paths always
-produce the same NAR archive. For instance, directory entries are
-always sorted so that the actual on-disk order doesn’t influence the
-result.  This means that the cryptographic hash of a NAR dump of a
-path is usable as a fingerprint of the contents of the path. Indeed,
-the hashes of store paths stored in Nix’s database (see `nix-store --query
---hash`) are SHA-256 hashes of the NAR dump of each store path.
+此外，NAR 归档是*规范化的*（canonical），这意味着"相同"的路径总是生成相同的 NAR 归档。例如，目录条目总是经过排序，因此磁盘上的实际顺序不会影响结果。这意味着一个路径的 NAR 转储的加密哈希可以用作该路径内容的指纹。事实上，存储在 Nix 数据库中的存储路径哈希（参见 `nix-store --query
+--hash`）就是每个存储路径的 NAR 转储的 SHA-256 哈希。
 
-NAR archives support filenames of unlimited length and 64-bit file
-sizes. They can contain regular files, directories, and symbolic links,
-but not other types of files (such as device nodes).
+NAR 归档支持无限长度的文件名和 64 位文件大小。它们可以包含普通文件、目录和符号链接，但不能包含其他类型的文件（如设备节点）。
 
-A Nix archive can be unpacked using [`nix-store --restore`](@docroot@/command-ref/nix-store/restore.md).
+可以使用 [`nix-store --restore`](@docroot@/command-ref/nix-store/restore.md) 解包 Nix 归档。
 
 [Nix Archive]: @docroot@/store/file-system-object/content-address.md#serial-nix-archive
 

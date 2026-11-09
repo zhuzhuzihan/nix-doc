@@ -1,4 +1,3 @@
-# Protocols
+# 协议
 
-This chapter documents various developer-facing interfaces provided by
-Nix.
+本章记录 Nix 提供的各种面向开发者的接口。

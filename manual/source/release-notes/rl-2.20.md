@@ -1,81 +1,77 @@
 # Release 2.20.0 (2024-01-29)
 
-- Option `allowed-uris` can now match whole schemes in URIs without slashes [#9547](https://github.com/NixOS/nix/pull/9547)
+- 选项 `allowed-uris` 现在可以匹配 URI 中不带斜杠的完整协议（scheme） [#9547](https://github.com/NixOS/nix/pull/9547)
 
-  If a scheme, such as `github:` is specified in the `allowed-uris` option, all URIs starting with `github:` are allowed.
-  Previously this only worked for schemes whose URIs used the `://` syntax.
+  如果在 `allowed-uris` 选项中指定了类似 `github:` 这样的协议，则所有以 `github:` 开头的 URI 都会被允许。
+  此前该行为仅对 URI 使用 `://` 语法的协议有效。
 
-- Include cgroup stats when building through the daemon [#9598](https://github.com/NixOS/nix/pull/9598)
+- 通过 daemon（守护进程）构建时包含 cgroup 统计信息 [#9598](https://github.com/NixOS/nix/pull/9598)
 
-  Nix now also reports cgroup statistics when building through the Nix daemon and when doing remote builds using `ssh-ng`,
-  if both sides of the connection are using Nix 2.20 or newer.
+  当连接双方使用的都是 Nix 2.20 或更新版本时，Nix 在通过 Nix daemon 构建以及使用 `ssh-ng` 进行远程构建时，现在也会报告 cgroup 统计信息。
 
-- Disallow empty search regex in `nix search` [#9481](https://github.com/NixOS/nix/pull/9481)
+- `nix search` 不再允许空的搜索正则表达式 [#9481](https://github.com/NixOS/nix/pull/9481)
 
-  [`nix search`](@docroot@/command-ref/new-cli/nix3-search.md) now requires a search regex to be passed. To show all packages, use `^`.
+  [`nix search`](@docroot@/command-ref/new-cli/nix3-search.md) 现在要求必须传入搜索正则表达式。要显示所有软件包，请使用 `^`。
 
-- Add new `eval-system` setting [#4093](https://github.com/NixOS/nix/pull/4093)
+- 新增 `eval-system` 设置 [#4093](https://github.com/NixOS/nix/pull/4093)
 
-  Add a new `eval-system` option.
-  Unlike `system`, it just overrides the value of `builtins.currentSystem`.
-  This is more useful than overriding `system`, because you can build these derivations on remote builders which can work on the given system.
-  In contrast, `system` also affects scheduling which will cause Nix to build those derivations locally even if that doesn't make sense.
+  新增 `eval-system` 选项。
+  与 `system` 不同，它只覆盖 `builtins.currentSystem` 的值。
+  这比覆盖 `system` 更有用，因为你可以在支持目标系统的远程构建机上构建这些 derivation（派生）。
+  相比之下，`system` 还会影响调度，这会导致 Nix 即使在本地构建毫无意义的情况下，也在本地构建这些 derivation。
 
-  `eval-system` only takes effect if it is non-empty.
-  If empty (the default) `system` is used as before, so there is no breakage.
+  `eval-system` 仅在其值非空时生效。
+  如果为空（默认值），则和以前一样使用 `system`，因此不会造成任何破坏。
 
-- Import-from-derivation builds the derivation in the build store [#9661](https://github.com/NixOS/nix/pull/9661)
+- Import-from-derivation 现在在构建用的 store 中构建 derivation [#9661](https://github.com/NixOS/nix/pull/9661)
 
-  When using `--eval-store`, `import`ing from a derivation will now result in the derivation being built on the build store, i.e. the store specified in the `store` Nix option.
+  使用 `--eval-store` 时，从 derivation 进行 `import` 现在会使该 derivation 在构建用的 store 中构建，即 `store` Nix 选项指定的 store。
 
-  Because the resulting Nix expression must be copied back to the evaluation store in order to be imported, this requires the evaluation store to trust the build store's signatures.
+  由于生成的 Nix 表达式必须复制回求值（evaluation）用的 store 才能被导入，这要求求值 store 信任构建 store 的签名。
 
 - Mounted SSH Store [#7890](https://github.com/NixOS/nix/issues/7890) [#7912](https://github.com/NixOS/nix/pull/7912)
 
-  Introduced the store [`mounted-ssh-ng://`](@docroot@/command-ref/new-cli/nix3-help-stores.md).
-  This store allows full access to a Nix store on a remote machine and additionally requires that the store be mounted in the local filesystem.
+  引入了 store [`mounted-ssh-ng://`](@docroot@/command-ref/new-cli/nix3-help-stores.md)。
+  该 store 允许完全访问远程机器上的 Nix store，并额外要求该 store 被挂载到本地文件系统中。
 
-- Rename `nix show-config` to `nix config show` [#7672](https://github.com/NixOS/nix/issues/7672) [#9477](https://github.com/NixOS/nix/pull/9477)
+- 将 `nix show-config` 重命名为 `nix config show` [#7672](https://github.com/NixOS/nix/issues/7672) [#9477](https://github.com/NixOS/nix/pull/9477)
 
-  `nix show-config` was renamed to `nix config show`, and `nix doctor` was renamed to `nix config check`, to be more consistent with the rest of the command line interface.
+  `nix show-config` 被重命名为 `nix config show`，`nix doctor` 被重命名为 `nix config check`，以便与命令行界面的其他部分保持一致。
 
-- Add command `nix hash convert` [#9452](https://github.com/NixOS/nix/pull/9452)
+- 新增命令 `nix hash convert` [#9452](https://github.com/NixOS/nix/pull/9452)
 
-  This replaces the old `nix hash to-*` commands, which are still available but will emit a deprecation warning. Please convert as follows:
+  它取代了旧的 `nix hash to-*` 命令，旧命令仍然可用，但会发出弃用警告。请按如下方式转换：
 
-  - `nix hash to-base16 $hash1 $hash2`: Use `nix hash convert --to base16 $hash1 $hash2` instead.
-  - `nix hash to-base32 $hash1 $hash2`: Use `nix hash convert --to nix32 $hash1 $hash2` instead.
-  - `nix hash to-base64 $hash1 $hash2`: Use `nix hash convert --to base64 $hash1 $hash2` instead.
-  - `nix hash to-sri $hash1 $hash2`: : Use `nix hash convert --to sri $hash1 $hash2` or even just `nix hash convert $hash1 $hash2` instead.
+  - `nix hash to-base16 $hash1 $hash2`：改用 `nix hash convert --to base16 $hash1 $hash2`。
+  - `nix hash to-base32 $hash1 $hash2`：改用 `nix hash convert --to nix32 $hash1 $hash2`。
+  - `nix hash to-base64 $hash1 $hash2`：改用 `nix hash convert --to base64 $hash1 $hash2`。
+  - `nix hash to-sri $hash1 $hash2`：: 改用 `nix hash convert --to sri $hash1 $hash2`，甚至可以直接使用 `nix hash convert $hash1 $hash2`。
 
-- Rename hash format `base32` to `nix32` [#9452](https://github.com/NixOS/nix/pull/9452)
+- 将哈希格式 `base32` 重命名为 `nix32` [#9452](https://github.com/NixOS/nix/pull/9452)
 
-  Hash format `base32` was renamed to `nix32` since it used a special Nix-specific character set for
-  [Base32](https://en.wikipedia.org/wiki/Base32).
+  哈希格式 `base32` 被重命名为 `nix32`，因为它使用了一套 Nix 特有的 [Base32](https://en.wikipedia.org/wiki/Base32) 字符集。
 
-- `nix profile` now allows referring to elements by human-readable names [#8678](https://github.com/NixOS/nix/pull/8678)
+- `nix profile` 现在允许通过人类可读的名称引用元素 [#8678](https://github.com/NixOS/nix/pull/8678)
 
-  [`nix profile`](@docroot@/command-ref/new-cli/nix3-profile.md) now uses names to refer to installed packages when running [`list`](@docroot@/command-ref/new-cli/nix3-profile-list.md), [`remove`](@docroot@/command-ref/new-cli/nix3-profile-remove.md) or [`upgrade`](@docroot@/command-ref/new-cli/nix3-profile-upgrade.md) as opposed to indices. Profile element names are generated when a package is installed and remain the same until the package is removed.
+  [`nix profile`](@docroot@/command-ref/new-cli/nix3-profile.md) 在运行 [`list`](@docroot@/command-ref/new-cli/nix3-profile-list.md)、[`remove`](@docroot@/command-ref/new-cli/nix3-profile-remove.md) 或 [`upgrade`](@docroot@/command-ref/new-cli/nix3-profile-upgrade.md) 时，现在使用名称而非索引来指代已安装的软件包。Profile 元素名称在软件包安装时生成，并在该软件包被移除之前保持不变。
 
-  **Warning**: The `manifest.nix` file used to record the contents of profiles has changed. Nix will automatically upgrade profiles to the new version when you modify the profile. After that, the profile can no longer be used by older versions of Nix.
+  **警告**：用于记录 profile 内容的 `manifest.nix` 文件已经变更。当你修改 profile 时，Nix 会自动将 profile 升级到新版本。此后，旧版本的 Nix 将无法再使用该 profile。
 
-- Give `nix store add` a `--hash-algo` flag [#9809](https://github.com/NixOS/nix/pull/9809)
+- 为 `nix store add` 添加 `--hash-algo` 标志 [#9809](https://github.com/NixOS/nix/pull/9809)
 
-  Adds a missing feature that was present in the old CLI, and matches our
-  plans to have similar flags for `nix hash convert` and `nix hash path`.
+  补齐了旧 CLI 中已有而新 CLI 缺失的功能，同时这也符合我们为 `nix hash convert` 和 `nix hash path` 提供类似标志的计划。
 
-- Coercion errors include the failing value
+- 强制转换（coercion）错误会包含出错的值
 
-  The `error: cannot coerce a <TYPE> to a string` message now includes the value
-  which caused the error.
+  `error: cannot coerce a <TYPE> to a string` 消息现在会包含导致该错误的值。
 
-  Before:
+  之前：
 
   ```
   error: cannot coerce a set to a string
   ```
 
-  After:
+  之后：
 
   ```
   error: cannot coerce a set to a string: { aesSupport = «thunk»;
@@ -85,18 +81,17 @@
     attributes elided»}
   ```
 
-- Type errors include the failing value
+- 类型错误会包含出错的值
 
-  In errors like `value is an integer while a list was expected`, the message now
-  includes the failing value.
+  在 `value is an integer while a list was expected` 这类错误中，消息现在会包含出错的值。
 
-  Before:
+  之前：
 
   ```
   error: value is a set while a string was expected
   ```
 
-  After:
+  之后：
 
   ```
   error: expected a string but found a set: { ghc810 = «thunk»;
@@ -105,10 +100,9 @@
     ghc924Binary = «thunk»; ghc925 = «thunk»;  «17 attributes elided»}
   ```
 
-- Source locations are printed more consistently in errors [#561](https://github.com/NixOS/nix/issues/561) [#9555](https://github.com/NixOS/nix/pull/9555)
+- 错误信息中的源代码位置打印更加一致 [#561](https://github.com/NixOS/nix/issues/561) [#9555](https://github.com/NixOS/nix/pull/9555)
 
-  Source location information is now included in error messages more
-  consistently. Given this code:
+  错误信息现在会更一致地包含源代码位置信息。对于以下代码：
 
   ```nix
   let
@@ -118,8 +112,7 @@
     attr.${key}
   ```
 
-  Previously, Nix would show this unhelpful message when attempting to evaluate
-  it:
+  此前，Nix 在尝试对它求值时会显示这条毫无帮助的消息：
 
   ```
   error:
@@ -128,7 +121,7 @@
          error: value is a set while a string was expected
   ```
 
-  Now, the error message displays where the problematic value was found:
+  现在，错误信息会显示问题值出现的位置：
 
   ```
   error:
@@ -144,18 +137,16 @@
          error: expected a string but found a set
   ```
 
-- Some stack overflow segfaults are fixed [#9616](https://github.com/NixOS/nix/issues/9616) [#9617](https://github.com/NixOS/nix/pull/9617)
+- 修复了部分栈溢出段错误 [#9616](https://github.com/NixOS/nix/issues/9616) [#9617](https://github.com/NixOS/nix/pull/9617)
 
-  The number of nested function calls has been restricted, to detect and report
-  infinite function call recursions. The default maximum call depth is 10,000 and
-  can be set with [the `max-call-depth`
-  option](@docroot@/command-ref/conf-file.md#conf-max-call-depth).
+  现在限制了嵌套函数调用的数量，以检测并报告无限的函数调用递归。默认最大调用深度为 10,000，可以通过 [the `max-call-depth`
+  option](@docroot@/command-ref/conf-file.md#conf-max-call-depth) 进行设置。
 
-  This replaces the `stack overflow (possible infinite recursion)` message.
+  它取代了原来的 `stack overflow (possible infinite recursion)` 消息。
 
-- Better error reporting for `with` expressions [#9658](https://github.com/NixOS/nix/pull/9658)
+- `with` 表达式的错误报告得到改进 [#9658](https://github.com/NixOS/nix/pull/9658)
 
-  `with` expressions using non-attrset values to resolve variables are now reported with proper positions, e.g.
+  使用非 attrset 值来解析变量的 `with` 表达式现在会以正确的位置报告，例如：
 
   ```
   nix-repl> with 1; a
@@ -168,10 +159,9 @@
          error: expected a set but found an integer
   ```
 
-- Functions are printed with more detail [#7145](https://github.com/NixOS/nix/issues/7145) [#9606](https://github.com/NixOS/nix/pull/9606)
+- 函数打印时包含更多细节 [#7145](https://github.com/NixOS/nix/issues/7145) [#9606](https://github.com/NixOS/nix/pull/9606)
 
-  `nix repl`, `nix eval`, `builtins.trace`, and most other places values are
-  printed will now include function names and source location information:
+  `nix repl`、`nix eval`、`builtins.trace` 以及大多数其他打印值的地方，现在会包含函数名称和源代码位置信息：
 
   ```
   $ nix repl nixpkgs
@@ -186,23 +176,18 @@
   "my-value"
   ```
 
-- Flake operations like `nix develop` will no longer fail when run in a Git
-  repository where the `flake.lock` file is `.gitignore`d
+- 当 `flake.lock` 文件被 `.gitignore` 忽略时，在 Git 仓库中运行 `nix develop` 等 Flakes 操作不再失败
   [#8854](https://github.com/NixOS/nix/issues/8854)
   [#9324](https://github.com/NixOS/nix/pull/9324)
 
-- Nix commands will now respect Ctrl-C
+- Nix 命令现在会正确响应 Ctrl-C
   [#7145](https://github.com/NixOS/nix/issues/7145)
   [#6995](https://github.com/NixOS/nix/pull/6995)
   [#9687](https://github.com/NixOS/nix/pull/9687)
 
-  Previously, many Nix commands would hang indefinitely if Ctrl-C was pressed
-  while performing various operations (including `nix develop`, `nix flake
-  update`, and so on). With several fixes to Nix's signal handlers, Nix
-  commands will now exit quickly after Ctrl-C is pressed.
+  此前，如果在执行各种操作（包括 `nix develop`、`nix flake
+  update` 等）时按下 Ctrl-C，许多 Nix 命令会无限期挂起。经过对 Nix 信号处理程序的若干修复，现在 Nix 命令在按下 Ctrl-C 后会快速退出。
 
-- `nix copy` to a `ssh-ng` store now needs `--substitute-on-destination` (a.k.a. `-s`)
-  in order to substitute paths on the remote store instead of copying them.
-  The behavior is consistent with `nix copy` to a different kind of remote store.
-  Previously this behavior was controlled by the
-  `builders-use-substitutes` setting and `--substitute-on-destination` was ignored.
+- `nix copy` 到 `ssh-ng` store 现在需要 `--substitute-on-destination`（即 `-s`）才能在远程 store 上用 substitute 代替复制路径。
+  该行为与其他类型远程 store 的 `nix copy` 行为保持一致。
+  此前该行为由 `builders-use-substitutes` 设置控制，而 `--substitute-on-destination` 会被忽略。

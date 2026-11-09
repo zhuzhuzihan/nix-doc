@@ -1,28 +1,26 @@
 # Release 2.18 (2023-09-20)
 
-- Two new builtin functions,
+- 新增两个内置函数：
   [`builtins.parseFlakeRef`](@docroot@/language/builtins.md#builtins-parseFlakeRef)
-  and
-  [`builtins.flakeRefToString`](@docroot@/language/builtins.md#builtins-flakeRefToString),
-  have been added.
-  These functions are useful for converting between flake references encoded as attribute sets and URLs.
+  和
+  [`builtins.flakeRefToString`](@docroot@/language/builtins.md#builtins-flakeRefToString)。
+  这两个函数可用于在以属性集和 URL 两种形式编码的 flake reference 之间相互转换。
 
-- [`builtins.toJSON`](@docroot@/language/builtins.md#builtins-parseFlakeRef) now prints [--show-trace](@docroot@/command-ref/conf-file.html#conf-show-trace) items for the path in which it finds an evaluation error.
+- [`builtins.toJSON`](@docroot@/language/builtins.md#builtins-parseFlakeRef) 现在会为它发现求值错误所在的路径打印 [--show-trace](@docroot@/command-ref/conf-file.html#conf-show-trace) 条目。
 
-- Error messages regarding malformed input to [`nix derivation add`](@docroot@/command-ref/new-cli/nix3-derivation-add.md) are now clearer and more detailed.
+- 关于 [`nix derivation add`](@docroot@/command-ref/new-cli/nix3-derivation-add.md) 输入格式不合法的错误信息现在更清晰、更详细。
 
-- The `discard-references` feature has been stabilized.
-  This means that the
+- `discard-references` 特性已经稳定。
+  这意味着
   [unsafeDiscardReferences](@docroot@/language/advanced-attributes.md#adv-attr-unsafeDiscardReferences)
-  attribute is no longer guarded by an experimental flag and can be used
-  freely.
+  属性不再由实验性标志守护，可以自由使用。
 
-- The JSON output for derived paths which are store paths is now a string, not an object with a single `path` field.
-  This only affects `nix-build --json` when "building" non-derivation things like fetched sources, which is a no-op.
+- 作为存储路径的 derived path，其 JSON 输出现在是一个字符串，而不是带单个 `path` 字段的对象。
+  这只影响 `nix-build --json` "构建"非 derivation 之物（例如获取的源码）的情况——那本就是一个空操作。
 
-- A new builtin [`outputOf`](@docroot@/language/builtins.md#builtins-outputOf) has been added.
-  It is part of the [`dynamic-derivations`](@docroot@/development/experimental-features.md#xp-feature-dynamic-derivations) experimental feature.
+- 新增内置函数 [`outputOf`](@docroot@/language/builtins.md#builtins-outputOf)。
+  它是 [`dynamic-derivations`](@docroot@/development/experimental-features.md#xp-feature-dynamic-derivations) 实验性特性的一部分。
 
-- Flake follow paths at depths greater than 2 are now handled correctly, preventing "follows a non-existent input" errors.
+- 深度大于 2 的 flake follow 路径现在能被正确处理，避免了"follows a non-existent input"错误。
 
-- [`nix-store --query`](@docroot@/command-ref/nix-store/query.md) gained a new type of query: `--valid-derivers`. It returns all `.drv` files in the local store that *can be* used to build the output passed in argument. This is in contrast to `--deriver`, which returns the single `.drv` file that *was actually* used to build the output passed in argument. In case the output was substituted from a binary cache, this `.drv` file may only exist on said binary cache and not locally.
+- [`nix-store --query`](@docroot@/command-ref/nix-store/query.md) 新增一种查询类型：`--valid-derivers`。它返回本地 store 中所有*可以*用来构建所传参数输出的 `.drv` 文件。与之相对，`--deriver` 返回的是*实际*用于构建所传参数输出的那一个 `.drv` 文件。如果该输出是从二进制缓存替代（substitute）而来的，这个 `.drv` 文件可能只存在于那个二进制缓存上而不在本地。

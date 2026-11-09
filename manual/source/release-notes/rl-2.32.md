@@ -1,99 +1,91 @@
 # Release 2.32.0 (2025-10-06)
 
-## Incompatible changes
+## 不兼容变更
 
-- Removed support for daemons and clients older than Nix 2.0 [#13951](https://github.com/NixOS/nix/pull/13951)
+- 移除对早于 Nix 2.0 的 daemon（守护进程）与客户端的支持 [#13951](https://github.com/NixOS/nix/pull/13951)
 
-  We have dropped support in the daemon worker protocol for daemons and clients that don't speak at least version 18 of the protocol. This first Nix release that supports this version is Nix 2.0, released in February 2018.
+  daemon worker 协议已不再支持不支持协议版本 18 及以上的 daemon 与客户端。首个支持该版本的 Nix 发布版是 2018 年 2 月发布的 Nix 2.0。
 
-- Derivation JSON format now uses store path basenames only [#13570](https://github.com/NixOS/nix/issues/13570) [#13980](https://github.com/NixOS/nix/pull/13980)
+- derivation（派生）JSON 格式现在只使用存储路径的基名（basename） [#13570](https://github.com/NixOS/nix/issues/13570) [#13980](https://github.com/NixOS/nix/pull/13980)
 
-  Experience with many JSON frameworks (e.g. nlohmann/json in C++, Serde in Rust, and Aeson in Haskell) has shown that the use of the store directory in JSON formats is an impediment to systematic JSON formats, because it requires the serializer/deserializer to take an extra parameter (the store directory).
+  许多 JSON 框架（例如 C++ 的 nlohmann/json、Rust 的 Serde、Haskell 的 Aeson）的使用经验表明，在 JSON 格式中使用 store 目录会阻碍系统化的 JSON 格式设计，因为它要求序列化器/反序列化器接受一个额外的参数（store 目录）。
 
-  We ultimately want to rectify this issue with all JSON formats to the extent allowed by our stability promises. To start with, we are changing the JSON format for derivations because the `nix derivation` commands are — in addition to being formally unstable — less widely used than other unstable commands.
+  我们最终希望在我们的稳定性承诺允许的范围内，对所有 JSON 格式纠正这一问题。第一步是修改 derivation 的 JSON 格式，因为 `nix derivation` 命令——除了在形式上属于不稳定命令之外——相比其他不稳定命令使用面更窄。
 
-  See the documentation on the [JSON format for derivations](@docroot@/protocols/json/derivation/index.md) for further details.
+  更多细节请参阅 [derivation 的 JSON 格式](@docroot@/protocols/json/derivation/index.md) 文档。
 
-- C API: `nix_get_attr_name_byidx`, `nix_get_attr_byidx` take a `nix_value *` instead of `const nix_value *` [#13987](https://github.com/NixOS/nix/pull/13987)
+- C API：`nix_get_attr_name_byidx`、`nix_get_attr_byidx` 改为接受 `nix_value *` 而非 `const nix_value *` [#13987](https://github.com/NixOS/nix/pull/13987)
 
-  In order to accommodate a more optimized internal representation of attribute set merges these functions require
-  a mutable `nix_value *` that might be modified on access. This does *not* break the ABI of these functions.
+  为了支持更优化的属性集合并内部表示，这些函数需要一个可变的 `nix_value *`，在访问时可能会被修改。这 *不会* 破坏这些函数的 ABI。
 
-## New features
+## 新特性
 
-- C API: Add lazy attribute and list item accessors [#14030](https://github.com/NixOS/nix/pull/14030)
+- C API：新增惰性属性与列表元素访问器 [#14030](https://github.com/NixOS/nix/pull/14030)
 
-  The C API now includes lazy accessor functions for retrieving values from lists and attribute sets without forcing evaluation:
+  C API 现在包含惰性访问器函数，可以在不强制求值的情况下从列表和属性集中取值：
 
-  - `nix_get_list_byidx_lazy()` - Get a list element without forcing its evaluation
-  - `nix_get_attr_byname_lazy()` - Get an attribute value by name without forcing evaluation
-  - `nix_get_attr_byidx_lazy()` - Get an attribute by index without forcing evaluation
+  - `nix_get_list_byidx_lazy()` - 获取列表元素而不强制对其求值
+  - `nix_get_attr_byname_lazy()` - 按名称获取属性值而不强制求值
+  - `nix_get_attr_byidx_lazy()` - 按索引获取属性而不强制求值
 
-  These functions are useful when forwarding unevaluated sub-values to other lists, attribute sets, or function calls. They allow more efficient handling of Nix values by deferring evaluation until actually needed.
+  这些函数在将未求值的子值转发给其他列表、属性集或函数调用时非常有用。它们通过把求值推迟到真正需要时进行，从而更高效地处理 Nix 值。
 
-  Additionally, bounds checking has been improved for all `_byidx` functions to properly validate indices before access, preventing potential out-of-bounds errors.
+  此外，所有 `_byidx` 函数的边界检查也得到了改进，在访问前会正确校验索引，避免潜在的越界错误。
 
-  The documentation for `NIX_ERR_KEY` error handling has also been clarified to specify when this error code is returned.
+  `NIX_ERR_KEY` 错误处理的文档也做了澄清，明确说明了何时返回该错误码。
 
-- HTTP binary caches now support transparent compression for metadata
+- HTTP 二进制缓存现在支持对元数据的透明压缩
 
-  HTTP binary cache stores can now compress `.narinfo`, `.ls`, and build log files before uploading them,
-  reducing bandwidth usage and storage requirements. The compression is applied transparently using the
-  `Content-Encoding` header, allowing compatible clients to automatically decompress the files.
+  HTTP 二进制缓存 store 现在可以在上传前压缩 `.narinfo`、`.ls` 和构建日志文件，从而降低带宽占用和存储需求。压缩通过 `Content-Encoding` 头部透明地应用，兼容的客户端可以自动解压这些文件。
 
-  Three new configuration options control this behavior:
-  - `narinfo-compression`: Compression method for `.narinfo` files
-  - `ls-compression`: Compression method for `.ls` files
-  - `log-compression`: Compression method for build logs in `log/` directory
+  三个新的配置选项控制此行为：
+  - `narinfo-compression`：`.narinfo` 文件的压缩方式
+  - `ls-compression`：`.ls` 文件的压缩方式
+  - `log-compression`：`log/` 目录中构建日志的压缩方式
 
-  Example usage:
+  用法示例：
   ```
   nix copy --to 'http://cache.example.com?narinfo-compression=gzip&ls-compression=gzip' /nix/store/...
   nix store copy-log --to 'http://cache.example.com?log-compression=br' /nix/store/...
   ```
 
-- Temporary build directories no longer include derivation names [#13839](https://github.com/NixOS/nix/pull/13839)
+- 临时构建目录不再包含 derivation 名称 [#13839](https://github.com/NixOS/nix/pull/13839)
 
-  Temporary build directories created during derivation builds no longer include the derivation name in their path to avoid build failures when the derivation name is too long. This change ensures predictable prefix lengths for build directories under `/nix/var/nix/builds`.
+  在构建 derivation 期间创建的临时构建目录，其路径中不再包含 derivation 名称，以避免在 derivation 名称过长时导致构建失败。此变更确保 `/nix/var/nix/builds` 下构建目录的前缀长度可预测。
 
-- External derivation builders [#14145](https://github.com/NixOS/nix/pull/14145)
+- 外部 derivation 构建器 [#14145](https://github.com/NixOS/nix/pull/14145)
 
-  These are helper programs that Nix calls to perform derivations for specified system types, e.g. by using QEMU to emulate a different type of platform. For more information, see the [`external-builders` setting](../command-ref/conf-file.md#conf-external-builders).
+  这是 Nix 调用来为指定系统类型执行 derivation 的辅助程序，例如通过 QEMU 模拟不同类型的平台。更多信息见 [`external-builders` 设置](../command-ref/conf-file.md#conf-external-builders)。
 
-  This is currently an experimental feature.
+  这目前是一项实验特性。
 
-## Performance improvements
+## 性能改进
 
-- Optimize memory usage of attribute set merges [#13987](https://github.com/NixOS/nix/pull/13987)
+- 优化属性集合并的内存使用 [#13987](https://github.com/NixOS/nix/pull/13987)
 
-  [Attribute set update operations](@docroot@/language/operators.md#update) have been optimized to
-  reduce reallocations in cases when the second operand is small.
+  [属性集更新操作](@docroot@/language/operators.md#update) 已被优化，以在第二个操作数较小时减少内存重新分配。
 
-  For typical evaluations of nixpkgs this optimization leads to ~20% less memory allocated in total
-  without significantly affecting evaluation performance.
+  对 nixpkgs 的典型求值而言，该优化在几乎不影响求值性能的情况下，使总分配内存减少约 20%。
 
-  See [eval-attrset-update-layer-rhs-threshold](@docroot@/command-ref/conf-file.md#conf-eval-attrset-update-layer-rhs-threshold)
+  参见 [eval-attrset-update-layer-rhs-threshold](@docroot@/command-ref/conf-file.md#conf-eval-attrset-update-layer-rhs-threshold)
 
-- Substituted flake inputs are no longer re-copied to the store [#14041](https://github.com/NixOS/nix/pull/14041)
+- 已 substitute 的 flake 输入不再被重复复制到 store [#14041](https://github.com/NixOS/nix/pull/14041)
 
-  Since 2.25, Nix would fail to store a cache entry for substituted flake inputs, which in turn would cause them to be re-copied to the store on initial evaluation. Caching these inputs results in a near doubling of performance in some cases — especially on I/O-bound machines and when using commands that fetch many inputs, like `nix flake [archive|prefetch-inputs]`.
+  从 2.25 开始，Nix 无法为已 substitute 的 flake 输入写入缓存条目，这导致它们在首次求值时被重复复制到 store。为这些输入建立缓存，在某些情况下可使性能几乎翻倍——尤其是在 I/O 受限的机器上，以及使用会抓取大量输入的命令（如 `nix flake [archive|prefetch-inputs]`）时。
 
-- `nix flake check` now skips derivations that can be substituted [#13574](https://github.com/NixOS/nix/pull/13574)
+- `nix flake check` 现在会跳过可被 substitute 的 derivation [#13574](https://github.com/NixOS/nix/pull/13574)
 
-  Previously, `nix flake check` would evaluate and build/substitute all
-  derivations. Now, it will skip downloading derivations that can be substituted.
-  This can drastically decrease the time invocations take in environments where
-  checks may already be cached (like in CI).
+  此前，`nix flake check` 会对所有 derivation 进行求值并构建/substitute。现在，它会跳过下载那些可以 substitute 的 derivation。在检查结果可能已有缓存的环境中（比如 CI），这可以大幅缩短调用耗时。
 
-- `fetchTarball` and `fetchurl` now correctly substitute (#14138)
+- `fetchTarball` 和 `fetchurl` 现在可以正确 substitute (#14138)
 
-  At some point we stopped substituting calls to `fetchTarball` and `fetchurl` with a set `narHash` to avoid incorrectly substituting things in `fetchTree`, even though it would be safe to substitute when calling the legacy `fetch{Tarball,url}`. This fixes that regression where it is safe.
-- Started moving AST allocations into a bump allocator [#14088](https://github.com/NixOS/nix/issues/14088)
+  某个时间点起，我们停止了对带有设定 `narHash` 的 `fetchTarball` 和 `fetchurl` 调用进行 substitute，以避免在 `fetchTree` 中错误地 substitute，尽管对旧式的 `fetch{Tarball,url}` 调用进行 substitute 本来是安全的。此修复在安全的前提下恢复了这一行为。
+- 开始将 AST 分配迁移到 bump allocator [#14088](https://github.com/NixOS/nix/issues/14088)
 
-  This leaves smaller, immutable structures in the AST. So far this saves about 2% memory on a NixOS config evaluation.
-## Contributors
+  这使 AST 中留下的是更小的不可变结构。到目前为止，这在一项 NixOS 配置求值上节省了约 2% 的内存。
+## Contributors（贡献者）
 
-This release was made possible by the following 32 contributors:
+本次发布由以下 32 位贡献者共同完成：
 
 - Farid Zakaria [**(@fzakaria)**](https://github.com/fzakaria)
 - dram [**(@dramforever)**](https://github.com/dramforever)

@@ -1,40 +1,40 @@
-# Exposing File System Objects in real operating system file systems
+# 在真实的操作系统文件系统中呈现文件系统对象
 
-Nix's [file system object] data model is minimal.
-All the various other bits and pieces of real world filesystem interfaces, such as [extended file attributes](https://en.wikipedia.org/wiki/Extended_file_attributes), are specifically ignored to reduce our interface surface and the reproducibility issues associated with a larger interface.
-In the view of Nix's developers, the types of simple, fine-grained batch jobs (typically, building software) that Nix specializes in simply don't benefit enough from that extra complexity for it to be worth the costs of supporting it.
+Nix 的[文件系统对象]数据模型是极简的。
+真实世界文件系统接口中的各种其他细枝末节，例如[扩展文件属性](https://en.wikipedia.org/wiki/Extended_file_attributes)，都被有意忽略，以减小我们的接口面积以及与更大接口相伴的可复现性问题。
+在 Nix 开发者看来，Nix 所专注的那类简单、细粒度的批处理作业（典型的是构建软件），从这些额外复杂性中获得的收益根本不足以抵偿支持它们的代价。
 
-But to actually be used by software, file system objects need to be made available through the operating system's file system.
-This is sometimes called "mounting" or "exposing" the file system object, though do note it may or may not be implemented with what the operating system calls "mounting".
+但要让软件真正使用文件系统对象，就需要通过操作系统的文件系统把它们提供出来。
+这有时被称为对文件系统对象进行"挂载"或"呈现"，不过要注意，它是否以操作系统所谓的"挂载"来实现，视情况而定。
 
 [file system object]: ../file-system-object.md
 
-## Metadata normalization
+## 元数据规范化
 
-File systems typically contain other metadata that is outside Nix's data model.
-To avoid this other metadata being a side channel and source of nondeterminism, Nix is careful to normalize to fixed values.
-For example, on Unix, the following metadata normalization occurs:
+文件系统通常还包含 Nix 数据模型之外的元数据。
+为避免这些元数据成为侧信道和不确定性来源，Nix 会小心地将它们规范化为固定值。
+例如，在 Unix 上，会发生以下元数据规范化：
 
-- The creation and last modification timestamps on all files are set to Unix Epoch 1s (00:00:01 1/1/1970 UTC)
+- 所有文件的创建时间和最后修改时间戳被设为 Unix 纪元后 1 秒（1970 年 1 月 1 日 00:00:01 UTC）
 
-- The group is set to the [default group](@docroot@/command-ref/conf-file.md#conf-build-users-group)
+- 组被设为[默认组](@docroot@/command-ref/conf-file.md#conf-build-users-group)
 
-- The Unix mode of the file to 0444 or 0555 (i.e., read-only, with execute permission enabled if the file was originally executable).
+- 文件的 Unix 模式设为 0444 或 0555（即只读，若文件原本可执行则开启执行权限）。
 
-- Any possible `setuid` and `setgid` bits are cleared.
+- 所有 `setuid` 和 `setgid` 位都被清除。
 
-  > **Note**
+  > **注意**
   >
-  > `setuid` and `setgid` programs are not currently supported by Nix.
-  > These special file system permissions are in general a security footgun, and with data owned by different users in different stores, it would especially be a hazard when copying store objects between stores.
+  > Nix 目前不支持 `setuid` 和 `setgid` 程序。
+  > 这些特殊的文件系统权限总体上是个安全隐患，而且由于数据归属于不同 store 中的不同用户，在 store 之间复制存储对象时它尤其危险。
   >
-  > This restriction has not proved to be onerous in practice.
-  > For example, NixOS uses so called setuid-wrappers which are outside the store.
+  > 这一限制在实践中并未显得过于苛刻。
+  > 例如，NixOS 使用位于 store 之外的所谓 setuid 包装器（setuid-wrappers）。
 
-> **Explanation**
+> **说明**
 >
-> As discussed before, Nix essentially shares its file system object data model with other tools like Git.
-> But those tools tend to ignore this metadata in both directions --- when reading files, like Nix, but when writing files, timestamps are set organically, and the user is free to set other special permissions (`setuid`, `setgid`, sticky, etc.) however they like.
-> Normalizing, and not just ignoring, this metadata is therefore what distinguishes Nix from these other tools more than the file system object data model itself.
+> 如前所述，Nix 实质上与 Git 等其他工具共享其文件系统对象数据模型。
+> 但那些工具往往在两个方向上都忽略这些元数据——读取文件时与 Nix 一样，但写入文件时时间戳是自然生成的，用户也可以随意设置其他特殊权限（`setuid`、`setgid`、粘滞位等）。
+> 因此，对这些元数据加以规范化（而不只是忽略），才是 Nix 与这些其他工具的区别所在，其重要性甚至超过文件系统对象数据模型本身。
 >
-> Nix's approach is motivated by deterministic building. Whereas Git can assume that humans running commands will simply ignore timestamps etc. as appropriate, understanding they are local and ephemeral, Nix aims to run software that was not necessarily designed with Nix in mind, and is unaware of whatever sandboxing/virtualization is in place.
+> Nix 的做法源于确定性构建的动机。Git 可以假设运行命令的人会酌情忽略时间戳等，理解它们是本地且临时的；而 Nix 要运行并非一定为 Nix 而设计的软件，这些软件并不知晓所处的沙箱/虚拟化环境。

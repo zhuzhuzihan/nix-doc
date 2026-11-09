@@ -1,4 +1,3 @@
 # Release 1.5.2 (2013-05-13)
 
-This is primarily a bug fix release. It has contributions from Eelco
-Dolstra, Lluís Batlle i Rossell and Shea Levy.
+这主要是一个修复缺陷的版本。本版本包含 Eelco Dolstra、Lluís Batlle i Rossell 和 Shea Levy 的贡献。

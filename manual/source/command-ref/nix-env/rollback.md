@@ -1,17 +1,15 @@
 # Name
 
-`nix-env --rollback` - set user environment to previous generation
+`nix-env --rollback` - 将用户环境切换到上一个 generation（代）
 
-# Synopsis
+概要
 
 `nix-env` `--rollback`
 
-# Description
+# 描述
 
-This operation switches to the “previous” generation of the active
-profile, that is, the highest numbered generation lower than the current
-generation, if it exists. It is just a convenience wrapper around
-`--list-generations` and `--switch-generation`.
+该操作切换到当前激活 profile 的"上一个" generation，即编号小于当前 generation 的最大编号 generation（如果存在）。
+它只是 `--list-generations` 和 `--switch-generation` 的一个便捷封装。
 
 {{#include ./opt-common.md}}
 
@@ -21,7 +19,7 @@ generation, if it exists. It is just a convenience wrapper around
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
 ```console
 $ nix-env --rollback

@@ -1,8 +1,8 @@
 {{#include signature-v2-fixed.md}}
 
-## Examples
+## 示例
 
-### Simple signature
+### 简单签名
 
 ```json
 {{#include schema/signature-v2/simple.json}}

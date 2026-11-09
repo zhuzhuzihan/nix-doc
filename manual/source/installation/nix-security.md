@@ -1,15 +1,5 @@
-# Security
+# 安全性
 
-Nix has two basic security models. First, it can be used in “single-user
-mode”, which is similar to what most other package management tools do:
-there is a single user (typically root) who performs all package
-management operations. All other users can then use the installed
-packages, but they cannot perform package management operations
-themselves.
+Nix 有两种基本的安全模型。首先，它可以以“单用户模式”使用，这类似于大多数其他软件包管理工具的做法：由单一用户（通常是 root）执行所有软件包管理操作。其他所有用户都可以使用已安装的软件包，但他们自身无法执行软件包管理操作。
 
-Alternatively, you can configure Nix in “multi-user mode”. In this
-model, all users can perform package management operations — for
-instance, every user can install software without requiring root
-privileges. Nix ensures that this is secure. For instance, it’s not
-possible for one user to overwrite a package used by another user with a
-Trojan horse.
+或者，你可以将 Nix 配置为“多用户模式”。在这种模型下，所有用户都可以执行软件包管理操作——例如，每个用户都可以在无需 root 权限的情况下安装软件。Nix 会确保这样做是安全的。例如，一个用户不可能用木马覆盖另一个用户正在使用的软件包。

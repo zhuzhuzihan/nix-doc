@@ -1,8 +1,8 @@
-# Appendix: Math notation
+# 附录：数学记号
 
-A few times in this manual, formal "proof trees" are used for [natural deduction](https://en.wikipedia.org/wiki/Natural_deduction)-style definition of various [relations](https://en.wikipedia.org/wiki/Relation_(mathematics)).
+本手册中有多处使用形式化的"证明树"，以[自然演绎](https://en.wikipedia.org/wiki/Natural_deduction)的方式定义各种[关系](https://en.wikipedia.org/wiki/Relation_(mathematics))。
 
-The following grammar and assignment of metavariables to syntactic categories is used in these sections.
+以下语法以及元变量到语法范畴的指派将在这些小节中使用。
 
 \\begin{align}
 s, t &\in \text{store-path} \\\\

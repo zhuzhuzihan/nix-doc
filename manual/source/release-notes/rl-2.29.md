@@ -1,120 +1,120 @@
 # Release 2.29.0 (2025-05-14)
 
-After the special backport-based release of Nix 2.28 (timed to coincide with Nixpkgs 25.05), the release process is back to normal with 2.29.
-As such, we have slightly more weeks of work from `master` (since 2.28 was branched from 2.27) than usual.
-This fact is counterbalanced by the fact that most of those changes are bug fixes rather than larger new features.
+在基于向后移植的特殊版本 Nix 2.28（刻意与 Nixpkgs 25.05 同步发布）之后，发布流程从 2.29 起恢复正常。
+因此，本次从 `master` 汇集的工作周数比往常略多一些（因为 2.28 是从 2.27 分支出来的）。
+不过这一点被另一个事实抵消了：这些变更大多是缺陷修复，而不是较大的新特性。
 
-- Prettified JSON output on the terminal [#12555](https://github.com/NixOS/nix/issues/12555) [#12652](https://github.com/NixOS/nix/pull/12652)
+- 终端上的 JSON 输出美化 [#12555](https://github.com/NixOS/nix/issues/12555) [#12652](https://github.com/NixOS/nix/pull/12652)
 
-  This makes the output easier to read.
+  这让输出更易于阅读。
 
-  Scripts are mostly unaffected because for those, stdout will be a file or a pipe, not a terminal, and for those, the old single-line behavior applies.
+  脚本基本不受影响，因为对脚本而言，stdout 通常是一个文件或管道而不是终端；这种情况仍沿用旧的单行输出行为。
 
-  `--json --pretty` can be passed to enable it even if the output is not a terminal.
-  If your script creates a pseudoterminal for Nix's stdout, you can pass `--no-pretty` to disable the new behavior.
+  即使输出不是终端，也可以传入 `--json --pretty` 来启用美化。
+  如果你的脚本为 Nix 的 stdout 创建了伪终端，可以传入 `--no-pretty` 来禁用这一新行为。
 
-- Repl: improve continuation prompt for incomplete expressions [#12846](https://github.com/NixOS/nix/pull/12846)
+- REPL：改进不完整表达式的续行提示符 [#12846](https://github.com/NixOS/nix/pull/12846)
 
-  Improved REPL user experience by updating the continuation prompt from invisible blank spaces to a visible `" > "`, enhancing clarity when entering multi-line expressions.
+  通过将续行提示符从不可见的空白改为可见的 `" > "`，改进了 REPL 的用户体验，让输入多行表达式时更加清晰。
 
-- REPL `:load-flake` and `:reload` now work together [#8753](https://github.com/NixOS/nix/issues/8753) [#13180](https://github.com/NixOS/nix/pull/13180)
+- REPL 的 `:load-flake` 与 `:reload` 现在可以协同工作 [#8753](https://github.com/NixOS/nix/issues/8753) [#13180](https://github.com/NixOS/nix/pull/13180)
 
-  Previously, `:reload` only reloaded the files specified with `:load` (or on the command line).
-  Now, it also works with the flakes specified with `:load-flake` (or on the command line).
-  This makes it correctly reload everything that was previously loaded, regardless of what sort of thing (plain file or flake) each item is.
+  以前，`:reload` 只会重新加载用 `:load`（或在命令行上）指定的文件。
+  现在，它对用 `:load-flake`（或在命令行上）指定的 Flakes 也同样生效。
+  这样就能正确重新加载此前加载过的所有内容，无论每一项是普通文件还是 Flakes。
 
-- Increase retry delays on HTTP 429 Too Many Requests [#13052](https://github.com/NixOS/nix/pull/13052)
+- 增大 HTTP 429 Too Many Requests 的重试延迟 [#13052](https://github.com/NixOS/nix/pull/13052)
 
-  When downloading Nix, the retry delay was previously set to 0.25 seconds. It has now been increased to 1 minute to better handle transient CI errors, particularly on GitHub.
+  下载 Nix 时，重试延迟以前是 0.25 秒，现在已增加到 1 分钟，以便更好地处理瞬时 CI 故障，尤其是 GitHub 上的故障。
 
-- S3: opt-in the STSProfileCredentialsProvider [#12646](https://github.com/NixOS/nix/pull/12646)
+- S3：可选择启用 STSProfileCredentialsProvider [#12646](https://github.com/NixOS/nix/pull/12646)
 
-  Added support for STS-based authentication for S3-based binary caches, i.e. enabling seamless integration with `aws sso login`.
+  为基于 S3 的二进制缓存增加了基于 STS 的身份验证支持，即实现与 `aws sso login` 的无缝集成。
 
-- Reduce connect timeout for http substituter [#12876](https://github.com/NixOS/nix/pull/12876)
+- 缩短 HTTP substituter 的连接超时 [#12876](https://github.com/NixOS/nix/pull/12876)
 
-  Previously, the Nix setting `connect-timeout` had no limit. It is now set to `5s`, offering a more practical default for users self-hosting binary caches, which may occasionally become unavailable, such as during updates.
+  以前，Nix 设置 `connect-timeout` 没有上限。现在默认设为 `5s`，为自托管二进制缓存的用户提供了更实用的默认值——这类缓存偶尔会不可用，例如在更新期间。
 
 
-- C API: functions for locking and loading a flake [#10435](https://github.com/NixOS/nix/issues/10435) [#12877](https://github.com/NixOS/nix/pull/12877) [#13098](https://github.com/NixOS/nix/pull/13098)
+- C API：用于锁定和加载 Flakes 的函数 [#10435](https://github.com/NixOS/nix/issues/10435) [#12877](https://github.com/NixOS/nix/pull/12877) [#13098](https://github.com/NixOS/nix/pull/13098)
 
-  This release adds functions to the C API for handling the loading of flakes. Previously, this had to be worked around by using `builtins.getFlake`.
-  C API consumers and language bindings now have access to basic locking functionality.
+  本次发布在 C API 中新增了处理 Flakes 加载的函数。以前只能借助 `builtins.getFlake` 变通实现。
+  C API 的使用者和语言绑定现在可以使用基本的锁定功能。
 
-  It does not expose the full locking API, so that the implementation can evolve more freely.
-  Locking is controlled with the functions, which cover the common use cases for consuming a flake:
+  这里并未暴露完整的锁定 API，以便实现可以更自由地演进。
+  锁定由以下函数控制，它们覆盖了使用 Flakes 的常见场景：
   - `nix_flake_lock_flags_set_mode_check`
   - `nix_flake_lock_flags_set_mode_virtual`
   - `nix_flake_lock_flags_set_mode_write_as_needed`
-  - `nix_flake_lock_flags_add_input_override`, which also enables `virtual`
+  - `nix_flake_lock_flags_add_input_override`（它同时启用 `virtual`）
 
-  This change also introduces the new `nix-fetchers-c` library, whose single purpose for now is to manage the (`nix.conf`) settings for the built-in fetchers.
+  这项变更还引入了新的 `nix-fetchers-c` 库，它目前唯一的用途是管理内置 fetcher 的（`nix.conf`）设置。
 
-  More details can be found in the [C API documentation](@docroot@/c-api.md).
+  更多细节请参阅 [C API 文档](@docroot@/c-api.md)。
 
-- No longer copy flakes that are in the nix store [#10435](https://github.com/NixOS/nix/issues/10435) [#12877](https://github.com/NixOS/nix/pull/12877) [#13098](https://github.com/NixOS/nix/pull/13098)
+- 不再复制位于 Nix store 中的 Flakes [#10435](https://github.com/NixOS/nix/issues/10435) [#12877](https://github.com/NixOS/nix/pull/12877) [#13098](https://github.com/NixOS/nix/pull/13098)
 
-  Previously, we would duplicate entries like `path:/nix/store/*` back into the Nix store.
-  This was prominently visible for pinned system flake registry entries in NixOS, e.g., when running `nix run nixpkgs#hello`.
+  以前，我们会把诸如 `path:/nix/store/*` 之类的条目重复复制回 Nix store。
+  在 NixOS 中，这一点在使用固定的系统 Flakes 注册表条目时格外明显，例如运行 `nix run nixpkgs#hello` 的时候。
 
-- Consistently preserve error messages from cached evaluation [#12762](https://github.com/NixOS/nix/issues/12762) [#12809](https://github.com/NixOS/nix/pull/12809)
+- 一致地保留来自缓存求值的错误消息 [#12762](https://github.com/NixOS/nix/issues/12762) [#12809](https://github.com/NixOS/nix/pull/12809)
 
-  In one code path, we are not returning the errors cached from prior evaluation, but instead throwing generic errors stemming from the lack of value (due to the error).
-  These generic error messages were far less informative.
-  Now we consistently return the original error message.
+  在某个代码路径中，我们此前返回的不是先前求值缓存的错误，而是抛出因值缺失（由错误导致）而产生的通用错误。
+  这些通用错误消息的信息量少得多。
+  现在我们会一致地返回原始错误消息。
 
-- Faster blake3 hashing [#12676](https://github.com/NixOS/nix/pull/12676)
+- 更快的 blake3 哈希 [#12676](https://github.com/NixOS/nix/pull/12676)
 
-  The implementation for blake3 hashing is now multi-threaded and used memory-mapped IO.
-  Benchmark results can be found the [pull request](https://github.com/NixOS/nix/pull/12676).
+  blake3 哈希的实现现在是多线程的，并使用了内存映射 IO。
+  基准测试结果见该[拉取请求](https://github.com/NixOS/nix/pull/12676)。
 
-- Fix progress bar for S3 binary caches and make file transfers interruptible [#12877](https://github.com/NixOS/nix/issues/12877) [#13098](https://github.com/NixOS/nix/issues/13098) [#12538](https://github.com/NixOS/nix/pull/12538)
+- 修复 S3 二进制缓存的进度条，并使文件传输可中断 [#12877](https://github.com/NixOS/nix/issues/12877) [#13098](https://github.com/NixOS/nix/issues/13098) [#12538](https://github.com/NixOS/nix/pull/12538)
 
-  The progress bar now correctly display upload/download progress for S3 up/downloads. S3 uploads are now interruptible.
+  进度条现在能正确显示 S3 上传/下载的进度。S3 上传现在可以中断了。
 
-- Add host attribute of github/gitlab flakerefs to URL serialization [#12580](https://github.com/NixOS/nix/pull/12580)
+- 将 github/gitlab flakeref 的 host 属性纳入 URL 序列化 [#12580](https://github.com/NixOS/nix/pull/12580)
 
-  Resolved an issue where `github:` or `gitlab:` URLs lost their `host` attribute when written to a lockfile, resulting in invalid URLs.
+  修复了 `github:` 或 `gitlab:` URL 写入 lockfile 时丢失 `host` 属性、从而产生无效 URL 的问题。
 
-- Multiple signatures support in store urls [#12976](https://github.com/NixOS/nix/pull/12976)
+- store URL 中的多重签名支持 [#12976](https://github.com/NixOS/nix/pull/12976)
 
-  Added support for a `secretKeyFiles` URI parameter in Nix store URIs, allowing multiple signing key files to be specified as a comma-separated list.
-  This enables signing paths with multiple keys. This helps with [RFC #149](https://github.com/NixOS/rfcs/pull/149) to enable binary cache key rotation in the NixOS infra.
+  在 Nix store URI 中增加了对 `secretKeyFiles` URI 参数的支持，允许以逗号分隔的列表形式指定多个签名密钥文件。
+  这使得可以用多个密钥对路径签名。这有助于 [RFC #149](https://github.com/NixOS/rfcs/pull/149) 在 NixOS 基础设施中实现二进制缓存密钥轮换。
 
-  Example usage:
+  用法示例：
 
   ```bash
   nix copy --to "file:///tmp/store?secret-keys=/tmp/key1,/tmp/key2" \
     "$(nix build --print-out-paths nixpkgs#hello)"
   ```
 
-- nix flake show now skips over import-from-derivation [#4265](https://github.com/NixOS/nix/issues/4265) [#12583](https://github.com/NixOS/nix/pull/12583)
+- nix flake show 现在会跳过依赖从 derivation（派生）导入的输出 [#4265](https://github.com/NixOS/nix/issues/4265) [#12583](https://github.com/NixOS/nix/pull/12583)
 
-  Previously, if a flake contained outputs relying on [import from derivation](@docroot@/language/import-from-derivation.md) during evaluation, `nix flake show` would fail to display the rest of the flake. The updated behavior skips such outputs, allowing the rest of the flake to be shown.
+  以前，如果某个 Flakes 的输出在求值时依赖[从 derivation 导入](@docroot@/language/import-from-derivation.md)（import-from-derivation），`nix flake show` 将无法显示该 Flakes 的其余部分。更新后的行为会跳过这类输出，从而让 Flakes 的其余部分得以显示。
 
-- Add `nix formatter build` and `nix formatter run` commands [#13063](https://github.com/NixOS/nix/pull/13063)
+- 新增 `nix formatter build` 和 `nix formatter run` 命令 [#13063](https://github.com/NixOS/nix/pull/13063)
 
-  `nix formatter run` is an alias for `nix fmt`. Nothing new there.
+  `nix formatter run` 是 `nix fmt` 的别名，并无新意。
 
-  `nix formatter build` is sort of like `nix build`: it builds, links, and prints a path to the formatter program:
+  `nix formatter build` 则有点类似于 `nix build`：它会构建、链接并打印格式化器程序的路径：
 
   ```
   $ nix formatter build
   /nix/store/cb9w44vkhk2x4adfxwgdkkf5gjmm856j-treefmt/bin/treefmt
   ```
 
-  Note that unlike `nix build`, this prints the full path to the program, not just the store path (in the example above that would be `/nix/store/cb9w44vkhk2x4adfxwgdkkf5gjmm856j-treefmt`).
+  注意，与 `nix build` 不同，它打印的是程序的完整路径，而不仅仅是存储路径（在上面的示例中，存储路径是 `/nix/store/cb9w44vkhk2x4adfxwgdkkf5gjmm856j-treefmt`）。
 
-- Amend OSC 8 escape stripping for xterm-style separator [#13109](https://github.com/NixOS/nix/pull/13109)
+- 修正针对 xterm 风格分隔符的 OSC 8 转义序列剥离 [#13109](https://github.com/NixOS/nix/pull/13109)
 
-  Improve terminal escape code filtering to understand a second type of hyperlink escape codes.
-  This in particular prevents parts of GCC 14's diagnostics from being improperly filtered away.
-
-
-## Contributors
+  改进终端转义序列的过滤逻辑，使其能够识别第二种类型的超链接转义序列。
+  这尤其避免了 GCC 14 的诊断信息中的一部分被错误地过滤掉。
 
 
-This release was made possible by the following 40 contributors:
+## 贡献者
+
+
+本次发布由以下 40 位贡献者共同促成：
 
 - Farid Zakaria [**(@fzakaria)**](https://github.com/fzakaria)
 - The Tumultuous Unicorn Of Darkness [**(@TheTumultuousUnicornOfDarkness)**](https://github.com/TheTumultuousUnicornOfDarkness)

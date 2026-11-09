@@ -1,22 +1,16 @@
 # Name
 
-`nix-store --delete` - delete store paths
+`nix-store --delete` - 删除 store 路径
 
-# Synopsis
+# 概要
 
 `nix-store` `--delete` [`--ignore-liveness`] *paths…*
 
-# Description
+# 描述
 
-The operation `--delete` deletes the store paths *paths* from the Nix
-store, but only if it is safe to do so; that is, when the path is not
-reachable from a root of the garbage collector. This means that you can
-only delete paths that would also be deleted by `nix-store --gc`. Thus,
-`--delete` is a more targeted version of `--gc`.
+`--delete` 操作从 Nix store 中删除存储路径 *paths*，但仅在安全的情况下才会删除；也就是说，只有当该路径从垃圾回收器的某个 root 不可达时才会删除。这意味着你只能删除那些同样会被 `nix-store --gc` 删除的路径。因此，`--delete` 是 `--gc` 的一个更有针对性的版本。
 
-With the option `--ignore-liveness`, reachability from the roots is
-ignored. However, the path still won’t be deleted if there are other
-paths in the store that refer to it (i.e., depend on it).
+使用选项 `--ignore-liveness` 时，将忽略从 root 出发的可达性。然而，如果 store 中还有其他路径引用它（即依赖它），该路径仍然不会被删除。
 
 {{#include ./opt-common.md}}
 
@@ -24,7 +18,7 @@ paths in the store that refer to it (i.e., depend on it).
 
 {{#include ../env-common.md}}
 
-# Example
+# 示例
 
 ```console
 $ nix-store --delete /nix/store/gjak3al7lj61x4gj6rln4f5pc5v0f67n-mesa-6.4

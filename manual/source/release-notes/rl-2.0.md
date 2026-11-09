@@ -1,13 +1,8 @@
 # Release 2.0 (2018-02-22)
 
-The following incompatible changes have been made:
+本版本做出了以下不兼容的变更：
 
-  - The manifest-based substituter mechanism
-    (`download-using-manifests`) has been
-    [removed](https://github.com/NixOS/nix/commit/867967265b80946dfe1db72d40324b4f9af988ed).
-    It has been superseded by the binary cache substituter mechanism
-    since several years. As a result, the following programs have been
-    removed:
+  - 基于 manifest 的替代器（substituter）机制（`download-using-manifests`）已被[移除](https://github.com/NixOS/nix/commit/867967265b80946dfe1db72d40324b4f9af988ed)。它早在几年前就已被二进制缓存替代器机制取代。因此，以下程序已被移除：
 
       - `nix-pull`
 
@@ -17,52 +12,23 @@ The following incompatible changes have been made:
 
       - `bspatch`
 
-  - The “copy from other stores” substituter mechanism
-    (`copy-from-other-stores` and the `NIX_OTHER_STORES` environment
-    variable) has been removed. It was primarily used by the NixOS
-    installer to copy available paths from the installation medium. The
-    replacement is to use a chroot store as a substituter (e.g.
-    `--substituters /mnt`), or to build into a chroot store (e.g.
-    `--store /mnt --substituters /`).
+  - "从其他 store 复制"的替代器机制（`copy-from-other-stores` 及 `NIX_OTHER_STORES` 环境变量）已被移除。它主要被 NixOS 安装器用来从安装介质复制可用的路径。替代做法是使用 chroot store 作为替代器（例如 `--substituters /mnt`），或者向 chroot store 中构建（例如 `--store /mnt --substituters /`）。
 
-  - The command `nix-push` has been removed as part of the effort to
-    eliminate Nix's dependency on Perl. You can use `nix copy` instead,
-    e.g. `nix copy
-                    --to file:///tmp/my-binary-cache paths…`
+  - 命令 `nix-push` 已作为消除 Nix 对 Perl 依赖的工作的一部分被移除。你可以改用 `nix copy`，例如 `nix copy --to file:///tmp/my-binary-cache paths…`
 
-  - The “nested” log output feature (`--log-type
-                    pretty`) has been removed. As a result, `nix-log2xml` was also
-    removed.
+  - "嵌套"日志输出特性（`--log-type pretty`）已被移除。相应地，`nix-log2xml` 也被移除了。
 
-  - OpenSSL-based signing has been
-    [removed](https://github.com/NixOS/nix/commit/f435f8247553656774dd1b2c88e9de5d59cab203).
-    This feature was never well-supported. A better alternative is
-    provided by the `secret-key-files` and `trusted-public-keys`
-    options.
+  - 基于 OpenSSL 的签名功能已被[移除](https://github.com/NixOS/nix/commit/f435f8247553656774dd1b2c88e9de5d59cab203)。该特性从未得到良好支持。`secret-key-files` 和 `trusted-public-keys` 选项提供了更好的替代方案。
 
-  - Failed build caching has been
-    [removed](https://github.com/NixOS/nix/commit/8cffec84859cec8b610a2a22ab0c4d462a9351ff).
-    This feature was introduced to support the Hydra continuous build
-    system, but Hydra no longer uses it.
+  - 失败构建缓存功能已被[移除](https://github.com/NixOS/nix/commit/8cffec84859cec8b610a2a22ab0c4d462a9351ff)。该特性当初是为支持 Hydra 持续构建系统而引入的，但 Hydra 已不再使用它。
 
-  - `nix-mode.el` has been removed from Nix. It is now [a separate
-    repository](https://github.com/NixOS/nix-mode) and can be installed
-    through the MELPA package repository.
+  - `nix-mode.el` 已从 Nix 中移除。它现在是[一个独立的仓库](https://github.com/NixOS/nix-mode)，可以通过 MELPA 软件包仓库安装。
 
-This release has the following new features:
+本版本包含以下新特性：
 
-  - It introduces a new command named `nix`, which is intended to
-    eventually replace all `nix-*` commands with a more consistent and
-    better designed user interface. It currently provides replacements
-    for some (but not all) of the functionality provided by `nix-store`,
-    `nix-build`, `nix-shell -p`, `nix-env -qa`, `nix-instantiate
-    --eval`, `nix-push` and `nix-copy-closure`. It has the following
-    major features:
+  - 它引入了一个名为 `nix` 的新命令，旨在最终以一个更一致、设计更完善的用户界面取代所有 `nix-*` 命令。它目前为 `nix-store`、`nix-build`、`nix-shell -p`、`nix-env -qa`、`nix-instantiate --eval`、`nix-push` 和 `nix-copy-closure` 所提供的部分（但非全部）功能提供了替代。它具有以下主要特性：
 
-      - Unlike the legacy commands, it has a consistent way to refer to
-        packages and package-like arguments (like store paths). For
-        example, the following commands all copy the GNU Hello package
-        to a remote machine:
+      - 与旧式命令不同，它提供了一致的方式来引用软件包及类软件包参数（例如存储路径）。例如，以下命令都会把 GNU Hello 软件包复制到远程机器：
 
             nix copy --to ssh://machine nixpkgs.hello
 
@@ -70,489 +36,216 @@ This release has the following new features:
 
             nix copy --to ssh://machine '(with import <nixpkgs> {}; hello)'
 
-        By contrast, `nix-copy-closure` only accepted store paths as
-        arguments.
+        相比之下，`nix-copy-closure` 只接受存储路径作为参数。
 
-      - It is self-documenting: `--help` shows all available
-        command-line arguments. If `--help` is given after a subcommand,
-        it shows examples for that subcommand. `nix
-                                                                        --help-config` shows all configuration options.
+      - 它是自文档化的：`--help` 会显示所有可用的命令行参数。如果在子命令之后给出 `--help`，它会显示该子命令的示例。`nix --help-config` 显示所有配置选项。
 
-      - It is much less verbose. By default, it displays a single-line
-        progress indicator that shows how many packages are left to be
-        built or downloaded, and (if there are running builds) the most
-        recent line of builder output. If a build fails, it shows the
-        last few lines of builder output. The full build log can be
-        retrieved using `nix
-                                                                        log`.
+      - 它的输出要简洁得多。默认情况下，它显示一个单行进度指示器，标明还剩多少软件包待构建或下载，以及（如果有正在运行的构建）构建器输出的最近一行。如果构建失败，它会显示构建器输出的最后几行。完整的构建日志可以用 `nix log` 获取。
 
-      - It
-        [provides](https://github.com/NixOS/nix/commit/b8283773bd64d7da6859ed520ee19867742a03ba)
-        all `nix.conf` configuration options as command line flags. For
-        example, instead of `--option
-                                                                        http-connections 100` you can write `--http-connections 100`.
-        Boolean options can be written as `--foo` or `--no-foo` (e.g.
-        `--no-auto-optimise-store`).
+      - 它[提供](https://github.com/NixOS/nix/commit/b8283773bd64d7da6859ed520ee19867742a03ba)了把所有 `nix.conf` 配置选项作为命令行标志使用的能力。例如，你可以写 `--http-connections 100` 来代替 `--option http-connections 100`。布尔选项可以写成 `--foo` 或 `--no-foo`（例如 `--no-auto-optimise-store`）。
 
-      - Many subcommands have a `--json` flag to write results to stdout
-        in JSON format.
+      - 许多子命令都有 `--json` 标志，以 JSON 格式把结果写到标准输出。
 
-    > **Warning**
+    > **警告**
     >
-    > Please note that the `nix` command is a work in progress and the
-    > interface is subject to change.
+    > 请注意，`nix` 命令仍在开发中，其界面可能发生变化。
 
-    It provides the following high-level (“porcelain”) subcommands:
+    它提供以下高层（"porcelain"）子命令：
 
-      - `nix build` is a replacement for `nix-build`.
+      - `nix build` 是 `nix-build` 的替代品。
 
-      - `nix run` executes a command in an environment in which the
-        specified packages are available. It is (roughly) a replacement
-        for `nix-shell
-                                                                        -p`. Unlike that command, it does not execute the command in a
-        shell, and has a flag (`-c`) that specifies the unquoted command
-        line to be executed.
+      - `nix run` 在一个指定软件包可用的环境中执行命令。它（大致上）是 `nix-shell -p` 的替代品。与后者不同，它不在 shell 中执行命令，并且有一个标志（`-c`）用于指定要执行的不带引号的命令行。
 
-        It is particularly useful in conjunction with chroot stores,
-        allowing Linux users who do not have permission to install Nix
-        in `/nix/store` to still use binary substitutes that assume
-        `/nix/store`. For example,
+        它与 chroot store 结合使用时尤其有用，让没有权限在 `/nix/store` 中安装 Nix 的 Linux 用户也能使用假定 `/nix/store` 存在的二进制替代品（binary substitute）。例如，
 
             nix run --store ~/my-nix nixpkgs.hello -c hello --greeting 'Hi everybody!'
 
-        downloads (or if not substitutes are available, builds) the GNU
-        Hello package into `~/my-nix/nix/store`, then runs `hello` in a
-        mount namespace where `~/my-nix/nix/store` is mounted onto
-        `/nix/store`.
+        会把 GNU Hello 软件包下载（或在没有可用替代品时构建）到 `~/my-nix/nix/store`，然后在一个 mount namespace 中运行 `hello`，在该 namespace 中 `~/my-nix/nix/store` 被挂载到 `/nix/store` 上。
 
-      - `nix search` replaces `nix-env
-                                                                        -qa`. It searches the available packages for occurrences of a
-        search string in the attribute name, package name or
-        description. Unlike `nix-env -qa`, it has a cache to speed up
-        subsequent searches.
+      - `nix search` 取代了 `nix-env -qa`。它在属性名、软件包名或描述中搜索出现的搜索字符串。与 `nix-env -qa` 不同，它有缓存来加速后续的搜索。
 
-      - `nix copy` copies paths between arbitrary Nix stores,
-        generalising `nix-copy-closure` and `nix-push`.
+      - `nix copy` 在任意 Nix store 之间复制路径，是对 `nix-copy-closure` 和 `nix-push` 的推广。
 
-      - `nix repl` replaces the external program `nix-repl`. It provides
-        an interactive environment for evaluating and building Nix
-        expressions. Note that it uses `linenoise-ng` instead of GNU
-        Readline.
+      - `nix repl` 取代了外部程序 `nix-repl`。它提供了一个用于求值和构建 Nix 表达式的交互式环境。注意，它使用 `linenoise-ng` 而不是 GNU Readline。
 
-      - `nix upgrade-nix` upgrades Nix to the latest stable version.
-        This requires that Nix is installed in a profile. (Thus it won’t
-        work on NixOS, or if it’s installed outside of the Nix store.)
+      - `nix upgrade-nix` 把 Nix 升级到最新的稳定版本。这要求 Nix 安装在 profile 中。（因此在 NixOS 上，或者当它安装在 Nix store 之外时，该命令无法工作。）
 
-      - `nix verify` checks whether store paths are unmodified and/or
-        “trusted” (see below). It replaces `nix-store --verify` and
-        `nix-store
-                                                                        --verify-path`.
+      - `nix verify` 检查存储路径是否未被修改和/或是否"受信任"（见下文）。它取代了 `nix-store --verify` 和 `nix-store --verify-path`。
 
-      - `nix log` shows the build log of a package or path. If the
-        build log is not available locally, it will try to obtain it
-        from the configured substituters (such as
-        [cache.nixos.org](https://cache.nixos.org/), which now
-        provides build logs).
+      - `nix log` 显示软件包或路径的构建日志。如果构建日志在本地不可用，它会尝试从配置的替代器（substituter）获取（例如 [cache.nixos.org](https://cache.nixos.org/)，它现在提供构建日志）。
 
-      - `nix edit` opens the source code of a package in your editor.
+      - `nix edit` 在你的编辑器中打开某个软件包的源代码。
 
-      - `nix eval` replaces `nix-instantiate --eval`.
+      - `nix eval` 取代了 `nix-instantiate --eval`。
 
-      - `nix
-                                                                        why-depends` shows why one store path has another in its
-        closure. This is primarily useful to finding the causes of
-        closure bloat. For example,
+      - `nix why-depends` 显示为什么一个存储路径的 closure 中包含另一个。这主要用于查找 closure 膨胀的原因。例如，
 
             nix why-depends nixpkgs.vlc nixpkgs.libdrm.dev
 
-        shows a chain of files and fragments of file contents that cause
-        the VLC package to have the “dev” output of `libdrm` in its
-        closure — an undesirable situation.
+        会显示导致 VLC 软件包的 closure 中包含 `libdrm` 的 "dev" 输出的文件链及文件内容片段——这是一种不理想的情况。
 
-      - `nix path-info` shows information about store paths, replacing
-        `nix-store -q`. A useful feature is the option `--closure-size`
-        (`-S`). For example, the following command show the closure
-        sizes of every path in the current NixOS system closure, sorted
-        by size:
+      - `nix path-info` 显示关于存储路径的信息，取代了 `nix-store -q`。一个有用的特性是选项 `--closure-size`（`-S`）。例如，以下命令显示当前 NixOS 系统 closure 中每条路径的 closure 大小，并按大小排序：
 
             nix path-info -rS /run/current-system | sort -nk2
 
-      - `nix optimise-store` replaces `nix-store --optimise`. The main
-        difference is that it has a progress indicator.
+      - `nix optimise-store` 取代了 `nix-store --optimise`。主要区别在于它有进度指示器。
 
-    A number of low-level (“plumbing”) commands are also available:
+    还有若干低层（"plumbing"）命令可用：
 
-      - `nix ls-store` and `nix
-                                                                        ls-nar` list the contents of a store path or NAR file. The
-        former is primarily useful in conjunction with remote stores,
-        e.g.
+      - `nix ls-store` 和 `nix ls-nar` 列出存储路径或 NAR 文件的内容。前者主要与远程 store 结合使用，例如
 
             nix ls-store --store https://cache.nixos.org/ -lR /nix/store/qbhyj3blxpw2i6pb7c6grc9185nbnpvy-hello-2.10
 
-        lists the contents of path in a binary cache.
+        列出某个二进制缓存中路径的内容。
 
-      - `nix cat-store` and `nix
-                                                                        cat-nar` allow extracting a file from a store path or NAR file.
+      - `nix cat-store` 和 `nix cat-nar` 允许从存储路径或 NAR 文件中提取文件。
 
-      - `nix dump-path` writes the contents of a store path to stdout in
-        NAR format. This replaces `nix-store --dump`.
+      - `nix dump-path` 以 NAR 格式把存储路径的内容写到标准输出。它取代了 `nix-store --dump`。
 
-      - `nix
-                                                                        show-derivation` displays a store derivation in JSON format.
-        This is an alternative to `pp-aterm`.
+      - `nix show-derivation` 以 JSON 格式显示存储的 derivation（派生）。它是 `pp-aterm` 的替代方案。
 
-      - `nix
-                                                                        add-to-store` replaces `nix-store
-                                                                        --add`.
+      - `nix add-to-store` 取代了 `nix-store --add`。
 
-      - `nix sign-paths` signs store paths.
+      - `nix sign-paths` 对存储路径进行签名。
 
-      - `nix copy-sigs` copies signatures from one store to another.
+      - `nix copy-sigs` 把签名从一个 store 复制到另一个。
 
-      - `nix show-config` shows all configuration options and their
-        current values.
+      - `nix show-config` 显示所有配置选项及其当前值。
 
-  - The store abstraction that Nix has had for a long time to support
-    store access via the Nix daemon has been extended
-    significantly. In particular, substituters (which used to be
-    external programs such as `download-from-binary-cache`) are now
-    subclasses of the abstract `Store` class. This allows many Nix
-    commands to operate on such store types. For example, `nix
-    path-info` shows information about paths in your local Nix store,
-    while `nix path-info --store https://cache.nixos.org/` shows
-    information about paths in the specified binary cache. Similarly,
-    `nix-copy-closure`, `nix-push` and substitution are all instances
-    of the general notion of copying paths between different kinds of
-    Nix stores.
+  - Nix 长期以来用于支持通过 Nix daemon（守护进程）访问 store 的 store 抽象得到了大幅扩展。特别是，替代器（过去是外部程序，例如 `download-from-binary-cache`）现在成了抽象 `Store` 类的子类。这使得许多 Nix 命令可以操作这类 store 类型。例如，`nix path-info` 显示本地 Nix store 中路径的信息，而 `nix path-info --store https://cache.nixos.org/` 显示指定二进制缓存中路径的信息。类似地，`nix-copy-closure`、`nix-push` 和替代（substitution）都是"在不同类型的 Nix store 之间复制路径"这一通用概念的具体实例。
 
-    Stores are specified using an URI-like syntax, e.g.
-    <https://cache.nixos.org/> or <ssh://machine>. The following store
-    types are supported:
+    store 使用类 URI 的语法指定，例如 <https://cache.nixos.org/> 或 <ssh://machine>。支持以下 store 类型：
 
-      - `LocalStore` (stori URI `local` or an absolute path) and the
-        misnamed `RemoteStore` (`daemon`) provide access to a local Nix
-        store, the latter via the Nix daemon. You can use `auto` or the
-        empty string to auto-select a local or daemon store depending on
-        whether you have write permission to the Nix store. It is no
-        longer necessary to set the `NIX_REMOTE` environment variable to
-        use the Nix daemon.
+      - `LocalStore`（URI 为 `local` 或绝对路径）和名不副实的 `RemoteStore`（`daemon`）提供对本地 Nix store 的访问，后者通过 Nix daemon 访问。你可以使用 `auto` 或空字符串来自动选择本地 store 或 daemon store，具体取决于你对 Nix store 是否有写权限。不再需要设置 `NIX_REMOTE` 环境变量来使用 Nix daemon。
 
-        As noted above, `LocalStore` now supports chroot builds,
-        allowing the “physical” location of the Nix store (e.g.
-        `/home/alice/nix/store`) to differ from its “logical” location
-        (typically `/nix/store`). This allows non-root users to use Nix
-        while still getting the benefits from prebuilt binaries from
-        [cache.nixos.org](https://cache.nixos.org/).
+        如上所述，`LocalStore` 现在支持 chroot 构建，允许 Nix store 的"物理"位置（例如 `/home/alice/nix/store`）与其"逻辑"位置（通常是 `/nix/store`）不同。这让非 root 用户也能使用 Nix，同时仍能享受来自 [cache.nixos.org](https://cache.nixos.org/) 的预构建二进制文件带来的好处。
 
-      - `BinaryCacheStore` is the abstract superclass of all binary
-        cache stores. It supports writing build logs and NAR content
-        listings in JSON format.
+      - `BinaryCacheStore` 是所有二进制缓存 store 的抽象超类。它支持以 JSON 格式写入构建日志和 NAR 内容清单。
 
-      - `HttpBinaryCacheStore` (`http://`, `https://`) supports binary
-        caches via HTTP or HTTPS. If the server supports `PUT` requests,
-        it supports uploading store paths via commands such as `nix
-                                                                        copy`.
+      - `HttpBinaryCacheStore`（`http://`、`https://`）支持通过 HTTP 或 HTTPS 访问的二进制缓存。如果服务器支持 `PUT` 请求，它还支持通过诸如 `nix copy` 之类的命令上传存储路径。
 
-      - `LocalBinaryCacheStore` (`file://`) supports binary caches in
-        the local filesystem.
+      - `LocalBinaryCacheStore`（`file://`）支持本地文件系统中的二进制缓存。
 
-      - `S3BinaryCacheStore` (`s3://`) supports binary caches stored in
-        Amazon S3, if enabled at compile time.
+      - `S3BinaryCacheStore`（`s3://`）支持存储在 Amazon S3 中的二进制缓存，前提是编译时启用了该支持。
 
-      - `LegacySSHStore` (`ssh://`) is used to implement remote builds
-        and `nix-copy-closure`.
+      - `LegacySSHStore`（`ssh://`）用于实现远程构建和 `nix-copy-closure`。
 
-      - `SSHStore` (`ssh-ng://`) supports arbitrary Nix operations on a
-        remote machine via the same protocol used by `nix-daemon`.
+      - `SSHStore`（`ssh-ng://`）通过 `nix-daemon` 所用的同一协议在远程机器上执行任意 Nix 操作。
 
-  - Security has been improved in various ways:
+  - 安全性在多个方面得到了改进：
 
-      - Nix now stores signatures for local store paths. When paths are
-        copied between stores (e.g., copied from a binary cache to a
-        local store), signatures are propagated.
+      - Nix 现在为本地存储路径保存签名。当路径在不同 store 之间复制时（例如从二进制缓存复制到本地 store），签名会随之传播。
 
-        Locally-built paths are signed automatically using the secret
-        keys specified by the `secret-key-files` store option.
-        Secret/public key pairs can be generated using `nix-store
-                                                                        --generate-binary-cache-key`.
+        本地构建的路径会使用 `secret-key-files` store 选项指定的密钥自动签名。密钥对（私钥/公钥）可以用 `nix-store --generate-binary-cache-key` 生成。
 
-        In addition, locally-built store paths are marked as “ultimately
-        trusted”, but this bit is not propagated when paths are copied
-        between stores.
+        此外，本地构建的存储路径会被标记为"最终受信任"（ultimately trusted），但当路径在 store 之间复制时，这个位不会传播。
 
-      - Content-addressable store paths no longer require signatures —
-        they can be imported into a store by unprivileged users even if
-        they lack signatures.
+      - 内容寻址（content-addressable）的存储路径不再需要签名——即使没有签名，非特权用户也可以把它们导入 store。
 
-      - The command `nix verify` checks whether the specified paths are
-        trusted, i.e., have a certain number of trusted signatures, are
-        ultimately trusted, or are content-addressed.
+      - 命令 `nix verify` 检查指定的路径是否受信任，即是否拥有一定数量的受信任签名、是否被最终受信任，或者是内容寻址的。
 
-      - Substitutions from binary caches
-        [now](https://github.com/NixOS/nix/commit/ecbc3fedd3d5bdc5a0e1a0a51b29062f2874ac8b)
-        require signatures by default. This was already the case on
-        NixOS.
+      - 来自二进制缓存的替代（substitution）[现在](https://github.com/NixOS/nix/commit/ecbc3fedd3d5bdc5a0e1a0a51b29062f2874ac8b)默认要求签名。在 NixOS 上此前已是如此。
 
-      - In Linux sandbox builds, we
-        [now](https://github.com/NixOS/nix/commit/eba840c8a13b465ace90172ff76a0db2899ab11b)
-        use `/build` instead of `/tmp` as the temporary build directory.
-        This fixes potential security problems when a build accidentally
-        stores its `TMPDIR` in some security-sensitive place, such as an
-        RPATH.
+      - 在 Linux 沙箱构建中，我们[现在](https://github.com/NixOS/nix/commit/eba840c8a13b465ace90172ff76a0db2899ab11b)使用 `/build` 而不是 `/tmp` 作为临时构建目录。这修复了一个潜在的安全问题：当构建意外地把它的 `TMPDIR` 存到某个安全敏感的位置（例如 RPATH）时。
 
-  - *Pure evaluation mode*. With the `--pure-eval` flag, Nix enables a
-    variant of the existing restricted evaluation mode that forbids
-    access to anything that could cause different evaluations of the
-    same command line arguments to produce a different result. This
-    includes builtin functions such as `builtins.getEnv`, but more
-    importantly, *all* filesystem or network access unless a content
-    hash or commit hash is specified. For example, calls to
-    `builtins.fetchGit` are only allowed if a `rev` attribute is
-    specified.
+  - *纯求值模式*。通过 `--pure-eval` 标志，Nix 启用了现有受限求值模式的一个变体，它禁止访问任何可能导致同样的命令行参数产生不同求值结果的东西。这包括 `builtins.getEnv` 之类的内置函数，但更重要的是，除非指定了内容哈希或 commit hash，*所有*文件系统和网络访问都被禁止。例如，只有在指定了 `rev` 属性时才允许调用 `builtins.fetchGit`。
 
-    The goal of this feature is to enable true reproducibility and
-    traceability of builds (including NixOS system configurations) at
-    the evaluation level. For example, in the future, `nixos-rebuild`
-    might build configurations from a Nix expression in a Git repository
-    in pure mode. That expression might fetch other repositories such as
-    Nixpkgs via `builtins.fetchGit`. The commit hash of the top-level
-    repository then uniquely identifies a running system, and, in
-    conjunction with that repository, allows it to be reproduced or
-    modified.
+    这一特性的目标是在求值层面实现真正的构建可复现性和可追溯性（包括 NixOS 系统配置）。例如，将来 `nixos-rebuild` 可能以纯模式从某个 Git 仓库中的 Nix 表达式构建配置。该表达式可能通过 `builtins.fetchGit` 获取诸如 Nixpkgs 之类的其他仓库。顶层仓库的 commit hash 便唯一标识了正在运行的系统，并结合该仓库，使系统得以复现或修改。
 
-  - There are several new features to support binary reproducibility
-    (i.e. to help ensure that multiple builds of the same derivation
-    produce exactly the same output). When `enforce-determinism` is set
-    to `false`, it’s [no
-    longer](https://github.com/NixOS/nix/commit/8bdf83f936adae6f2c907a6d2541e80d4120f051)
-    a fatal error if build rounds produce different output. Also, a hook
-    named `diff-hook` is
-    [provided](https://github.com/NixOS/nix/commit/9a313469a4bdea2d1e8df24d16289dc2a172a169)
-    to allow you to run tools such as `diffoscope` when build rounds
-    produce different output.
+  - 新增了若干特性以支持二进制可复现性（即帮助确保同一个 derivation 的多次构建产生完全相同的输出）。当 `enforce-determinism` 设为 `false` 时，各轮构建产出不同的输出[不再是](https://github.com/NixOS/nix/commit/8bdf83f936adae6f2c907a6d2541e80d4120f051)致命错误。此外还[提供](https://github.com/NixOS/nix/commit/9a313469a4bdea2d1e8df24d16289dc2a172a169)了一个名为 `diff-hook` 的钩子，让你在各轮构建产出不同输出时运行诸如 `diffoscope` 的工具。
 
-  - Configuring remote builds is a lot easier now. Provided you are not
-    using the Nix daemon, you can now just specify a remote build
-    machine on the command line, e.g. `--option builders
-                    'ssh://my-mac x86_64-darwin'`. The environment variable
-    `NIX_BUILD_HOOK` has been removed and is no longer needed. The
-    environment variable `NIX_REMOTE_SYSTEMS` is still supported for
-    compatibility, but it is also possible to specify builders in
-    `nix.conf` by setting the option `builders =
-                    @path`.
+  - 配置远程构建现在容易多了。只要你没有使用 Nix daemon，现在就可以直接在命令行上指定远程构建机器，例如 `--option builders 'ssh://my-mac x86_64-darwin'`。环境变量 `NIX_BUILD_HOOK` 已被移除，也不再需要。环境变量 `NIX_REMOTE_SYSTEMS` 为兼容起见仍受支持，但也可以在 `nix.conf` 中通过设置选项 `builders = @path` 来指定构建机器。
 
-  - If a fixed-output derivation produces a result with an incorrect
-    hash, the output path is moved to the location corresponding to the
-    actual hash and registered as valid. Thus, a subsequent build of the
-    fixed-output derivation with the correct hash is unnecessary.
+  - 如果固定输出 derivation（fixed-output derivation）产出了哈希不正确的结果，输出路径会被移动到与实际哈希对应的位置并注册为有效。因此，随后用正确哈希构建该固定输出 derivation 就不再必要。
 
-  - `nix-shell`
-    [now](https://github.com/NixOS/nix/commit/ea59f39326c8e9dc42dfed4bcbf597fbce58797c)
-    sets the `IN_NIX_SHELL` environment variable during evaluation and
-    in the shell itself. This can be used to perform different actions
-    depending on whether you’re in a Nix shell or in a regular build.
-    Nixpkgs provides `lib.inNixShell` to check this variable during
-    evaluation.
+  - `nix-shell` [现在](https://github.com/NixOS/nix/commit/ea59f39326c8e9dc42dfed4bcbf597fbce58797c)会在求值期间和 shell 本身中设置 `IN_NIX_SHELL` 环境变量。它可以用来根据你处于 Nix shell 还是常规构建中执行不同的动作。Nixpkgs 提供了 `lib.inNixShell` 用于在求值期间检查该变量。
 
-  - `NIX_PATH` is now lazy, so URIs in the path are only downloaded if
-    they are needed for evaluation.
+  - `NIX_PATH` 现在是惰性的，因此路径中的 URI 只有在求值需要时才会被下载。
 
-  - You can now use `channel:` as a short-hand for
-    <https://nixos.org/channels//nixexprs.tar.xz> [now <https://channels.nixos.org//nixexprs.tar.xz>]. For example,
-    `nix-build channel:nixos-15.09 -A hello` will build the GNU Hello
-    package from the `nixos-15.09` channel. In the future, this may
-    use Git to fetch updates more efficiently.
+  - 现在可以使用 `channel:` 作为 <https://nixos.org/channels//nixexprs.tar.xz> [现为 <https://channels.nixos.org//nixexprs.tar.xz>] 的简写。例如，`nix-build channel:nixos-15.09 -A hello` 会从 `nixos-15.09` channel 构建 GNU Hello 软件包。将来，这可能会改用 Git 来更高效地获取更新。
 
-  - When `--no-build-output` is given, the last 10 lines of the build
-    log will be shown if a build fails.
+  - 当给定 `--no-build-output` 时，如果构建失败，将显示构建日志的最后 10 行。
 
-  - Networking has been improved:
+  - 网络功能得到改进：
 
-      - HTTP/2 is now supported. This makes binary cache lookups [much
-        more
-        efficient](https://github.com/NixOS/nix/commit/90ad02bf626b885a5dd8967894e2eafc953bdf92).
+      - 现已支持 HTTP/2。这使得二进制缓存的查询[高效得多](https://github.com/NixOS/nix/commit/90ad02bf626b885a5dd8967894e2eafc953bdf92)。
 
-      - We now retry downloads on many HTTP errors, making binary caches
-        substituters more resilient to temporary failures.
+      - 我们现在会对许多 HTTP 错误重试下载，使二进制缓存替代器对临时故障更有韧性。
 
-      - HTTP credentials can now be configured via the standard `netrc`
-        mechanism.
+      - HTTP 凭据现在可以通过标准的 `netrc` 机制配置。
 
-      - If S3 support is enabled at compile time, <s3://> URIs are
-        [supported](https://github.com/NixOS/nix/commit/9ff9c3f2f80ba4108e9c945bbfda2c64735f987b)
-        in all places where Nix allows URIs.
+      - 如果编译时启用了 S3 支持，在 Nix 允许 URI 的所有地方都[支持](https://github.com/NixOS/nix/commit/9ff9c3f2f80ba4108e9c945bbfda2c64735f987b) <s3://> URI。
 
-      - Brotli compression is now supported. In particular,
-        [cache.nixos.org](https://cache.nixos.org/) build logs are now compressed
-        using Brotli.
+      - 现已支持 Brotli 压缩。特别是，[cache.nixos.org](https://cache.nixos.org/) 的构建日志现在使用 Brotli 压缩。
 
-  - `nix-env`
-    [now](https://github.com/NixOS/nix/commit/b0cb11722626e906a73f10dd9a0c9eea29faf43a)
-    ignores packages with bad derivation names (in particular those
-    starting with a digit or containing a dot).
+  - `nix-env` [现在](https://github.com/NixOS/nix/commit/b0cb11722626e906a73f10dd9a0c9eea29faf43a)会忽略具有非法 derivation 名称的软件包（尤其是以数字开头或包含点号的名称）。
 
-  - Many configuration options have been renamed, either because they
-    were unnecessarily verbose (e.g. `build-use-sandbox` is now just
-    `sandbox`) or to reflect generalised behaviour (e.g. `binary-caches`
-    is now `substituters` because it allows arbitrary store URIs). The
-    old names are still supported for compatibility.
+  - 许多配置选项被重命名，或者是因为原来的名字过于冗长（例如 `build-use-sandbox` 现在就是 `sandbox`），或者是为反映泛化后的行为（例如 `binary-caches` 现在是 `substituters`，因为它允许任意 store URI）。出于兼容性考虑，旧名称仍然受支持。
 
-  - The `max-jobs` option can
-    [now](https://github.com/NixOS/nix/commit/7251d048fa812d2551b7003bc9f13a8f5d4c95a5)
-    be set to `auto` to use the number of CPUs in the system.
+  - `max-jobs` 选项[现在](https://github.com/NixOS/nix/commit/7251d048fa812d2551b7003bc9f13a8f5d4c95a5)可以设为 `auto`，以使用系统中的 CPU 数量。
 
-  - Hashes can
-    [now](https://github.com/NixOS/nix/commit/c0015e87af70f539f24d2aa2bc224a9d8b84276b)
-    be specified in base-64 format, in addition to base-16 and the
-    non-standard base-32.
+  - 哈希[现在](https://github.com/NixOS/nix/commit/c0015e87af70f539f24d2aa2bc224a9d8b84276b)可以用 base-64 格式指定了，此外还支持 base-16 和非标准的 base-32。
 
-  - `nix-shell` now uses `bashInteractive` from Nixpkgs, rather than the
-    `bash` command that happens to be in the caller’s `PATH`. This is
-    especially important on macOS where the `bash` provided by the
-    system is seriously outdated and cannot execute `stdenv`’s setup
-    script.
+  - `nix-shell` 现在使用来自 Nixpkgs 的 `bashInteractive`，而不是恰好出现在调用者 `PATH` 中的 `bash` 命令。这在 macOS 上尤为重要，因为系统提供的 `bash` 严重过时，无法执行 `stdenv` 的 setup 脚本。
 
-  - Nix can now automatically trigger a garbage collection if free disk
-    space drops below a certain level during a build. This is configured
-    using the `min-free` and `max-free` options.
+  - Nix 现在可以在构建期间可用磁盘空间低于某个阈值时自动触发垃圾回收。这通过 `min-free` 和 `max-free` 选项配置。
 
-  - `nix-store -q --roots` and `nix-store --gc --print-roots` now show
-    temporary and in-memory roots.
+  - `nix-store -q --roots` 和 `nix-store --gc --print-roots` 现在会显示临时的和内存中的根（root）。
 
-  - Nix can now be extended with plugins. See the documentation of the
-    `plugin-files` option for more details.
+  - Nix 现在可以通过插件扩展。详见 `plugin-files` 选项的文档。
 
-The Nix language has the following new features:
+Nix 语言包含以下新特性：
 
-  - It supports floating point numbers. They are based on the C++
-    `float` type and are supported by the existing numerical operators.
-    Export and import to and from JSON and XML works, too.
+  - 它支持浮点数。浮点数基于 C++ 的 `float` 类型，并为现有的数值运算符所支持。与 JSON 和 XML 之间的导入导出也可用。
 
-  - Derivation attributes can now reference the outputs of the
-    derivation using the `placeholder` builtin function. For example,
-    the attribute
+  - derivation 属性现在可以使用 `placeholder` 内置函数引用该 derivation 自身的输出。例如，属性
 
         configureFlags = "--prefix=${placeholder "out"} --includedir=${placeholder "dev"}";
 
-    will cause the `configureFlags` environment variable to contain the
-    actual store paths corresponding to the `out` and `dev` outputs.
+    会使 `configureFlags` 环境变量包含与 `out` 和 `dev` 输出对应的实际存储路径。
 
-The following builtin functions are new or extended:
+以下内置函数是新增或扩展的：
 
-  - `builtins.fetchGit` allows Git repositories to be fetched at
-    evaluation time. Thus it differs from the `fetchgit` function in
-    Nixpkgs, which fetches at build time and cannot be used to fetch Nix
-    expressions during evaluation. A typical use case is to import
-    external NixOS modules from your configuration, e.g.
+  - `builtins.fetchGit` 允许在求值时获取 Git 仓库。因此它不同于 Nixpkgs 中的 `fetchgit` 函数——后者在构建时获取，无法在求值期间获取 Nix 表达式。一个典型的用例是从你的配置中导入外部 NixOS 模块，例如
 
         imports = [ (builtins.fetchGit https://github.com/edolstra/dwarffs + "/module.nix") ];
 
-  - Similarly, `builtins.fetchMercurial` allows you to fetch Mercurial
-    repositories.
+  - 类似地，`builtins.fetchMercurial` 允许你获取 Mercurial 仓库。
 
-  - `builtins.path` generalises `builtins.filterSource` and path
-    literals (e.g. `./foo`). It allows specifying a store path name that
-    differs from the source path name (e.g. `builtins.path { path =
-    ./foo; name = "bar";
-                    }`) and also supports filtering out unwanted files.
+  - `builtins.path` 推广了 `builtins.filterSource` 和路径字面量（例如 `./foo`）。它允许指定一个不同于源路径名的存储路径名（例如 `builtins.path { path = ./foo; name = "bar"; }`），并且也支持过滤掉不需要的文件。
 
-  - `builtins.fetchurl` and `builtins.fetchTarball` now support `sha256`
-    and `name` attributes.
+  - `builtins.fetchurl` 和 `builtins.fetchTarball` 现在支持 `sha256` 和 `name` 属性。
 
-  - `builtins.split` splits a string using a POSIX extended regular
-    expression as the separator.
+  - `builtins.split` 使用 POSIX 扩展正则表达式作为分隔符来切分字符串。
 
-  - `builtins.partition` partitions the elements of a list into two
-    lists, depending on a Boolean predicate.
+  - `builtins.partition` 依据一个布尔谓词把列表的元素划分为两个列表。
 
-  - `<nix/fetchurl.nix>` now uses the content-addressable tarball cache
-    at <http://tarballs.nixos.org/>, just like `fetchurl` in Nixpkgs.
-    (f2682e6e18a76ecbfb8a12c17e3a0ca15c084197)
+  - `<nix/fetchurl.nix>` 现在使用位于 <http://tarballs.nixos.org/> 的内容寻址 tarball 缓存，就像 Nixpkgs 中的 `fetchurl` 一样。(f2682e6e18a76ecbfb8a12c17e3a0ca15c084197)
 
-  - In restricted and pure evaluation mode, builtin functions that
-    download from the network (such as `fetchGit`) are permitted to
-    fetch underneath a list of URI prefixes specified in the option
-    `allowed-uris`.
+  - 在受限求值模式和纯求值模式下，从网络下载的内置函数（例如 `fetchGit`）允许获取选项 `allowed-uris` 中指定的 URI 前缀列表之下的内容。
 
-The Nix build environment has the following changes:
+Nix 构建环境包含以下变更：
 
-  - Values such as Booleans, integers, (nested) lists and attribute sets
-    can
-    [now](https://github.com/NixOS/nix/commit/6de33a9c675b187437a2e1abbcb290981a89ecb1)
-    be passed to builders in a non-lossy way. If the special attribute
-    `__structuredAttrs` is set to `true`, the other derivation
-    attributes are serialised in JSON format and made available to the
-    builder via the file `.attrs.json` in the builder’s temporary
-    directory. This obviates the need for `passAsFile` since JSON files
-    have no size restrictions, unlike process environments.
+  - 布尔值、整数、（嵌套）列表和属性集之类的值[现在](https://github.com/NixOS/nix/commit/6de33a9c675b187437a2e1abbcb290981a89ecb1)可以无损地传递给构建器。如果特殊属性 `__structuredAttrs` 设为 `true`，其他 derivation 属性会以 JSON 格式序列化，并通过构建器临时目录中的文件 `.attrs.json` 提供给构建器。这使得 `passAsFile` 不再必要，因为 JSON 文件不像进程环境变量那样有大小限制。
 
-    [As a convenience to Bash
-    builders](https://github.com/NixOS/nix/commit/2d5b1b24bf70a498e4c0b378704cfdb6471cc699),
-    Nix writes a script named `.attrs.sh` to the builder’s directory
-    that initialises shell variables corresponding to all attributes
-    that are representable in Bash. This includes non-nested
-    (associative) arrays. For example, the attribute `hardening.format =
-                    true` ends up as the Bash associative array element
-    `${hardening[format]}`.
+    [作为对 Bash 构建器的一项便利](https://github.com/NixOS/nix/commit/2d5b1b24bf70a498e4c0b378704cfdb6471cc699)，Nix 会向构建器目录写入一个名为 `.attrs.sh` 的脚本，它会初始化与所有可用 Bash 表示的属性对应的 shell 变量。这包括非嵌套的（关联）数组。例如，属性 `hardening.format = true` 最终会成为 Bash 关联数组元素 `${hardening[format]}`。
 
-  - Builders can
-    [now](https://github.com/NixOS/nix/commit/88e6bb76de5564b3217be9688677d1c89101b2a3)
-    communicate what build phase they are in by writing messages to the
-    file descriptor specified in `NIX_LOG_FD`. The current phase is
-    shown by the `nix` progress indicator.
+  - 构建器[现在](https://github.com/NixOS/nix/commit/88e6bb76de5564b3217be9688677d1c89101b2a3)可以通过向 `NIX_LOG_FD` 指定的文件描述符写入消息来告知自己当前处于哪个构建阶段。当前阶段会显示在 `nix` 的进度指示器中。
 
-  - In Linux sandbox builds, we
-    [now](https://github.com/NixOS/nix/commit/a2d92bb20e82a0957067ede60e91fab256948b41)
-    provide a default `/bin/sh` (namely `ash` from BusyBox).
+  - 在 Linux 沙箱构建中，我们[现在](https://github.com/NixOS/nix/commit/a2d92bb20e82a0957067ede60e91fab256948b41)提供一个默认的 `/bin/sh`（即 BusyBox 的 `ash`）。
 
-  - In structured attribute mode, `exportReferencesGraph`
-    [exports](https://github.com/NixOS/nix/commit/c2b0d8749f7e77afc1c4b3e8dd36b7ee9720af4a)
-    extended information about closures in JSON format. In particular,
-    it includes the sizes and hashes of paths. This is primarily useful
-    for NixOS image builders.
+  - 在结构化属性模式下，`exportReferencesGraph` 会以 JSON 格式[导出](https://github.com/NixOS/nix/commit/c2b0d8749f7e77afc1c4b3e8dd36b7ee9720af4a)关于 closure 的扩展信息。特别是，它包含路径的大小和哈希。这对 NixOS 镜像构建器尤其有用。
 
-  - Builds are
-    [now](https://github.com/NixOS/nix/commit/21948deed99a3295e4d5666e027a6ca42dc00b40)
-    killed as soon as Nix receives EOF on the builder’s stdout or
-    stderr. This fixes a bug that allowed builds to hang Nix
-    indefinitely, regardless of timeouts.
+  - 一旦 Nix 在构建器的 stdout 或 stderr 上收到 EOF，构建[现在](https://github.com/NixOS/nix/commit/21948deed99a3295e4d5666e027a6ca42dc00b40)会被立即杀死。这修复了一个允许构建无视超时地把 Nix 无限期挂起的缺陷。
 
-  - The `sandbox-paths` configuration option can now specify optional
-    paths by appending a `?`, e.g. `/dev/nvidiactl?` will bind-mount
-    `/dev/nvidiactl` only if it exists.
+  - `sandbox-paths` 配置选项现在可以通过追加 `?` 来指定可选路径，例如 `/dev/nvidiactl?` 只有在 `/dev/nvidiactl` 存在时才会把它 bind-mount 进来。
 
-  - On Linux, builds are now executed in a user namespace with UID 1000
-    and GID 100.
+  - 在 Linux 上，构建现在在 UID 1000、GID 100 的 user namespace 中执行。
 
-A number of significant internal changes were made:
+内部做出了若干重大变更：
 
-  - Nix no longer depends on Perl and all Perl components have been
-    rewritten in C++ or removed. The Perl bindings that used to be part
-    of Nix have been moved to a separate package, `nix-perl`.
+  - Nix 不再依赖 Perl，所有 Perl 组件都已被用 C++ 重写或移除。原先属于 Nix 的 Perl 绑定已被移至独立的软件包 `nix-perl`。
 
-  - All `Store` classes are now thread-safe. `RemoteStore` supports
-    multiple concurrent connections to the daemon. This is primarily
-    useful in multi-threaded programs such as `hydra-queue-runner`.
+  - 所有 `Store` 类现在都是线程安全的。`RemoteStore` 支持到 daemon 的多个并发连接。这在诸如 `hydra-queue-runner` 之类的多线程程序中尤其有用。
 
-This release has contributions from Adrien Devresse, Alexander Ried,
-Alex Cruice, Alexey Shmalko, AmineChikhaoui, Andy Wingo, Aneesh Agrawal,
-Anthony Cowley, Armijn Hemel, aszlig, Ben Gamari, Benjamin Hipple,
-Benjamin Staffin, Benno Fünfstück, Bjørn Forsman, Brian McKenna, Charles
-Strahan, Chase Adams, Chris Martin, Christian Theune, Chris Warburton,
-Daiderd Jordan, Dan Connolly, Daniel Peebles, Dan Peebles, davidak,
-David McFarland, Dmitry Kalinkin, Domen Kožar, Eelco Dolstra, Emery
-Hemingway, Eric Litak, Eric Wolf, Fabian Schmitthenner, Frederik
-Rietdijk, Gabriel Gonzalez, Giorgio Gallo, Graham Christensen, Guillaume
-Maudoux, Harmen, Iavael, James Broadhead, James Earl Douglas, Janus
-Troelsen, Jeremy Shaw, Joachim Schiele, Joe Hermaszewski, Joel Moberg,
-Johannes 'fish' Ziemke, Jörg Thalheim, Jude Taylor, kballou, Keshav
-Kini, Kjetil Orbekk, Langston Barrett, Linus Heckemann, Ludovic Courtès,
-Manav Rathi, Marc Scholten, Markus Hauck, Matt Audesse, Matthew Bauer,
-Matthias Beyer, Matthieu Coudron, N1X, Nathan Zadoks, Neil Mayhew,
-Nicolas B. Pierron, Niklas Hambüchen, Nikolay Amiantov, Ole Jørgen
-Brønner, Orivej Desh, Peter Simons, Peter Stuart, Pyry Jahkola, regnat,
-Renzo Carbonara, Rhys, Robert Vollmert, Scott Olson, Scott R. Parish,
-Sergei Trofimovich, Shea Levy, Sheena Artrip, Spencer Baugh, Stefan
-Junker, Susan Potter, Thomas Tuegel, Timothy Allen, Tristan Hume, Tuomas
-Tynkkynen, tv, Tyson Whitehead, Vladimír Čunát, Will Dietz, wmertens,
-Wout Mertens, zimbatm and Zoran Plesivčak.
+本版本包含 Adrien Devresse、Alexander Ried、Alex Cruice、Alexey Shmalko、AmineChikhaoui、Andy Wingo、Aneesh Agrawal、Anthony Cowley、Armijn Hemel、aszlig、Ben Gamari、Benjamin Hipple、Benjamin Staffin、Benno Fünfstück、Bjørn Forsman、Brian McKenna、Charles Strahan、Chase Adams、Chris Martin、Christian Theune、Chris Warburton、Daiderd Jordan、Dan Connolly、Daniel Peebles、Dan Peebles、davidak、David McFarland、Dmitry Kalinkin、Domen Kožar、Eelco Dolstra、Emery Hemingway、Eric Litak、Eric Wolf、Fabian Schmitthenner、Frederik Rietdijk、Gabriel Gonzalez、Giorgio Gallo、Graham Christensen、Guillaume Maudoux、Harmen、Iavael、James Broadhead、James Earl Douglas、Janus Troelsen、Jeremy Shaw、Joachim Schiele、Joe Hermaszewski、Joel Moberg、Johannes 'fish' Ziemke、Jörg Thalheim、Jude Taylor、kballou、Keshav Kini、Kjetil Orbekk、Langston Barrett、Linus Heckemann、Ludovic Courtès、Manav Rathi、Marc Scholten、Markus Hauck、Matt Audesse、Matthew Bauer、Matthias Beyer、Matthieu Coudron、N1X、Nathan Zadoks、Neil Mayhew、Nicolas B. Pierron、Niklas Hambüchen、Nikolay Amiantov、Ole Jørgen Brønner、Orivej Desh、Peter Simons、Peter Stuart、Pyry Jahkola、regnat、Renzo Carbonara、Rhys、Robert Vollmert、Scott Olson、Scott R. Parish、Sergei Trofimovich、Shea Levy、Sheena Artrip、Spencer Baugh、Stefan Junker、Susan Potter、Thomas Tuegel、Timothy Allen、Tristan Hume、Tuomas Tynkkynen、tv、Tyson Whitehead、Vladimír Čunát、Will Dietz、wmertens、Wout Mertens、zimbatm 和 Zoran Plesivčak 的贡献。

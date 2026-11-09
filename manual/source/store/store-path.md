@@ -1,11 +1,11 @@
-# Store Path and Store Directory
+# 存储路径与 store 目录
 
-Nix's [store object] and [file system object] data models are minimal and abstract.
-But to actually be used by software, store objects need to be made available through the operating system's file system.
+Nix 的[存储对象]和[文件系统对象]数据模型是极简且抽象的。
+但要让软件真正使用存储对象，就需要通过操作系统的文件系统把它们提供出来。
 
-This is done by exposing all the store objects in a single *[store directory][store directory path]*.
-Every entry in that directory is a *[store path base name]* pointing to a store object.
-Store objects exposed in this way can then be referenced by *[store paths][store path]*.
+具体做法是把所有存储对象呈现在同一个 *[store 目录][store directory path]*中。
+该目录中的每个条目都是一个指向存储对象的 *[store path base name]*。
+以这种方式呈现的存储对象随后就可以通过 *[存储路径][store path]*来引用。
 
 [store object]: ./store-object.md
 [file system object]: ./file-system-object.md
@@ -15,32 +15,32 @@ Store objects exposed in this way can then be referenced by *[store paths][store
 
 ## Store Path Base Name {#base-name}
 
-Nix implements references to store objects as *store path base names*.
+Nix 把对存储对象的引用实现为 *store path base name*（存储路径基名）。
 
-Think of a store path base name as an [opaque], [unique identifier]:
-The only way to obtain a store path base name is by adding or building store objects.
-A store path base name will always reference exactly one store object.
+可以把 store path base name 想成一个[不透明的][opaque]、[唯一的标识符][unique identifier]：
+获得 store path base name 的唯一途径是添加或构建存储对象。
+一个 store path base name 总是恰好引用一个存储对象。
 
 [opaque]: https://en.m.wikipedia.org/wiki/Opaque_data_type
 [unique identifier]: https://en.m.wikipedia.org/wiki/Unique_identifier
 
-Store path base names are pairs of
+store path base name 是一个二元组：
 
-- A 20-byte [digest]{#digest} for identification
-- A symbolic [name]{#name} for people to read
+- 一个用于标识的 20 字节[摘要]{#digest}
+- 一个供人阅读的符号化[名称]{#name}
 
-> **Example**
+> **示例**
 >
-> - Digest: `q06x3jll2yfzckz2bzqak089p43ixkkq`
-> - Name:   `firefox-33.1`
+> - Digest（摘要）：`q06x3jll2yfzckz2bzqak089p43ixkkq`
+> - Name（名称）：  `firefox-33.1`
 
-A store path base name is rendered to a string as the concatenation of
+store path base name 渲染为字符串时是以下各部分的拼接：
 
-- Digest rendered in [Nix32], a variant of [Base32] (20 hash bytes become 32 ASCII characters)
-- Hyphen (`-`)
-- Name
+- 以 [Nix32]（[Base32] 的一个变体）渲染的摘要（20 个哈希字节变成 32 个 ASCII 字符）
+- 连字符（`-`）
+- 名称
 
-> **Example**
+> **示例**
 >
 > ```
 > q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1
@@ -51,31 +51,31 @@ A store path base name is rendered to a string as the concatenation of
 [Nix32]: @docroot@/protocols/nix32.md
 [Base32]: https://en.wikipedia.org/wiki/Base32
 
-Exactly how the digest is calculated depends on the type of store object being referenced.
-Store path digests are *supposed* to be opaque, and so for most operations, it is not necessary to know the details.
-That said, the manual has a full [specification of store path digests](@docroot@/protocols/store-path.md).
+摘要究竟如何计算，取决于被引用存储对象的类型。
+存储路径摘要*本应*是不透明的，因此对大多数操作而言，无需了解细节。
+话虽如此，本手册仍提供了完整的[存储路径摘要规范](@docroot@/protocols/store-path.md)。
 
-## Store Directory Path
+## Store 目录路径（Store Directory Path）
 
-Every [Nix store] has a store directory path.
-This is an absolute, lexically canonical (not containing any `..`, `.`, or similar) path which points to the directory where all store objects are to be found.
+每个 [Nix store] 都有一个 store 目录路径。
+这是一个绝对路径、词法上规范化（不含任何 `..`、`.` 或类似内容）的路径，指向存放所有存储对象的目录。
 
 [Nix store]: ./index.md
 
-> **Note**
+> **注意**
 >
-> The store directory defaults to `/nix/store`, but is in principle arbitrary.
+> store 目录默认为 `/nix/store`，但原则上可以是任意路径。
 
-## Store Path
+## 存储路径（Store Path）
 
-A store path is the pair of a store directory path and a [store path base name].
-It is rendered to a file system path as the concatenation of
+存储路径是 store 目录路径与一个 [store path base name] 的二元组。
+它渲染为文件系统路径时是以下各部分的拼接：
 
-- [Store directory path] (typically `/nix/store`)
-- Path separator (`/`)
-- The [store path base name]
+- [Store 目录路径]（通常为 `/nix/store`）
+- 路径分隔符（`/`）
+- [store path base name]
 
-> **Example**
+> **示例**
 >
 > ```
 >   /nix/store/q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1
@@ -83,61 +83,61 @@ It is rendered to a file system path as the concatenation of
 > store directory            digest                 name
 > ```
 
-When we have fixed a given store, or given store directory path (that all the stores in use share), the abstract syntax for store paths and the abstract syntax for store path base names coincide: the store directory path is known from context, so only the other two fields vary from one store path to the next.
+当我们固定了某个给定的 store，或某个给定的 store 目录路径（所有在用的 store 都共享它）时，存储路径的抽象语法与 store path base name 的抽象语法就重合了：store 目录路径可由上下文得知，因此各存储路径之间只有另外两个字段在变化。
 
-## Exposing Store Objects in OS File Systems {#exposing}
+## 在操作系统文件系统中呈现存储对象 {#exposing}
 
-Not every store can be accessed through the file system.
-But if the store has a file system representation, the following should be true:
+并非每个 store 都能通过文件系统访问。
+但如果某个 store 有文件系统表示，以下性质应当成立：
 
-- The store directory path is canonical: no prefix of the path (i.e. path of the first *n* path segments) points to a symlink.
-  In other words, the store directory can be looked up from the store directory path without following any symlinks.
-  (This condition is a separate condition in addition to the "lexical canonicity" described above, which is a property of just the path itself.
-  This (regular) "canonicity" is a property about the path and the filesystem it navigates jointly.)
+- store 目录路径是规范的：路径的任何前缀（即前 *n* 个路径段构成的路径）都不指向符号链接。
+  换言之，可以在不跟随任何符号链接的情况下从 store 目录路径查找到 store 目录。
+  （这个条件是独立于上文所述"词法规范性"之外的另一个条件，后者只是路径本身的属性。
+  而这个（常规的）"规范性"是关于路径与其所穿越的文件系统 jointly 的属性。）
 
-  > **Note**
+  > **注意**
   >
-  > The [`allow-symlinked-store`](@docroot@/command-ref/conf-file.md#conf-allow-symlinked-store) setting can be used to relax this requirement.
+  > [`allow-symlinked-store`](@docroot@/command-ref/conf-file.md#conf-allow-symlinked-store) 设置可用于放宽这一要求。
 
-- The store directory path in fact points to a directory.
+- store 目录路径实际上指向一个目录。
 
-- The store directory contains, for every store object in the store, the [file system object] of that store object at the (rendered) [store path base name].
-  The permissions and other metadata for these files in the store directory is in the normal form described in [Exposing in OS file systems](./file-system-object/os-file-system.md).
+- store 目录为 store 中的每个存储对象，在（渲染后的）[store path base name] 处包含该存储对象的[文件系统对象]。
+  store 目录中这些文件的权限和其他元数据处于[在操作系统文件系统中呈现](./file-system-object/os-file-system.md)所述的规范形式。
 
-The above properties mean that the following file accesses will work.
-Suppose we have a store available on the file system per the above rules, and `q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1` is the store path base name of a store object in that store.
+上述性质意味着以下文件访问操作能够成功。
+假设我们有一个按上述规则可在文件系统上访问的 store，且 `q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1` 是该 store 中某个存储对象的 store path base name。
 
-- Suppose that the store directory (path) is `/foo/bar`.
-  Then, `/foo/bar/q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1` exists and is the file system object of that store object.
+- 假设 store 目录（路径）为 `/foo/bar`。
+  那么 `/foo/bar/q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1` 存在，且就是该存储对象的文件系统对象。
 
-- Suppose that we don't know what the store directory path of the store is, but we do have a capability `storeDir` to the store directory on the file system.
-  (This would be a "file descriptor" on Unix, or a "file handle" on Windows.)
-  Then (using the Unix notation for this):
+- 假设我们不知道该 store 的 store 目录路径是什么，但确实持有一个指向文件系统上 store 目录的能力（capability）`storeDir`。
+  （在 Unix 上这是一个"文件描述符"，在 Windows 上是一个"文件句柄"。）
+  那么（此处使用 Unix 记法）：
   ```
   openat(storeDir, "q06x3jll2yfzckz2bzqak089p43ixkkq-firefox-33.1", O_NOFOLLOW)
   ```
-  will succeed (so long as the file system object is not a symlink), and the yielded capability will point to the file system object of that store object.
+  将会成功（只要该文件系统对象不是符号链接），且得到的能力将指向该存储对象的文件系统对象。
 
-  (The behavior for symlinks is harder to specify because of limitations in POSIX.)
+  （由于 POSIX 的限制，符号链接情况下的行为较难精确规定。）
 
-## Relocating store objects
+## 迁移存储对象
 
-The inclusion of the store directory path in the full rendered store path means that the full rendered store path is not just derived from the referenced store object itself, but depends on the store that the store object is in.
-(And actually, all of the currently-supported ways of computing the digest of a store path also depend on the store directory path, as described in the [specification of store path digests](@docroot@/protocols/store-path.md).
-So this is also true even just for store path base names, in general.)
+完整渲染的存储路径中包含 store 目录路径，意味着完整渲染的存储路径并非仅由被引用的存储对象本身派生，而是还取决于该存储对象所在的 store。
+（实际上，当前所有受支持的存储路径摘要计算方式也都依赖 store 目录路径，参见[存储路径摘要规范](@docroot@/protocols/store-path.md)。
+所以一般来说，即使只看 store path base name 也是如此。）
 
-It is therefore important to consider which store a given store object belongs to:
-Files in the store object can contain store paths, and processes may read these paths.
-Nix can only guarantee referential integrity if store paths do not cross store boundaries.
+因此，考虑某个给定存储对象属于哪个 store 十分重要：
+存储对象中的文件可以包含存储路径，而进程可能会读取这些路径。
+只有当存储路径不跨越 store 边界时，Nix 才能保证引用完整性。
 
-One can only copy store objects to a different store if
+只有在以下情况下，才能把存储对象复制到另一个 store：
 
-- The source and target stores' directories match
+- 源 store 与目标 store 的目录相匹配
 
-  or
+  或者
 
-- The store object in question has no references, that is, contains no store paths
+- 所论存储对象没有引用，即不包含任何存储路径
 
-One cannot copy a store object to a store with a different store directory.
-Instead, it has to be rebuilt, together with all its dependencies.
-It is in general not enough to replace the store directory string in file contents, as this may render executables unusable by invalidating their internal offsets or checksums.
+存储对象无法复制到 store 目录不同的 store。
+相反，它必须连同其全部依赖一起重新构建。
+一般来说，仅仅替换文件内容中的 store 目录字符串是不够的，因为这可能使内部偏移或校验和失效，导致可执行文件无法使用。

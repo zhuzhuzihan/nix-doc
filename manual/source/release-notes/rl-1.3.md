@@ -1,10 +1,5 @@
 # Release 1.3 (2013-01-04)
 
-This is primarily a bug fix release. When this version is first run on
-Linux, it removes any immutable bits from the Nix store and increases
-the schema version of the Nix store. (The previous release removed
-support for setting the immutable bit; this release clears any remaining
-immutable bits to make certain operations more efficient.)
+这主要是一个修复缺陷的版本。在 Linux 上首次运行该版本时，它会移除 Nix store 中所有不可变位（immutable bit），并提升 Nix store 的 schema 版本。（上一个版本已移除对设置不可变位的支持；本版本会清除残留的不可变位，以使某些操作更高效。）
 
-This release has contributions from Eelco Dolstra and Stuart
-Pernsteiner.
+本版本包含 Eelco Dolstra 和 Stuart Pernsteiner 的贡献。

@@ -1,120 +1,120 @@
-# Derivation Outputs and Types of Derivations
+# Derivation 输出与 derivation 的类型
 
-As stated on the [main pages on derivations](../index.md#store-derivation),
-a derivation produces [store objects](@docroot@/store/store-object.md), which are known as the *outputs* of the derivation.
-Indeed, the entire point of derivations is to produce these outputs, and to reliably and reproducibly produce these derivations each time the derivation is run.
+正如 [derivation 主页面](../index.md#store-derivation)所述，
+derivation 产出[存储对象](@docroot@/store/store-object.md)，它们被称为该 derivation 的*输出*。
+的确，derivation 的全部意义就在于产出这些输出，并在每次运行 derivation 时可靠且可复现地产出它们。
 
-One of the parts of a derivation is its *outputs specification*, which specifies certain information about the outputs the derivation produces when run.
-The outputs specification is a map, from names to specifications for individual outputs.
+derivation 的组成部分之一是它的*输出规格*，它指明 derivation 运行时所产出输出的某些信息。
+输出规格是一个映射，从名称到单个输出的规格。
 
-## Output Names {#outputs}
+## 输出名称 {#outputs}
 
-Output names can be any string which is also a valid [store path name](@docroot@/store/store-path.md#name).
-The name mapped to each output specification is not actually the name of the output.
-In the general case, the output store object has name `derivationName + "-" + outputSpecName`, not any other metadata about it.
-However, an output spec named "out" describes and output store object whose name is just the derivation name.
+输出名称可以是任何同时是有效[存储路径名称](@docroot@/store/store-path.md#name)的字符串。
+映射到每个输出规格的名称实际上并不是输出的名称。
+在一般情况下，输出存储对象的名称是 `derivationName + "-" + outputSpecName`，而非关于它的其他任何元数据。
+不过，名为 "out" 的输出规格所描述的输出存储对象，其名称就是 derivation 的名称本身。
 
-> **Example**
+> **示例**
 >
-> A derivation is named `hello`, and has two outputs, `out`, and `dev`
+> 一个 derivation 名为 `hello`，有两个输出：`out` 和 `dev`：
 >
-> - The derivation's path will be: `/nix/store/<hash>-hello.drv`.
+> - 该 derivation 的路径将是：`/nix/store/<hash>-hello.drv`。
 >
-> - The store path of `out` will be: `/nix/store/<hash>-hello`.
+> - `out` 的存储路径将是：`/nix/store/<hash>-hello`。
 >
-> - The store path of `dev` will be: `/nix/store/<hash>-hello-dev`.
+> - `dev` 的存储路径将是：`/nix/store/<hash>-hello-dev`。
 
-The outputs are the derivations are the [store objects](@docroot@/store/store-object.md) it is obligated to produce.
+输出就是 derivation 有义务产出的那些[存储对象](@docroot@/store/store-object.md)。
 
-> **Note**
+> **注意**
 >
-> The formal terminology here is somewhat at odds with everyday communication in the Nix community today.
-> "output" in casual usage tends to refer to either to the actual output store object, or the notional output spec, depending on context.
+> 这里的正式术语与如今 Nix 社区的日常用语有些出入。
+> 在随意场合，"output" 既可以指实际的输出存储对象，也可以指名义上的输出规格，视上下文而定。
 >
-> For example "hello's `dev` output" means the store object referred to by the store path `/nix/store/<hash>-hello-dev`.
-> It is unusual to call this the "`hello-dev` output", even though `hello-dev` is the actual name of that store object.
+> 例如 "hello 的 `dev` 输出"指的是存储路径 `/nix/store/<hash>-hello-dev` 所指的存储对象。
+> 人们通常不会把它称为 "`hello-dev` 输出"，尽管 `hello-dev` 才是该存储对象的实际名称。
 
-## Types of output addressing
+## 输出寻址的类型
 
-The main information contained in an output specification is how the derivation output is addressed.
-In particular, the specification decides:
+输出规格所包含的主要信息是 derivation 输出的寻址方式。
+特别地，该规格决定：
 
-- whether the output is [content-addressed](./content-address.md) or [input-addressed](./input-address.md)
+- 输出是[内容寻址](./content-address.md)还是[输入寻址](./input-address.md)
 
-- if the content is content-addressed, how is it content addressed
+- 如果是内容寻址的，采用何种内容寻址方式
 
-- if the content is content-addressed, [what is its content address](./content-address.md#fixed) (and thus what is its [store path])
+- 如果是内容寻址的，[其内容地址是什么](./content-address.md#fixed)（从而其[存储路径]是什么）
 
-## Output checks {#output-checks}
+## 输出检查 {#output-checks}
 
-In addition to the output specification above, a derivation may mandate additional *checks* on its outputs:
-properties that must hold for the produced store objects in order for the build to be considered successful.
-Checks may be specified separately for each output, or once for all outputs of the derivation.
+除上述输出规格之外，derivation 还可以对其输出强制额外的*检查*：
+即为了使构建被视为成功，产出的存储对象必须满足的性质。
+检查可以按输出分别指定，也可以对 derivation 的所有输出统一指定一次。
 
-### Reference checks
+### 引用检查
 
-The main checks constrain the [references][reference] of an output.
-These checks vary along two axes, yielding 4 possible checks:
+主要的检查约束一个输出的[引用][reference]。
+这些检查沿两个维度变化，共有 4 种可能的检查：
 
-- Whether the check applies to the *direct* references of the output, or to its entire [closure] via *transitive* references ([requisites][requisite]).
+- 检查是作用于输出的*直接*引用，还是作用于其经由*传递*引用构成的整个[闭包]（[必需项][requisite]）。
 
-- Whether the check *allows* a set of references (every reference must be a member of the set, though not every member needs to be referenced), or *disallows* a set of references (no reference may be a member of the set).
+- 检查是*允许*一组引用（每个引用都必须是该集合的成员，但并非每个成员都需要被引用），还是*禁止*一组引用（任何引用都不得是该集合的成员）。
 
-The four checks are:
+四种检查分别是：
 
-- [*allowed references*]{#allowed-references}:
-  An optional set; the output's references must be a subset of it.
-  When the set is absent the check is skipped, i.e. every reference is allowed.
+- [*allowed references*（允许的引用）]{#allowed-references}：
+  一个可选集合；输出的引用必须是它的子集。
+  集合缺省时跳过该检查，即允许任何引用。
 
-  For example, the empty set enforces that the output has no runtime dependencies at all.
+  例如，空集合强制输出完全没有运行时依赖。
 
-  > **Usage note**
+  > **用法提示**
   >
-  > This is used in NixOS to check that generated files such as initial ramdisks for booting Linux don't have accidental dependencies on other paths in the Nix store.
+  > NixOS 用它来检查生成的文件（例如用于引导 Linux 的初始内存盘）不会意外依赖 Nix store 中的其他路径。
 
-- [*allowed requisites*]{#allowed-requisites}:
-  Like *allowed references*, but applying to the whole closure of the output:
-  every transitive dependency must be a member of the set.
+- [*allowed requisites*（允许的必需项）]{#allowed-requisites}：
+  与 *allowed references* 类似，但作用于输出的整个闭包：
+  每个传递依赖都必须是该集合的成员。
 
-- [*disallowed references*]{#disallowed-references}:
-  A set of which no member may be a direct reference of the output.
-  (There is no need for this check to be optional: disallowing nothing is the same as skipping the check.)
+- [*disallowed references*（禁止的引用）]{#disallowed-references}：
+  一个集合，其任何成员都不得是输出的直接引用。
+  （这个检查无需可选：禁止空集等同于跳过检查。）
 
-- [*disallowed requisites*]{#disallowed-requisites}:
-  Like *disallowed references*, but applying to the whole closure of the output:
-  no member of the set may appear anywhere in the output's transitive dependencies.
+- [*disallowed requisites*（禁止的必需项）]{#disallowed-requisites}：
+  与 *disallowed references* 类似，但作用于输出的整个闭包：
+  该集合的任何成员不得出现在输出的传递依赖中的任何位置。
 
-The references of a store object are always store paths.
-However, if every element of these sets had to be a store path, it would be hard-to-impossible to constrain references from outputs *to other outputs* of the same derivation, because in general the store paths of outputs are not known until the derivation is built.
-For this reason, an element of these sets may also be an *output name* of the derivation being checked, standing for the store path of that output, whatever it turns out to be.
-For example, an output can be permitted to reference itself by including its own name in its *allowed references*.
+存储对象的引用总是存储路径。
+然而，如果这些集合的每个元素都必须是存储路径，那么要约束输出对*同一 derivation 的其他输出*的引用将很难甚至不可能，因为一般来说输出的存储路径在 derivation 构建之前是未知的。
+为此，这些集合的元素也可以是被检查 derivation 的一个*输出名称*，代表该输出的存储路径，无论它最终是什么。
+例如，可以通过把输出自己的名称放进它的 *allowed references*，允许输出引用自身。
 
-### Size checks
+### 大小检查
 
-- [*max size*]{#max-size}:
-  The [NAR size][nar size] of the output's store object may not exceed the given number of bytes.
+- [*max size*（最大大小）]{#max-size}：
+  输出的存储对象的 [NAR size][nar size] 不得超过给定的字节数。
 
-- [*max closure size*]{#max-closure-size}:
-  The [closure NAR size][closure nar size] of the output's store object may not exceed the given number of bytes.
+- [*max closure size*（最大闭包大小）]{#max-closure-size}：
+  输出的存储对象的 [closure NAR size][closure nar size] 不得超过给定的字节数。
 
-### Self-reference handling
+### 自引用处理
 
-- [*ignore self references*]{#ignore-self-refs}:
-  Whether references of an output to itself are exempted from the reference checks above.
+- [*ignore self references*（忽略自引用）]{#ignore-self-refs}：
+  输出对自身的引用是否豁免于上述引用检查。
 
-## Reference scanning {#reference-scanning}
+## 引用扫描 {#reference-scanning}
 
-Besides the output checks, there is one more per-output setting.
-It is *not* a check — nothing is verified about the produced store object — but it is configured in the same per-output manner, so it is documented here:
+除输出检查之外，还有一个按输出配置的设置。
+它*不是*检查——对产出的存储对象不作任何校验——但它以同样的按输出方式配置，因此在这里记述：
 
-- [*unsafe discard references*]{#unsafe-discard-references}:
-  Disables [scanning the output for run-time references](../../building.md#scanning-for-references) altogether.
-  The output is then registered as having no references, regardless of its contents.
+- [*unsafe discard references*（不安全地丢弃引用）]{#unsafe-discard-references}：
+  完全禁用[扫描输出的运行时引用](../../building.md#scanning-for-references)。
+  之后该输出将被登记为没有任何引用，无论其内容如何。
 
-  This is useful, for example, when generating self-contained filesystem images with their own embedded Nix store:
-  hashes found inside such an image refer to the embedded store and not to the host's Nix store.
+  例如，在生成带有自身内嵌 Nix store 的自包含文件系统镜像时，这很有用：
+  此类镜像内部找到的哈希指向的是内嵌的 store，而不是宿主的 Nix store。
 
-  As the name suggests, this is unsafe: discarding references that are in fact needed at run time makes the closure incomplete, so copying the output elsewhere will not bring its dependencies along.
+  顾名思义，这是不安全的：丢弃运行时实际需要的引用会使闭包不完整，因此把输出复制到别处将不会带上其依赖。
 
 [closure]: @docroot@/glossary.md#gloss-closure
 [nar size]: @docroot@/store/store-object.md#nar-size
@@ -122,52 +122,52 @@ It is *not* a check — nothing is verified about the produced store object — 
 [reference]: @docroot@/glossary.md#gloss-reference
 [requisite]: @docroot@/store/store-object.md#references
 
-## Types of derivations
+## Derivation 的类型
 
-The sections on each type of derivation output addressing ended up discussing other attributes of the derivation besides its outputs, such as purity, scheduling, determinism, etc.
-This is no concidence; for the type of a derivation is in fact one-for-one with the type of its outputs:
+关于各类型 derivation 输出寻址的小节最终都讨论了 derivation 除输出之外的其他属性，例如纯性、调度、确定性等。
+这并非巧合；因为 derivation 的类型实际上与其输出的类型一一对应：
 
-- A derivation that produces *xyz-addressed* outputs is an *xyz-addressing* derivations.
+- 产出 *xyz-addressed* 输出的 derivation 是一个 *xyz-addressing* derivation。
 
-The rules for this are fairly concise:
+这方面的规则相当简洁：
 
-- All the outputs must be of the same type / use the same addressing
+- 所有输出必须是同一类型／使用同一寻址方式
 
-  - The derivation must have at least one output
+  - derivation 必须至少有一个输出
 
-  - Additionally, if the outputs are fixed content-addressed, there must be exactly one output, whose specification is mapped from the name `out`.
-    (The name `out` is special, according to the rules described above.
-    Having only one output and calling its specification `out` means the single output is effectively anonymous; the store path just has the derivation name.)
+  - 此外，如果输出是固定内容寻址的，则必须恰好有一个输出，其规格映射自名称 `out`。
+    （按照上文所述的规则，名称 `out` 是特殊的。
+    只有一个输出且把它的规格称为 `out`，意味着这个单一输出实际上是匿名的；存储路径只有 derivation 的名称。）
 
-    (This is an arbitrary restriction that could be lifted.)
+    （这是一个任意的限制，本可以取消。）
 
-- The output is either *fixed* or *floating*, indicating whether the store path is known prior to building it.
+- 输出要么是*固定的*（fixed），要么是*浮动的*（floating），表明存储路径在构建之前是否已知。
 
-  - With fixed content-addressing it is fixed.
+  - 固定内容寻址时是固定的。
 
-    > A *fixed content-addressing* derivation is also called a *fixed-output derivation*, since that is the only currently-implemented form of fixed-output addressing
+    > *固定内容寻址*的 derivation 也被称为*固定输出 derivation*（fixed-output derivation），因为它是当前唯一实现的固定输出寻址形式
 
-  - With floating content-addressing or input-addressing it is floating.
+  - 浮动内容寻址或输入寻址时是浮动的。
 
-  > Thus, historically with Nix, with no experimental features enabled, *all* outputs are fixed.
+  > 因此，历史上在 Nix 未启用任何实验性特性时，*所有*输出都是固定的。
 
-- The derivation may be *pure* or *impure*, indicating what read access to the outside world the [builder](../index.md#builder) has.
+- derivation 可以是*纯的*或*不纯的*，表明 [builder](../index.md#builder) 对外部世界的读访问权限。
 
-  - An input-addressing derivation *must* be pure.
+  - 输入寻址 derivation *必须*是纯的。
 
-    > If it is impure, we would have a large problem, because an input-addressed derivation always produces outputs with the same paths.
+    > 如果它是不纯的，就会有大麻烦，因为输入寻址 derivation 总是产出具有相同路径的输出。
 
 
-  - A content-addressing derivation may be pure or impure
+  - 内容寻址 derivation 可以是纯的或不纯的
 
-   - If it is impure, it may be fixed (typical), or it may be floating if the additional [`impure-derivations`][xp-feature-impure-derivations] experimental feature is enabled.
+   - 如果它是不纯的，可以是固定的（典型情况），或者在启用了额外的 [`impure-derivations`][xp-feature-impure-derivations] 实验性特性时是浮动的。
 
-   - If it is pure, it must be floating.
+   - 如果它是纯的，则必须是浮动的。
 
-   - Pure, fixed content-addressing derivations are not supported
+   - 纯的、固定内容寻址的 derivation 不受支持
 
-     > There is no use for this forth combination.
-     > The sole purpose of an output's store path being fixed is to support the derivation being impure.
+     > 这种第四种组合没有用处。
+     > 输出存储路径被固定的唯一目的，就是支持 derivation 可以是不纯的。
 
 [xp-feature-ca-derivations]: @docroot@/development/experimental-features.md#xp-feature-ca-derivations
 [xp-feature-git-hashing]: @docroot@/development/experimental-features.md#xp-feature-git-hashing

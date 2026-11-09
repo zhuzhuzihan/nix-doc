@@ -1,20 +1,20 @@
 {{#include deriving-path-v1-fixed.md}}
 
-## Examples
+## 示例
 
-### Constant
+### 常量
 
 ```json
 {{#include schema/deriving-path-v1/single_opaque.json}}
 ```
 
-### Output of static derivation
+### 静态 derivation 的输出
 
 ```json
 {{#include schema/deriving-path-v1/single_built.json}}
 ```
 
-### Output of dynamic derivation
+### 动态 derivation 的输出
 
 ```json
 {{#include schema/deriving-path-v1/single_built_built.json}}

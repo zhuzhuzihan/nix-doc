@@ -1,50 +1,50 @@
-# Content-addressing derivation outputs
+# 内容寻址 derivation 输出
 
-The content-addressing of an output only depends on that store object itself, not any other information external (such has how it was made, when it was made, etc.).
-As a consequence, a store object will be content-addressed the same way regardless of whether it was manually inserted into the store, outputted by some derivation, or outputted by a some other derivation.
+一个输出的内容寻址只取决于该存储对象本身，而不取决于任何外部信息（例如它是如何被制造的、何时被制造的等）。
+因此，无论一个存储对象是手动插入 store 的、由某个 derivation 输出的，还是由另一个 derivation 输出的，它都会以相同的方式被内容寻址。
 
-The output spec for a content-addressed output must contains the following field:
+内容寻址输出的输出规格必须包含以下字段：
 
-- *method*: how the data of the store object is digested into a content address
+- *method*：存储对象的数据如何被摘要为一个内容地址
 
-The possible choices of *method* are described in the [section on content-addressing store objects](@docroot@/store/store-object/content-address.md).
-Given the method, the output's name (computed from the derivation name and output spec mapping as described above), and the data of the store object, the output's store path will be computed as described in that section.
+*method* 的可能取值在[存储对象内容寻址一节](@docroot@/store/store-object/content-address.md)中描述。
+给定 method、输出的名称（按上文所述由 derivation 名称和输出规格映射计算得出）以及存储对象的数据，输出的存储路径将按该节所述计算。
 
-## Fixed-output content-addressing {#fixed}
+## 固定输出内容寻址 {#fixed}
 
-In this case the content address of the *fixed* in advanced by the derivation itself.
-In other words, when the derivation has finished [building](@docroot@/store/building.md), and the provisional output' content-address is computed as part of the process to turn it into a *bona fide* store object, the calculated content address must match that given in the derivation, or the build of that derivation will be deemed a failure.
+在这种情况下，内容地址由 derivation 本身*预先固定*。
+换言之，当该 derivation 完成[构建](@docroot@/store/building.md)后，临时输出的内容地址会在把它变成*真正的*存储对象的过程中被计算，计算出的内容地址必须与 derivation 中给定的相符，否则该 derivation 的构建将被判定为失败。
 
-The output spec for an output with a fixed content addresses additionally contains:
+带固定内容地址的输出的输出规格额外包含：
 
-- *hash*, the hash expected from digesting the store object's file system objects.
-  This hash may be of a freely-chosen hash algorithm (that Nix supports)
+- *hash*，即对存储对象的文件系统对象做摘要所期望得到的哈希。
+  该哈希可以采用自由选择的（Nix 所支持的）哈希算法
 
-> **Design note**
+> **设计说明**
 >
-> In principle, the output spec could also specify the references the store object should have, since the references and file system objects are equally parts of a content-addressed store object proper that contribute to its content-addressed.
-> However, at this time, the references are not done because all fixed content-addressed outputs are required to have no references (including no self-reference).
+> 原则上，输出规格也可以指明存储对象应当拥有的引用，因为引用和文件系统对象同样是内容寻址存储对象本体中对其内容地址有贡献的组成部分。
+> 然而目前没有这样做，因为所有固定内容寻址的输出都被要求没有任何引用（包括自引用）。
 >
-> Also in principle, rather than specifying the references and file system object data with separate hashes, a single hash that constraints both could be used.
-> This could be done with the final store path's digest, or better yet, the hash that will become the store path's digest before it is truncated.
+> 同样在原则上，与其用分开的哈希来分别约束引用和文件系统对象数据，也可以用一个同时约束两者的哈希。
+> 这可以用最终存储路径的摘要来实现，或者更好的是，用即将成为存储路径摘要、但尚未截断的哈希来实现。
 >
-> These possible future extensions are included to elucidate the core property of fixed-output content addressing --- that all parts of the output must be cryptographically fixed with one or more hashes --- separate from the particulars of the currently-supported store object content-addressing schemes.
+> 这里列出这些可能的未来扩展，是为了阐明固定输出内容寻址的核心性质——输出的所有部分都必须用一个或多个哈希以密码学方式固定下来——并把这一性质与当前受支持的存储对象内容寻址方案的细节区分开来。
 
-### Design rationale
+### 设计动机
 
-What is the purpose of fixing an output's content address in advanced?
-In abstract terms, the answer is carefully controlled impurity.
-Unlike a regular derivation, the [builder] executable of a derivation that produced fixed outputs has access to the network.
-The outputs' guaranteed content-addresses are supposed to mitigate the risk of the builder being given these capabilities;
-regardless of what the builder does *during* the build, it cannot influence downstream builds in unanticipated ways because all information it passed downstream flows through the outputs whose content-addresses are fixed.
+预先固定输出的内容地址有什么用处？
+抽象地说，答案是经过精心控制的不纯性。
+与常规 derivation 不同，产出固定输出的 derivation 的 [builder] 可执行文件可以访问网络。
+输出的有保证的内容地址正是为了缓解赋予构建器这些能力所带来的风险；
+无论构建器在构建*期间*做什么，它都无法以未预料的方式影响下游构建，因为它传给下游的所有信息都流经那些内容地址已被固定的输出。
 
 [builder]: @docroot@/store/derivation/index.md#builder
 
-In concrete terms, the purpose of this feature is fetching fixed input data like source code from the network.
-For example, consider a family of "fetch URL" derivations.
-These derivations download files from given URL.
-To ensure that the downloaded file has not been modified, each derivation must also specify a cryptographic hash of the file.
-For example,
+具体地说，该功能的用途是从网络抓取固定输入数据，例如源代码。
+例如，考虑一族"fetch URL" derivation。
+这些 derivation 从给定的 URL 下载文件。
+为确保下载的文件未被改动，每个 derivation 还必须指定该文件的密码学哈希。
+例如，
 
 ```jsonc
 {
@@ -63,9 +63,9 @@ For example,
 }
 ```
 
-It sometimes happens that the URL of the file changes,
-e.g., because servers are reorganised or no longer available.
-In these cases, we then must update the call to `fetchurl`, e.g.,
+有时文件的 URL 会变化，
+例如服务器重组或不再可用。
+在这些情况下，我们必须更新对 `fetchurl` 的调用，例如：
 
 ```diff
    "env": {
@@ -75,77 +75,77 @@ In these cases, we then must update the call to `fetchurl`, e.g.,
    },
 ```
 
-If a `fetchurl` derivation's outputs were [input-addressed][input addressing], the output paths of the derivation and of *all derivations depending on it* would change.
-For instance, if we were to change the URL of the Glibc source distribution in Nixpkgs (a package on which almost all other packages depend on Linux) massive rebuilds would be needed.
-This is unfortunate for a change which we know cannot have a real effect as it propagates upwards through the dependency graph.
+如果 `fetchurl` derivation 的输出是[输入寻址][input addressing]的，那么该 derivation 以及*所有依赖它的 derivation* 的输出路径都会改变。
+例如，如果我们修改 Nixpkgs 中 Glibc 源码分发的 URL（在 Linux 上几乎所有其他包都依赖这个包），就需要大规模重新构建。
+对于一个我们明知不会在沿依赖图向上传播时产生任何实际影响的变更来说，这很不幸。
 
-For content-addressed outputs (fixed or floating), on the other hand, the outputs' store path only depends on the derivation's name, data, and the `method` of the outputs' specs.
-The rest of the derivation is ignored for the purpose of computing the output path.
+而对于内容寻址的输出（固定或浮动），输出的存储路径只取决于 derivation 的名称、数据以及输出规格的 `method`。
+为计算输出路径，derivation 的其余部分被忽略。
 
-> **History Note**
+> **历史说明**
 >
-> Fixed content-addressing is especially important both today and historically as the *only* form of content-addressing that is stabilized.
-> This is why the rationale above contrasts it with [input addressing].
+> 固定内容寻址无论在今天还是历史上都格外重要，因为它是*唯一*一种已稳定的内容寻址形式。
+> 这也是为什么上面的动机部分把它与[输入寻址][input addressing]进行对比。
 
-## (Floating) Content-Addressing {#floating}
+## （浮动）内容寻址 {#floating}
 
-> **Warning**
-> This is part of an [experimental feature](@docroot@/development/experimental-features.md).
+> **警告**
+> 这属于某个[实验性特性](@docroot@/development/experimental-features.md)。
 >
-> To use this type of output addressing, you must enable the
-> [`ca-derivations`][xp-feature-ca-derivations] experimental feature.
-> For example, in [nix.conf](@docroot@/command-ref/conf-file.md) you could add:
+> 要使用这种类型的输出寻址，必须启用
+> [`ca-derivations`][xp-feature-ca-derivations] 实验性特性。
+> 例如，可以在 [nix.conf](@docroot@/command-ref/conf-file.md) 中添加：
 >
 > ```
 > extra-experimental-features = ca-derivations
 > ```
 
-With this experimemental feature enabled, derivation outputs can also be content-addressed *without* fixing in the output spec what the outputs' content address must be.
+启用该实验性特性后，derivation 输出也可以被内容寻址，而*无需*在输出规格中固定输出的内容地址必须是什么。
 
-### Purity
+### 纯性
 
-Because the derivation output is not fixed (just like with [input addressing]), the [builder] is not given any impure capabilities [^purity].
+因为 derivation 输出不是固定的（与[输入寻址][input addressing]一样），[builder] 不会被给予任何不纯能力 [^purity]。
 
-> **Configuration note**
+> **配置说明**
 >
-> Strictly speaking, the extent to which sandboxing and deprivilaging is possible varies with the environment Nix is running in.
-> Nix's configuration settings indicate what level of sandboxing is required or enabled.
-> Builds of derivations will fail if they request an absence of sandboxing which is not allowed.
-> Builds of derivations will also fail if the level of sandboxing specified in the configure exceeds what is possible in the given environment.
+> 严格来说，沙箱化与去特权化的可行程度随 Nix 的运行环境而异。
+> Nix 的配置设置指明要求或启用了何种程度的沙箱。
+> 如果 derivation 的构建请求了不被允许的无沙箱，构建将失败。
+> 如果配置中指定的沙箱程度超过了给定环境所能达到的程度，构建同样会失败。
 >
-> (The "environment", in this case, consists of attributes such as the Operating System Nix runs atop, along with the operating-system-specific privileges that Nix has been granted.
-> Because of how conventional operating systems like macos, Linux, etc. work, granting builders *fewer* privileges may ironically require that Nix be run with *more* privileges.)
+> （此处的"环境"由 Nix 所运行于其上的操作系统等属性，以及 Nix 被授予的操作系统特定权限构成。
+> 由于 macOS、Linux 等常规操作系统的工作方式，讽刺的是，给予构建器*更少*的权限可能反而要求 Nix 以*更多*权限运行。）
 
-That said, derivations producing floating content-addressed outputs may declare their builders as impure (like the builders of derivations producing fixed outputs).
-This is provisionally supported as part of the [`impure-derivations`][xp-feature-impure-derivations] experimental feature.
+话虽如此，产出浮动内容寻址输出的 derivation 可以把其构建器声明为不纯的（就像产出固定输出的 derivation 的构建器那样）。
+这目前作为 [`impure-derivations`][xp-feature-impure-derivations] 实验性特性的一部分得到临时支持。
 
-### Compatibility negotiation
+### 兼容性协商
 
-Any derivation producing a floating content-addressed output implicitly requires the `ca-derivations` [system feature](@docroot@/command-ref/conf-file.md#conf-system-features).
-This prevents scheduling the building of the derivation on a machine without the experimental feature enabled.
-Even once the experimental feature is stabilized, this is still useful in order to be allow using remote builder running odler versions of Nix, or alternative implementations that do not support floating content addressing.
+任何产出浮动内容寻址输出的 derivation 都隐式要求 `ca-derivations` [system feature](@docroot@/command-ref/conf-file.md#conf-system-features)。
+这可以避免把该 derivation 的构建调度到未启用该实验性特性的机器上。
+即使该实验性特性稳定之后，这仍然有用：可以允许使用运行较旧版本 Nix 的远程构建器，或不支持浮动内容寻址的其他实现。
 
-### Determinism
+### 确定性
 
-In the earlier [discussion of how self-references are handled when content-addressing store objects](@docroot@/store/store-object/content-address.html#self-references), it was pointed out that methods of producing store objects ought to be deterministic regardless of the choice of provisional store path.
-For store objects produced by manually inserting into the store to create a store object, the "method of production" is an informally concept --- formally, Nix has no idea where the store object came from, and content-addressing is crucial in order to ensure that the derivation is *intrinsically* tamper-proof.
-But for store objects produced by derivation, the "method is quite formal" --- the whole point of derivations is to be a formal notion of building, after all.
-In this case, we can elevate this informal property to a formal one.
+在早前[关于存储对象内容寻址时如何处理自引用的讨论](@docroot@/store/store-object/content-address.html#self-references)中指出，产出存储对象的方法应当是确定性的，与临时存储路径的选择无关。
+对于通过手动插入 store 来创建存储对象而产出的存储对象，"生产方法"是一个非正式概念——形式上，Nix 并不知道存储对象来自哪里，而内容寻址正是确保该 derivation *内在*防篡改的关键。
+但对于由 derivation 产出的存储对象，"生产方法是相当形式化的"——derivation 的全部意义就在于它是构建的形式化概念。
+在这种情况下，我们可以把这个非正式性质提升为形式化性质。
 
-A *deterministic* content-addressing derivation should produce outputs with the same content addresses:
+一个*确定性的*内容寻址 derivation 应当产出具有相同内容地址的输出：
 
-1. Every time the builder is run
+1. 每次运行构建器时
 
-  This is because either the builder is completely sandboxed, or because all any remaining impurities that leak inside the build sandbox are ignored by the builder and do not influence its behavior.
+  这是因为构建器要么被完全沙箱化，要么构建器会忽略所有泄露进构建沙箱的残余不纯性，它们不影响其行为。
 
-2. Regardless of the choice of any provisional outputs paths
+2. 无论选择了怎样的临时输出路径
 
-  Provisional store paths must be chosen for any output that has a self-reference.
-  The choice of provisional store path can be thought of as an impurity, since it is an arbitrary choice.
+  对任何有自引用的输出，必须选择临时存储路径。
+  临时存储路径的选择可以被视为一种不纯性，因为它是一个任意的选择。
 
-  If provisional outputs paths are deterministically chosen, we are in the first branch of part (1).
-  The builder the data it produces based on it in arbitrary ways, but this gets us closer to [input addressing].
-  Deterministically choosing the provisional path may be considered "complete sandboxing" by removing an impurity, but this is unsatisfactory
+  如果临时输出路径是被确定性选择的，我们就处于第 (1) 条的第一个分支。
+  构建器可以基于它以任意方式生成其产出的数据，但这让我们更接近[输入寻址][input addressing]。
+  确定性地选择临时路径可以通过消除一种不纯性而被视为"完全沙箱化"，但这并不令人满意
 
   <!--
 
@@ -154,37 +154,37 @@ A *deterministic* content-addressing derivation should produce outputs with the 
 
   -->
 
-  If provisional outputs paths are randomly chosen, we are in the second branch of part (1).
-  The builder *must* not let the random input affect the final outputs it produces, and multiple builds may be performed and the compared in order to ensure that this is in fact the case.
+  如果临时输出路径是随机选择的，我们就处于第 (1) 条的第二个分支。
+  构建器*不得*让这个随机输入影响其产出的最终输出，并且可以执行多次构建并加以比较，以确保情况确实如此。
 
-### Floating versus Fixed
+### 浮动与固定
 
-While the distinction between content- and input-addressing is one of *mechanism*, the distinction between fixed and floating content addressing is more one of *policy*.
-A fixed output that passes its content address check is just like a floating output.
-It is only in the potential for that check to fail that they are different.
+内容寻址与输入寻址的区别是*机制*层面的，而固定与浮动内容寻址的区别则更多是*策略*层面的。
+一个通过其内容地址检查的固定输出，与浮动输出别无二致。
+它们只在该检查可能失败这一点上有所不同。
 
-> **Design Note**
+> **设计说明**
 >
-> In a future world where floating content-addressing is also stable, we in principle no longer need separate [fixed](#fixed) content-addressing.
-> Instead, we could always use floating content-addressing, and separately assert the precise value content address of a given store object to be used as an input (of another derivation).
-> A stand-alone assertion object of this sort is not yet implemented, but its possible creation is tracked in [issue #11955](https://github.com/NixOS/nix/issues/11955).
+> 在浮动内容寻址也稳定之后的未来世界里，原则上我们不再需要单独的[固定](#fixed)内容寻址。
+> 相反，我们可以始终使用浮动内容寻址，并另行断言某个给定存储对象的精确内容地址值，以将其用作（另一个 derivation 的）输入。
+> 这种独立的断言对象尚未实现，其可能的创建在 [issue #11955](https://github.com/NixOS/nix/issues/11955) 中跟踪。
 >
-> In the current version of Nix, fixed outputs which fail their hash check are still registered as valid store objects, just not registered as outputs of the derivation which produced them.
-> This is an optimization that means if the wrong output hash is specified in a derivation, and then the derivation is recreated with the right output hash, derivation does not need to be rebuilt &mdash; avoiding downloading potentially large amounts of data twice.
-> This optimisation prefigures the design above:
-> If the output hash assertion was removed outside the derivation itself, Nix could additionally not only register that outputted store object like today, but could also make note that derivation did in fact successfully download some data.
-For example, for the "fetch URL" example above, making such a note is tantamount to recording what data is available at the time of download at the given URL.
-> It would only be when Nix subsequently tries to build something with that (refining our example) downloaded source code that Nix would be forced to check the output hash assertion, preventing it from e.g. building compromised malware.
+> 在当前的 Nix 版本中，未通过哈希检查的固定输出仍会被登记为有效的存储对象，只是不会被登记为产出它的 derivation 的输出。
+> 这是一种优化，意味着如果在 derivation 中指定了错误的输出哈希，随后又用正确的输出哈希重建该 derivation，那么 derivation 无需重新构建——避免把可能很大的数据下载两次。
+> 这一优化预示了上述设计：
+> 如果把输出哈希断言移到 derivation 之外，Nix 不仅可以像今天一样登记那个输出的存储对象，还可以额外记录该 derivation 确实成功下载了一些数据。
+例如，对上面的"fetch URL"示例，做这样的记录就相当于记录了在下载时刻给定 URL 上可用的数据。
+> 只有当 Nix 随后尝试用那个（细化我们的示例）下载的源代码构建某些东西时，Nix 才会被迫检查输出哈希断言，从而阻止它例如构建被攻陷的恶意软件。
 >
-> Recapping, Nix would
+> 总结一下，Nix 会
 >
-> 1. successfully download data
-> 2. insert that data into the store
-> 3. associate (presumably with some sort of expiration policy) the downloaded data with the derivation that downloaded it
+> 1. 成功下载数据
+> 2. 把数据插入 store
+> 3. 将下载的数据与下载它的 derivation 关联（大概配合某种过期策略）
 >
-> But only use the downloaded store object in subsequent derivations that depended upon the assertion if the assertion passed.
+> 但只在断言通过时，才在依赖该断言的后续 derivation 中使用下载的存储对象。
 >
-> This possible future extension is included to illustrate this distinction:
+> 这里列出这个可能的未来扩展，是为了说明上述区别：
 
 [input addressing]: ./input-address.md
 [xp-feature-ca-derivations]: @docroot@/development/experimental-features.md#xp-feature-ca-derivations

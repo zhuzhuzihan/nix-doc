@@ -1,28 +1,28 @@
-# String interpolation
+# 字符串插值
 
-String interpolation is a language feature where a [string], [path], or [attribute name][attribute set] can contain expressions enclosed in `${ }` (dollar-sign with curly brackets).
+字符串插值（string interpolation）是一项语言特性：[字符串]、[路径]或[属性名][attribute set]中可以包含以 `${ }`（美元符号加花括号）括起来的表达式。
 
-Such a construct is called *interpolated string*, and the expression inside is an [interpolated expression](#interpolated-expression).
+这样的结构称为*插值字符串（interpolated string）*，其中的表达式称为[插值表达式](#interpolated-expression)。
 
 [string]: ./types.md#type-string
 [path]: ./types.md#type-path
 [attribute set]: ./types.md#type-attrs
 
-> **Syntax**
+> **语法**
 >
 > *interpolation_element* → `${` *expression* `}`
 
-## Examples
+## 示例
 
-### String
+### 字符串
 
-Rather than writing
+与其写
 
 ```nix
 "--with-freetype2-library=" + freetype + "/lib"
 ```
 
-(where `freetype` is a [derivation expression]), you can instead write
+（其中 `freetype` 是一个 [derivation 表达式]），你可以改为写
 
 [derivation expression]: @docroot@/glossary.md#gloss-derivation-expression
 
@@ -30,9 +30,9 @@ Rather than writing
 "--with-freetype2-library=${freetype}/lib"
 ```
 
-The latter is automatically translated to the former.
+后者会被自动转换成前者。
 
-A more complicated example (from the Nix expression for [Qt](http://www.trolltech.com/products/qt)):
+一个更复杂的例子（来自 [Qt](http://www.trolltech.com/products/qt) 的 Nix 表达式）：
 
 ```nix
 configureFlags = "
@@ -44,12 +44,12 @@ configureFlags = "
 ";
 ```
 
-Note that Nix expressions and strings can be arbitrarily nested;
-in this case the outer string contains various interpolated expressions that themselves contain strings (e.g., `"-thread"`), some of which in turn contain interpolated expressions (e.g., `${mesa}`).
+注意，Nix 表达式和字符串可以任意嵌套；
+在这个例子中，外层字符串包含多个插值表达式，这些插值表达式本身又包含字符串（例如 `"-thread"`），其中一些字符串又包含插值表达式（例如 `${mesa}`）。
 
-To write a literal `${` in an regular string, escape it with a backslash (`\`).
+要在普通字符串中书写字面的 `${`，请用反斜杠（`\`）转义它。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > "echo \${PATH}"
@@ -57,9 +57,9 @@ To write a literal `${` in an regular string, escape it with a backslash (`\`).
 >
 >     "echo ${PATH}"
 
-To write a literal `${` in an indented string, escape it with two single quotes (`''`).
+要在缩进字符串中书写字面的 `${`，请用两个单引号（`''`）转义它。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > ''
@@ -69,12 +69,12 @@ To write a literal `${` in an indented string, escape it with two single quotes 
 >
 >     "echo ${PATH}\n"
 
-`$${` can be written literally in any string.
+`$${` 可以在任何字符串中按字面书写。
 
-> **Example**
+> **示例**
 >
-> In Make, `$` in file names or recipes is represented as `$$`, see [GNU `make`: Basics of Variable Reference](https://www.gnu.org/software/make/manual/html_node/Reference.html#Basics-of-Variable-References).
-> This can be expressed directly in the Nix language strings:
+> 在 Make 中，文件名或配方（recipe）中的 `$` 表示为 `$$`，参见 [GNU `make`：变量引用的基础](https://www.gnu.org/software/make/manual/html_node/Reference.html#Basics-of-Variable-References)。
+> 这可以直接在 Nix 语言的字符串中表达：
 >
 > ```nix
 > ''
@@ -86,38 +86,38 @@ To write a literal `${` in an indented string, escape it with two single quotes 
 >
 >     "MAKEVAR = Hello\nall:\n\t@export BASHVAR=world; echo $(MAKEVAR) $\${BASHVAR}\n"
 
-See the [documentation on strings][string] for details.
+详情参见[字符串文档][string]。
 
-### Path
+### 路径
 
-Rather than writing
+与其写
 
 ```nix
 ./. + "/" + foo + "-" + bar + ".nix"
 ```
 
-or
+或
 
 ```nix
 ./. + "/${foo}-${bar}.nix"
 ```
 
-you can instead write
+你可以改为写
 
 ```nix
 ./${foo}-${bar}.nix
 ```
 
-### Attribute name
+### 属性名
 
 <!--
 FIXME: these examples are redundant with the main page on attribute sets.
 figure out what to do about that
 -->
 
-Attribute names can be interpolated strings.
+属性名可以是插值字符串。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > let name = "foo"; in
@@ -126,9 +126,9 @@ Attribute names can be interpolated strings.
 >
 >     { foo = 123; }
 
-Attributes can be selected with interpolated strings.
+属性可以用插值字符串来选择。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > let name = "foo"; in
@@ -137,32 +137,32 @@ Attributes can be selected with interpolated strings.
 >
 >     123
 
-# Interpolated expression
+# 插值表达式
 
-An expression that is interpolated must evaluate to one of the following:
+被插值的表达式必须求值为以下之一：
 
-- a [string]
-- a [path]
-- an [attribute set] that has a `__toString` attribute or an `outPath` attribute
+- 一个[字符串]
+- 一个[路径]
+- 一个带有 `__toString` 属性或 `outPath` 属性的[属性集]
 
-  - `__toString` must be a function that takes the attribute set itself and returns a string
-  - `outPath` must be a string
+  - `__toString` 必须是一个函数，它接受属性集本身并返回一个字符串
+  - `outPath` 必须是一个字符串
 
-  This includes [derivation expressions](./derivations.md) or [flake inputs](@docroot@/command-ref/new-cli/nix3-flake.md#flake-inputs) (experimental).
+  这包括 [derivation 表达式](./derivations.md)和 [flake 输入](@docroot@/command-ref/new-cli/nix3-flake.md#flake-inputs)（实验性）。
 
-A string interpolates to itself.
+字符串插值为它自身。
 
-A path in an interpolated expression is first copied into the Nix store, and the resulting string is the [store path] of the newly created [store object](@docroot@/store/store-object.md).
+插值表达式中的路径会先被复制进 Nix store，所得的字符串就是新建的 [store object](@docroot@/store/store-object.md) 的[存储路径]。
 
 [store path]: @docroot@/store/store-path.md
 
-> **Example**
+> **示例**
 >
 > ```console
 > $ mkdir foo
 > ```
 >
-> Reference the empty directory in an interpolated expression:
+> 在插值表达式中引用这个空目录：
 >
 > ```nix
 > "${./foo}"
@@ -170,9 +170,9 @@ A path in an interpolated expression is first copied into the Nix store, and the
 >
 >     "/nix/store/2hhl2nz5v0khbn06ys82nrk99aa1xxdw-foo"
 
-A derivation interpolates to the [store path] of its first [output](./derivations.md#attr-outputs).
+derivation 插值为它的第一个[输出](./derivations.md#attr-outputs)的[存储路径]。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > let
@@ -183,9 +183,9 @@ A derivation interpolates to the [store path] of its first [output](./derivation
 >
 >     "/nix/store/qnlr7906z0mrl2syrkdbpicffq02nw07-hello-2.12.1"
 
-An attribute set interpolates to the return value of the function in the `__toString` applied to the attribute set itself.
+属性集插值为其中 `__toString` 函数作用于属性集本身的返回值。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > let
@@ -199,9 +199,9 @@ An attribute set interpolates to the return value of the function in the `__toSt
 >
 >     "2"
 
-An attribute set also interpolates to the value of its `outPath` attribute.
+属性集也可以插值为它的 `outPath` 属性的值。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > let
@@ -212,9 +212,9 @@ An attribute set also interpolates to the value of its `outPath` attribute.
 >
 >     "foo"
 
-If both `__toString` and `outPath` are present in an attribute set, `__toString` takes precedence.
+如果属性集中同时存在 `__toString` 和 `outPath`，则 `__toString` 优先。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > let
@@ -225,9 +225,9 @@ If both `__toString` and `outPath` are present in an attribute set, `__toString`
 >
 >     "yes"
 
-If neither is present, an error is thrown.
+如果两者都不存在，则会抛出错误。
 
-> **Example**
+> **示例**
 >
 > ```nix
 > let

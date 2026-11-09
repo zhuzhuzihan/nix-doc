@@ -1,14 +1,14 @@
-# Contributing
+# 贡献
 
-## Add a release note
+## 添加 release note
 
-`doc/manual/rl-next` contains release notes entries for all unreleased changes.
+`doc/manual/rl-next` 包含所有未发布变更的 release note 条目。
 
-User-visible changes should come with a release note.
+对用户可见的变更都应附带 release note。
 
-### Add an entry
+### 添加条目
 
-Here's what a complete entry looks like. The file name is not incorporated in the document.
+下面是一个完整条目的样子。文件名不会并入文档中。
 
 ```
 ---
@@ -24,57 +24,56 @@ Here's one or more paragraphs that describe the change.
 ```
 <!-- for the raw markdown readers: that means using @docroot@ -->
 
-Significant changes should add the following header, which moves them to the top.
+重大变更应添加以下头部，使其移到顶部。
 
 ```
 significance: significant
 ```
 
 <!-- Keep an eye on https://codeberg.org/fgaz/changelog-d/issues/1 -->
-See also the [format documentation](https://github.com/haskell/cabal/blob/master/CONTRIBUTING.md#changelog).
+另请参阅[格式文档](https://github.com/haskell/cabal/blob/master/CONTRIBUTING.md#changelog)。
 
-### Build process
+### 构建过程
 
-Releases have a precomputed `rl-MAJOR.MINOR.md`, and no `rl-next.md`.
+正式发布版本有一个预先生成的 `rl-MAJOR.MINOR.md`，并且没有 `rl-next.md`。
 
-## Branches
+## 分支
 
 - [`master`](https://github.com/NixOS/nix/commits/master)
 
-  The main development branch. All changes are approved and merged here.
-  When developing a change, create a branch based on the latest `master`.
+  主开发分支。所有变更都在此获得批准并合并。
+  开发变更时，请基于最新的 `master` 创建分支。
 
-  Maintainers try to [keep it in a release-worthy state](#reverting).
+  维护者会尽力[使其保持适合发布的状态](#reverting)。
 
 - [`maintenance-*.*`](https://github.com/NixOS/nix/branches/all?query=maintenance)
 
-  These branches are the subject of backports only, and are
-  also [kept](#reverting) in a release-worthy state.
+  这些分支仅用于回移（backport），同样[保持](#reverting)在适合发布的状态。
 
-  See [`maintainers/backporting.md`](https://github.com/NixOS/nix/blob/master/maintainers/backporting.md)
+  参见 [`maintainers/backporting.md`](https://github.com/NixOS/nix/blob/master/maintainers/backporting.md)
 
 - [`latest-release`](https://github.com/NixOS/nix/tree/latest-release)
 
-  The latest patch release of the latest minor version.
+  最新次要版本的最新补丁发布。
 
-  See [`maintainers/release-process.md`](https://github.com/NixOS/nix/blob/master/maintainers/release-process.md)
+  参见 [`maintainers/release-process.md`](https://github.com/NixOS/nix/blob/master/maintainers/release-process.md)
 
 - [`backport-*-to-*`](https://github.com/NixOS/nix/branches/all?query=backport)
 
-  Generally branches created by the backport action.
+  通常是由回移（backport）动作创建的分支。
 
-  See [`maintainers/backporting.md`](https://github.com/NixOS/nix/blob/master/maintainers/backporting.md)
+  参见 [`maintainers/backporting.md`](https://github.com/NixOS/nix/blob/master/maintainers/backporting.md)
 
-- [_other_](https://github.com/NixOS/nix/branches/all)
+- [_其他_](https://github.com/NixOS/nix/branches/all)
 
-  Branches that do not conform to the above patterns should be feature branches.
+  不符合上述模式的分支应为功能分支。
 
-## Reverting
+## 回退
 
-If a change turns out to be merged by mistake, or contain a regression, it may be reverted.
-A revert is not a rejection of the contribution, but merely part of an effective development process.
-It makes sure that development keeps running smoothly, with minimal uncertainty, and less overhead.
-If maintainers have to worry too much about avoiding reverts, they would not be able to merge as much.
-By embracing reverts as a good part of the development process, everyone wins.
+如果某项变更被发现是误合并的，或包含回归，它可能会被回退。
+回退并不是对贡献的否定，而只是高效开发过程的一部分。
+它确保开发持续顺畅进行，将不确定性降到最低，并减少额外开销。
+如果维护者需要过度担心避免回退，他们就无法合并足够多的变更。
+把回退视为开发过程中正常的一部分，对每个人都有好处。
 
-However, taking a step back may be frustrating, so maintainers will be extra supportive on the next try.
+不过，走回头路可能令人沮丧，因此维护者会在你下次尝试时给予格外多的支持。

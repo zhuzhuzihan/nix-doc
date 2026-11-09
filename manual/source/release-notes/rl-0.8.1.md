@@ -1,8 +1,7 @@
 # Release 0.8.1 (2005-04-13)
 
-This is a bug fix release.
+这是一个缺陷修复版本。
 
-  - Patch downloading was broken.
+  - 补丁下载功能此前是损坏的。
 
-  - The garbage collector would not delete paths that had references
-    from invalid (but substitutable) paths.
+  - 垃圾回收器此前不会删除那些被无效（但可通过 substitute 获取的）路径所引用的路径。

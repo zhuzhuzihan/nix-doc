@@ -1,16 +1,14 @@
 # Name
 
-`nix-store --print-env` - print the build environment of a derivation
+`nix-store --print-env` - 打印 derivation（派生）的构建环境
 
-## Synopsis
+## 概要
 
 `nix-store` `--print-env` *drvpath*
 
-## Description
+## 描述
 
-The operation `--print-env` prints out the environment of a derivation
-in a format that can be evaluated by a shell. The command line arguments
-of the builder are placed in the variable `_args`.
+`--print-env` 操作以可被 shell 求值的格式打印 derivation 的环境。builder 的命令行参数会被放入变量 `_args` 中。
 
 {{#include ./opt-common.md}}
 
@@ -18,7 +16,7 @@ of the builder are placed in the variable `_args`.
 
 {{#include ../env-common.md}}
 
-## Example
+## 示例
 
 ```console
 $ nix-store --print-env $(nix-instantiate '<nixpkgs>' -A firefox)
@@ -28,4 +26,3 @@ export stdenv; stdenv='/nix/store/7c8asx3yfrg5dg1gzhzyq2236zfgibnn-stdenv'
 export system; system='x86_64-linux'
 export _args; _args='-e /nix/store/9krlzvny65gdc8s7kpb6lkx8cd02c25c-default-builder.sh'
 ```
-

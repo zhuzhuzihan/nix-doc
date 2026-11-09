@@ -1,220 +1,220 @@
 # Release 2.35.0 (2026-06-22)
 
-## Highlights
+## Highlights（亮点）
 
-- Sources are copied to the store more lazily [#3121](https://github.com/NixOS/nix/issues/3121) [#15711](https://github.com/NixOS/nix/pull/15711) [#15920](https://github.com/NixOS/nix/pull/15920)
+- 源码现在以更惰性的方式复制到 Nix store [#3121](https://github.com/NixOS/nix/issues/3121) [#15711](https://github.com/NixOS/nix/pull/15711) [#15920](https://github.com/NixOS/nix/pull/15920)
 
-  Historically, flakes source trees have been eagerly fetched to and evaluated from the Nix store to ensure deterministic and hermetic evaluation, even if the resulting store object is not used as a derivation input. This made the implementation simpler, yet made flakes unusable in large repositories and performed unnecessary writes to the store on each change to the source tree.
+  历史上，Flakes 源码树会被急切地抓取到 Nix store 中并从中求值，以确保求值的确定性与封闭性，即使产生的 store 对象并未用作 derivation（派生）输入。这让实现更简单，却使 Flakes 在大型仓库中不可用，并且每次源码树变更都会对 store 执行不必要的写入。
 
-  Since Nix 2.32, all I/O (excluding `path:` and `hg+:`-style inputs) for reading sources during evaluation has been funneled to their original filesystem location (or to the `~/.cache/nix/tarball-cache-v2` bare git repository for tarball-based inputs). However, the source tree was still fetched to the store -- primarily for computing the resulting content-addressed store path. In most cases, (such as importing the `nixpkgs` package set) this is not necessary.
+  自 Nix 2.32 起，求值期间读取源码的所有 I/O（`path:` 和 `hg+:` 风格的输入除外）都被导向其原始文件系统位置（对于基于 tarball 的输入，则导向 `~/.cache/nix/tarball-cache-v2` 这个 bare git 仓库）。然而，源码树仍会被抓取到 store 中——主要是为了计算最终的内容寻址存储路径。在多数情况下（例如导入 `nixpkgs` 软件包集合），这并非必要。
 
-  Touching (and hashing the NAR serialisation of) the whole source tree is unavoidable, since:
+  触碰（并对其 NAR 序列化结果做哈希）整个源码树是不可避免的，因为：
 
-  - In case of flake inputs, `narHash` integrity must be checked eagerly.
-  - The `outPath` attribute of a flake must be known in advance, and for backwards compatibility must be a content-addressed store path string with [constant string context](@docroot@/language/string-context.md#string-context-constant) representing the flake source tree.
+  - 对于 Flakes 输入，`narHash` 完整性必须被急切地检查。
+  - Flakes 的 `outPath` 属性必须事先可知，并且出于向后兼容，它必须是一个带有[常量字符串上下文](@docroot@/language/string-context.md#string-context-constant)的内容寻址存储路径字符串，代表该 Flakes 源码树。
 
-  Even within the constraints imposed by backwards compatibility requirements, there are several improvements that are achievable. To reduce the number of copies performed, Nix now hashes the input without copying first, assuming that the `.outPath` will not end up in a derivation attribute and thus would never have to be actually fetched to the store. This comes at the slight cost of doing more work in case the assumption is wrong, but results in less work in typical use cases. The evaluator continues to behave as if the copy was performed:
+  即使在向后兼容性要求所施加的约束之内，仍有若干可以实现的改进。为了减少执行的复制次数，Nix 现在会在不复制的情况下先对输入做哈希，假定 `.outPath` 不会出现在 derivation 属性中，因而永远不会真正被抓取到 store。这样做的代价是当假定不成立时需要做更多工作，但在典型用例中减少了工作量。求值器仍会表现得好像复制已经执行过：
 
-  - Flakes are still evaluated from the store, from the evaluator's point of view.
-  - `toString ./.` continues to produce a content-addressed store path string without context.
-  - Path resolution crossing trees located in the filesystem and in Nix's view of it (with "virtual" overlays on top) continues to work. For example, the flake source tree can contain a relative symlink pointing outside its corresponding store object (though such usage is discouraged and makes further improvements to laziness intractable).
-  - Reading files from the flake's `outPath` continues to work. For example, such code is well-formed and is not considered [IFD](@docroot@/language/import-from-derivation.md):
+  - 从求值器的视角看，Flakes 仍然是从 store 中求值的。
+  - `toString ./.` 仍然产生一个不带上下文的内容寻址存储路径字符串。
+  - 跨越文件系统中的树与 Nix 视角中的树（其上有"虚拟"覆盖层）的路径解析仍可工作。例如，Flakes 源码树中可以包含指向其对应 store 对象之外的相对符号链接（尽管这种用法不被推荐，并且会使进一步的惰性化改进变得难以实现）。
+  - 从 Flakes 的 `outPath` 读取文件仍可工作。例如，以下代码是良构的，且不被视为 [IFD](@docroot@/language/import-from-derivation.md)：
 
   ```nix
   builtins.readFile ( /. + (builtins.unsafeDiscardStringContext self.outPath) + "/flake.nix" )
   ```
 
-  Similar treatment has been applied to `builtins.fetchTarball`, which no longer eagerly copies paths to the store.
-  `builtins.storePath` now also short-circuits on "lazy-ish" store paths and doesn't substitute unless necessary.
+  类似的处理也已应用于 `builtins.fetchTarball`，它不再急切地将路径复制到 store。
+  `builtins.storePath` 现在也会在"半惰性"的存储路径上短路，除非必要才执行 substitute。
 
-  This change is expected to significantly reduce disk usage required for typical evaluations and results in ~2x speedup for fetching and unpacking a nixpkgs tarball (either via `fetchTree`/flakes or via `fetchTarball`).
+  预期这一变化会显著减少典型求值所需的磁盘占用，并使抓取和解包 nixpkgs tarball（无论通过 `fetchTree`/Flakes 还是通过 `fetchTarball`）获得约 2 倍的速度提升。
 
-- Support FreeBSD `libjail` based sandboxing, add `x86_64-freebsd` to installer [#9968](https://github.com/NixOS/nix/pull/9968) [#13281](https://github.com/NixOS/nix/pull/13281) [#15673](https://github.com/NixOS/nix/pull/15673)
+- 支持基于 FreeBSD `libjail` 的沙箱，在安装器中加入 `x86_64-freebsd` [#9968](https://github.com/NixOS/nix/pull/9968) [#13281](https://github.com/NixOS/nix/pull/13281) [#15673](https://github.com/NixOS/nix/pull/15673)
 
-  The FreeBSD build of Nix now supports build sandboxing via FreeBSD jails and is enabled by default.
-  A FreeBSD build has been added to the traditional installer script. The beta rust-based installer is not yet supported.
-  FreeBSD support is not as well-tested as Linux or macOS, but is fully capable of building packages and performing other tasks expected of Nix on Linux.
+  FreeBSD 版本的 Nix 现在支持通过 FreeBSD jails 进行构建沙箱隔离，并且默认启用。
+  传统的安装器脚本中也加入了 FreeBSD 构建。beta 版的 Rust 安装器尚不支持。
+  FreeBSD 支持不如 Linux 或 macOS 那样经过充分测试，但完全能够构建软件包并完成在 Linux 上对 Nix 所期待的其他任务。
 
-## Improvements
+## 改进
 
-- HTTP/3 (QUIC) support [#15961](https://github.com/NixOS/nix/pull/15961)
+- HTTP/3 (QUIC) 支持 [#15961](https://github.com/NixOS/nix/pull/15961)
 
-  Nix can now fetch from binary caches and other HTTP(S) sources over HTTP/3 (QUIC), controlled by a new [`http3`](@docroot@/command-ref/conf-file.md#conf-http3) setting (disabled by default).
-  When enabled, Nix requests HTTP/3 and transparently falls back to HTTP/2 or HTTP/1.1 for servers that do not advertise QUIC.
-  The setting only takes effect when linked against a `libcurl` built with HTTP/3 support, otherwise it is ignored and Nix keeps using HTTP/2 without warning or error.
+  Nix 现在可以通过 HTTP/3 (QUIC) 从二进制缓存和其他 HTTP(S) 来源抓取，由新的 [`http3`](@docroot@/command-ref/conf-file.md#conf-http3) 设置控制（默认禁用）。
+  启用后，Nix 会请求 HTTP/3，并且对未通告 QUIC 的服务器透明地回退到 HTTP/2 或 HTTP/1.1。
+  该设置仅在链接到以 HTTP/3 支持构建的 `libcurl` 时生效，否则会被忽略，Nix 继续使用 HTTP/2，不会发出警告或错误。
 
-  Enable it with:
+  启用方式：
 
   ```
   nix.conf: http3 = true
   CLI:      --http3
   ```
 
-  Or disable with:
+  或禁用方式：
 
   ```
   nix.conf: http3 = false
   CLI:      --no-http3
   ```
 
-- Link mimalloc for faster evaluation [#15596](https://github.com/NixOS/nix/pull/15596)
+- 链接 mimalloc 以加快求值 [#15596](https://github.com/NixOS/nix/pull/15596)
 
-  The `nix` binary now links [mimalloc](https://github.com/microsoft/mimalloc) by default, replacing glibc's malloc for all non-GC allocations.
-  This yields a **5–12% wall-clock improvement** on evaluation workloads, ranging from `nix-instantiate hello` to `nix-env -qa` and full NixOS configurations.
-  The allocator can be disabled at build time with `-Dnix:mimalloc=disabled`.
+  `nix` 二进制文件现在默认链接 [mimalloc](https://github.com/microsoft/mimalloc)，为所有非 GC 分配替换 glibc 的 malloc。
+  这在求值工作负载上带来了 **5–12% 的挂钟时间提升**，范围从 `nix-instantiate hello` 到 `nix-env -qa` 以及完整的 NixOS 配置。
+  该分配器可以在构建时通过 `-Dnix:mimalloc=disabled` 禁用。
 
-- The `revCount` attribute of the Git fetchers is now lazily computed and passed-through as-is when explicitly specified [#15772](https://github.com/NixOS/nix/pull/15772) [#14596](https://github.com/NixOS/nix/pull/14596)
+- Git 抓取器的 `revCount` 属性现在被惰性计算，且在显式指定时原样透传 [#15772](https://github.com/NixOS/nix/pull/15772) [#14596](https://github.com/NixOS/nix/pull/14596)
 
-  `revCount` and `lastModified` attributes passed to the Git fetcher are no longer eagerly validated when explicitly specified.
+  传递给 Git 抓取器的 `revCount` 和 `lastModified` 属性在显式指定时不再被急切地校验。
 
-  When not explicitly specified, `revCount` is now also a thunk value and not computed eagerly. This delays this (potentially) expensive computation until the value is actually required.
+  当未显式指定时，`revCount` 现在也是一个 thunk 值，不再被急切地计算。这会将这项（可能）昂贵的计算推迟到实际需要该值时才进行。
 
-- Configurable file-transfer retry backoff with full jitter and `Retry-After` support [#15023](https://github.com/NixOS/nix/issues/15023) [#15419](https://github.com/NixOS/nix/issues/15419) [#15449](https://github.com/NixOS/nix/pull/15449)
+- 可配置的文件传输重试退避，支持 full jitter 与 `Retry-After` [#15023](https://github.com/NixOS/nix/issues/15023) [#15419](https://github.com/NixOS/nix/issues/15419) [#15449](https://github.com/NixOS/nix/pull/15449)
 
-  File transfer retries (downloads and uploads) now use AWS-style "full jitter" exponential backoff, treat HTTP 503 as rate-limited (same longer delay as 429),
-  and honor the `Retry-After` response header.
+  文件传输重试（下载与上传）现在使用 AWS 风格的 "full jitter" 指数退避，将 HTTP 503 视为限速响应（与 429 相同的更长延迟），
+  并遵循 `Retry-After` 响应头。
 
-  Retry timing is configurable via new `nix.conf` settings:
+  重试时机可通过新的 `nix.conf` 设置进行配置：
 
-  - [`filetransfer-retry-delay`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-delay): base delay for transient errors
-  - [`filetransfer-retry-delay-rate-limited`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-delay-rate-limited): base delay for 429/503
-  - [`filetransfer-retry-max-delay`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-max-delay): per-attempt delay ceiling
-  - [`filetransfer-retry-jitter`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-jitter): enable full jitter
+  - [`filetransfer-retry-delay`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-delay)：瞬时错误的基础延迟
+  - [`filetransfer-retry-delay-rate-limited`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-delay-rate-limited)：429/503 的基础延迟
+  - [`filetransfer-retry-max-delay`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-max-delay)：每次尝试的延迟上限
+  - [`filetransfer-retry-jitter`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-jitter)：启用 full jitter
 
-  The existing `download-attempts` setting has been renamed to [`filetransfer-retry-attempts`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-attempts) to reflect that it applies to uploads as well as downloads.
-  The old name remains as an alias for backwards compatibility.
+  现有的 `download-attempts` 设置已重命名为 [`filetransfer-retry-attempts`](@docroot@/command-ref/conf-file.md#conf-filetransfer-retry-attempts)，以反映它同样适用于上传。
+  旧名称作为别名保留以实现向后兼容。
 
-  Per-substituter overrides are available as store reference parameters ([`retry-delay`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-delay), [`retry-delay-rate-limited`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-delay-rate-limited), [`retry-max-delay`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-max-delay), [`retry-attempts`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-attempts)), e.g. `s3://my-cache?retry-attempts=8`.
+  每个 substituter 的覆盖配置可以作为 store 引用参数使用（[`retry-delay`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-delay)、[`retry-delay-rate-limited`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-delay-rate-limited)、[`retry-max-delay`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-max-delay)、[`retry-attempts`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-retry-attempts)），例如 `s3://my-cache?retry-attempts=8`。
 
-- Improve daemon socket path logic for chroot stores [#15190](https://github.com/NixOS/nix/pull/15190)
+- 改进 chroot store 的 daemon socket 路径逻辑 [#15190](https://github.com/NixOS/nix/pull/15190)
 
-  The default daemon socket path now uses the per-store [`state`](@docroot@/store/types/local-store.md#store-local-store-state) directory whenever one is defined, rather than always using the global [`NIX_STATE_DIR`](@docroot@/command-ref/env-common.md#env-NIX_STATE_DIR).
-  This means [local chroot stores](@docroot@/store/types/local-store.md#chroot) each get their own socket path automatically.
+  默认的 daemon socket 路径现在会在定义了 per-store [`state`](@docroot@/store/types/local-store.md#store-local-store-state) 目录时使用它，而不是总是使用全局的 [`NIX_STATE_DIR`](@docroot@/command-ref/env-common.md#env-NIX_STATE_DIR)。
+  这意味着每个[本地 chroot store](@docroot@/store/types/local-store.md#chroot) 都会自动获得自己的 socket 路径。
 
-  Example:
+  示例：
 
   ```bash
   nix-daemon --store /foo/bar
   ```
 
-  will now use a socket at:
+  现在会使用位于以下位置的 socket：
   ```
   /foo/bar/nix/var/nix/daemon-socket/socket
   ```
-  instead of
+  而不是
   ```
   $NIX_STATE_DIR/daemon-socket/socket
   ```
 
-  Users who wish to serve or connect to a chroot store at the old location will have to force the socket location:
+  希望在旧位置对外提供或连接 chroot store 的用户必须强制指定 socket 位置：
 
-  - When serving (running a daemon), use the new [`--socket-path`](@docroot@/command-ref/new-cli/nix3-daemon.md#opt-socket-path) flag:
+  - 作为服务端（运行 daemon）时，使用新的 [`--socket-path`](@docroot@/command-ref/new-cli/nix3-daemon.md#opt-socket-path) 标志：
 
     ```bash
     nix daemon --socket-path "$NIX_STATE_DIR/daemon-socket/socket"
     ```
 
-  - When connecting as a client, put the path in the [store URL](@docroot@/store/types/local-daemon-store.md):
+  - 作为客户端连接时，把路径放进 [store URL](@docroot@/store/types/local-daemon-store.md)：
 
     ```
     unix://$NIX_STATE_DIR/daemon-socket/socket
     ```
 
-- Linux sandbox: also block `listxattr` syscalls [#15743](https://github.com/NixOS/nix/pull/15743)
+- Linux 沙箱：同时屏蔽 `listxattr` 系统调用 [#15743](https://github.com/NixOS/nix/pull/15743)
 
-  The Linux sandbox now also returns `ENOTSUP` for `listxattr`, `llistxattr` and `flistxattr`, matching the existing treatment of `getxattr`/`setxattr`/`removexattr`.
-  This prevents host xattrs (e.g. `security.selinux`) from leaking into builds and fixes tools such as `mkfs.ubifs` that probe xattr support via `listxattr`.
+  Linux 沙箱现在对 `listxattr`、`llistxattr` 和 `flistxattr` 也返回 `ENOTSUP`，与现有的 `getxattr`/`setxattr`/`removexattr` 处理方式保持一致。
+  这可以防止宿主的 xattr（例如 `security.selinux`）泄漏进构建，并修复了通过 `listxattr` 探测 xattr 支持的工具（例如 `mkfs.ubifs`）。
 
-- Support SCP-like URLs in fetchGit and type = "git" flake inputs [#14852](https://github.com/NixOS/nix/issues/14852) [#14867](https://github.com/NixOS/nix/issues/14867) [#14863](https://github.com/NixOS/nix/pull/14863)
+- fetchGit 与 type = "git" 的 Flakes 输入支持 SCP 风格 URL [#14852](https://github.com/NixOS/nix/issues/14852) [#14867](https://github.com/NixOS/nix/issues/14867) [#14863](https://github.com/NixOS/nix/pull/14863)
 
-  Nix now (once again) recognizes [SCP-like syntax for Git URLs](https://git-scm.com/docs/git-clone#_git_urls). This partially
-  restores compatibility with Nix 2.3 for `fetchGit`. The following syntax is once again supported:
+  Nix 现在（再次）识别 [Git URL 的 SCP 风格语法](https://git-scm.com/docs/git-clone#_git_urls)。这部分恢复了
+  `fetchGit` 与 Nix 2.3 的兼容性。以下语法重新受到支持：
 
   ```nix
   builtins.fetchGit "host:/absolute/path/to/repo"
   ```
 
-  Nix also passes through the tilde (for home directories) verbatim:
+  Nix 还会原样透传波浪号（用于家目录）：
 
   ```nix
   builtins.fetchGit "host:~/relative/to/home"
   ```
 
-  IPv6 addresses also supported when bracketed:
+  加上方括号时也支持 IPv6 地址：
 
   ```nix
   builtins.fetchGit "user@[::1]:~/relative/to/home"
   ```
 
-  `builtins.fetchTree` also supports this syntax now:
+  `builtins.fetchTree` 现在也支持该语法：
 
   ```nix
   builtins.fetchTree { type = "git"; url = "host:/path/to/repo"; }
   ```
 
-- `nix flake check` now supports `--print-out-paths` [#13470](https://github.com/NixOS/nix/issues/13470) [#15476](https://github.com/NixOS/nix/pull/15476) and `--out-link` [#13470](https://github.com/NixOS/nix/issues/13470) [#15476](https://github.com/NixOS/nix/pull/15476) defaulting to not creating out links if the flag is not specified.
+- `nix flake check` 现在支持 `--print-out-paths` [#13470](https://github.com/NixOS/nix/issues/13470) [#15476](https://github.com/NixOS/nix/pull/15476) 和 `--out-link` [#13470](https://github.com/NixOS/nix/issues/13470) [#15476](https://github.com/NixOS/nix/pull/15476)，未指定该标志时默认不创建 out link。
 
-- Added `--skip-alive` (and `--skip-live` alias for compatibility with Lix users) option to `nix store delete` for collecting garbage within a closure [#7239](https://github.com/NixOS/nix/issues/7239) [#15236](https://github.com/NixOS/nix/pull/15236) [#15727](https://github.com/NixOS/nix/pull/15727)
+- 为 `nix store delete` 新增 `--skip-alive`（以及为兼容 Lix 用户的 `--skip-live` 别名）选项，用于在闭包内回收垃圾 [#7239](https://github.com/NixOS/nix/issues/7239) [#15236](https://github.com/NixOS/nix/pull/15236) [#15727](https://github.com/NixOS/nix/pull/15727)
 
-  `nix store delete --recursive --skip-alive` can be used to collect garbage within a closure, in which case it will only collect the dead paths that are part of the closure of its arguments.
-  The additional option `--also-referrers` is added to support this mode, which allows referrers of paths in the closure to also be deleted.
+  `nix store delete --recursive --skip-alive` 可用于在闭包内回收垃圾，此时它只会收集其参数闭包中属于死路径的部分。
+  为支持该模式还新增了额外选项 `--also-referrers`，允许同时删除闭包中路径的 referrers。
 
-- `builtins.getFlake` now supports path values [#15290](https://github.com/NixOS/nix/pull/15290)
+- `builtins.getFlake` 现在支持 path 值 [#15290](https://github.com/NixOS/nix/pull/15290)
 
-  `builtins.getFlake` now accepts path values in addition to flakerefs. This improves the usability of relative flakes, allowing you to write `builtins.getFlake ./subflake`.
-  This change does not allow specifying paths that are not already in the store (though they do not have valid store objects, i.e. this will not force a copy if the flake has only been hashed -- and not copied to the store). This may change in a future release.
+  `builtins.getFlake` 现在接受 path 值，不再仅限于 flakerefs。这提升了相对 Flakes 的可用性，让你可以写 `builtins.getFlake ./subflake`。
+  该变化不允许指定尚未进入 store 的路径（不过它们并没有有效的 store 对象，即如果该 Flakes 只是被哈希过——而未被复制到 store——这不会强制触发一次复制）。这一点在未来的版本中可能会改变。
 
-- `nix-profile.fish` and `nix-profile-daemon.fish` now use `$NIX_LINK` for computing the value of `NIX_PROFILE` instead of `$HOME/.nix-profile` [#14293](https://github.com/NixOS/nix/pull/14293)
+- `nix-profile.fish` 和 `nix-profile-daemon.fish` 现在使用 `$NIX_LINK` 而不是 `$HOME/.nix-profile` 来计算 `NIX_PROFILE` 的值 [#14293](https://github.com/NixOS/nix/pull/14293)
 
-- `nix` binary now exports symbols from C bindings [#15696](https://github.com/NixOS/nix/pull/15696)
+- `nix` 二进制文件现在导出 C 绑定中的符号 [#15696](https://github.com/NixOS/nix/pull/15696)
 
-  This allows Nix plugins written against the C API to look up symbols dynamically without linking to corresponding `libnix*c.so` libraries.
+  这使得基于 C API 编写的 Nix 插件能够动态查找符号，而无需链接对应的 `libnix*c.so` 库。
 
-- The computed Git LFS endpoint URLs have been fixed to follow the spec [#15891](https://github.com/NixOS/nix/pull/15891) and memory usage of LFS fetches has been decreased [#15912](https://github.com/NixOS/nix/pull/15912)
+- 修复了计算出的 Git LFS 端点 URL 以遵循规范 [#15891](https://github.com/NixOS/nix/pull/15891)，并降低了 LFS 抓取的内存占用 [#15912](https://github.com/NixOS/nix/pull/15912)
 
-- We now verify that fetched Git LFS objects have the same OID as requested [#15845](https://github.com/NixOS/nix/pull/15845)
+- 我们现在会校验抓取到的 Git LFS 对象的 OID 与请求一致 [#15845](https://github.com/NixOS/nix/pull/15845)
 
-- Primop documentation now includes time complexity information [#14554](https://github.com/NixOS/nix/pull/14554)
+- Primop 文档现在包含时间复杂度信息 [#14554](https://github.com/NixOS/nix/pull/14554)
 
-- Improved documentation on store paths and derivation building [#14699](https://github.com/NixOS/nix/pull/14699)
+- 改进了关于存储路径与 derivation 构建的文档 [#14699](https://github.com/NixOS/nix/pull/14699)
 
-- The [build hook](@docroot@/command-ref/conf-file.md#conf-build-hook) is now killed with `SIGTERM` instead of `SIGKILL` [#15105](https://github.com/NixOS/nix/pull/15105)
+- [build hook](@docroot@/command-ref/conf-file.md#conf-build-hook) 现在以 `SIGTERM` 而不是 `SIGKILL` 终止 [#15105](https://github.com/NixOS/nix/pull/15105)
 
-- Download/upload logs strip `userinfo` URL components [#15715](https://github.com/NixOS/nix/pull/15715)
+- 下载/上传日志会去除 URL 的 `userinfo` 组件 [#15715](https://github.com/NixOS/nix/pull/15715)
 
-## Content-addressed derivations changes
+## 内容寻址 derivation 变更
 
-  The experimental content-addressed (CA) derivation feature has undergone a significant change to how build traces (formerly called "realisations") are identified.
-  This changes the binary cache endpoints for realisations and the daemon/nix-serve protocol (gated behind a daemon protocol feature flag).
+  实验性的内容寻址（CA）derivation 特性在构建痕迹（以前称为 "realisations"）的标识方式上经历了一次重大变化。
+  这改变了 realisations 的二进制缓存端点以及 daemon/nix-serve 协议（由 daemon 协议特性开关控制）。
 
-- Realisations keyed by store path instead of hash modulo [#11897](https://github.com/NixOS/nix/issues/11897) [#12464](https://github.com/NixOS/nix/pull/12464)
+- realisations 改为以存储路径为键，而不是 hash modulo [#11897](https://github.com/NixOS/nix/issues/11897) [#12464](https://github.com/NixOS/nix/pull/12464)
 
-  Previously, a build trace entry (realisation) was keyed by the hash modulo of the derivation. In simpler terms, derivations transitively depending on distinct fixed-output derivations with the same `outPath` would share a realisation.
+  之前，构建痕迹条目（realisation）以 derivation 的 hash modulo 为键。简单来说，传递依赖于具有相同 `outPath` 的不同 fixed-output derivation 的 derivation 会共享同一个 realisation。
 
-  Now, build trace entries are keyed by the regular derivation store path (`.drvPath`) plus the output name. For example, instead of:
+  现在，构建痕迹条目以常规的 derivation 存储路径（`.drvPath`）加上输出名为键。例如，不再是：
 
   ```
   sha256:ba7816bf8f01...!out
   ```
 
-  The key is now:
+  而键现在为：
 
   ```
   /nix/store/abc...-foo.drv^out
   ```
 
-- Removed support for "deep" realisations [#15289](https://github.com/NixOS/nix/pull/15289)
+- 移除了对 "deep" realisations 的支持 [#15289](https://github.com/NixOS/nix/pull/15289)
 
-  Previously the build trace (set of "realisations") contained entries for both unresolved and [resolved](@docroot@/store/resolution.md) derivations.
-  Now, it contains entries exclusively for resolved derivations.
-  For now, unresolved derivations will be resolved from these underlying build trace entries.
-  This is slower, but has the benefit of making build trace entries stateless and self-describing --- making sharing realisations easier between stores.
+  之前构建痕迹（"realisations" 的集合）中同时包含未解析（unresolved）和[已解析](@docroot@/store/resolution.md)（resolved）derivation 的条目。
+  现在，它只包含已解析 derivation 的条目。
+  目前，未解析的 derivation 仍会从这些底层构建痕迹条目中解析出来。
+  这样做更慢，但好处是构建痕迹条目变为无状态且自描述的——使得在 store 之间共享 realisations 更加容易。
 
-  This change necessitates changes to the binary cache format:
+  该变化 necessitates 对二进制缓存格式的修改：
 
-  - The directory for build traces moved from `realisations/` to `build-trace-v2/`.
-  - File paths changed from `realisations/<hash>!<output>.doi` to `build-trace-v2/<drvName>/<outputName>.doi`.
-  - The JSON format of build trace entries is now split into `key` and `value` objects:
+  - 构建痕迹的目录从 `realisations/` 移动到 `build-trace-v2/`。
+  - 文件路径从 `realisations/<hash>!<output>.doi` 变为 `build-trace-v2/<drvName>/<outputName>.doi`。
+  - 构建痕迹条目的 JSON 格式现在拆分为 `key` 和 `value` 两个对象：
     ```json
     {
       "key": {
@@ -227,131 +227,131 @@
       }
     }
     ```
-    Previously, these were flat objects with a string `id` field like `"sha256:...!out"`.
-  - The deprecated `dependentRealisations` field has been removed.
+    之前，这些是带有字符串 `id` 字段（如 `"sha256:...!out"`）的扁平对象。
+  - 已弃用的 `dependentRealisations` 字段被移除。
 
-  The build trace entries stored in the local SQLite database no longer have any foreign key references to store objects.
-  This is because the build trace entries for resolved derivations that may have been deleted need to be preserved, otherwise the outputs of other unresolved derivations will be effectively forgotten.
-  GC for the build trace is not yet implemented due to the lack of a clear default policy.
+  本地 SQLite 数据库中存储的构建痕迹条目不再有任何指向 store 对象的外键引用。
+  这是因为可能已被删除的已解析 derivation 的构建痕迹条目需要被保留，否则其他未解析 derivation 的输出将实际上被遗忘。
+  由于缺乏明确的默认策略，构建痕迹的垃圾回收尚未实现。
 
-- Structured signature for realisations and `path-info` [#15009](https://github.com/NixOS/nix/pull/15009)
+- realisations 和 `path-info` 的结构化签名 [#15009](https://github.com/NixOS/nix/pull/15009)
 
-  [Signatures](@docroot@/protocols/json/signature.md) in JSON formats are now represented as structured objects with `keyName` and `sig` fields, rather than colon-separated strings.
-  `nix path-info --json --json-format 3` opts into the new version for this command.
-  JSON parsing accepts both the old string format and new structured format for backwards compatibility.
+  JSON 格式中的[签名](@docroot@/protocols/json/signature.md)现在表示为带有 `keyName` 和 `sig` 字段的结构化对象，而不是冒号分隔的字符串。
+  `nix path-info --json --json-format 3` 为该命令启用新版本。
+  出于向后兼容，JSON 解析同时接受旧的字符串格式和新的结构化格式。
 
-  This format is also used for the build trace entries in binary caches.
+  该格式也用于二进制缓存中的构建痕迹条目。
 
-- `nix realisation` command has been renamed to `nix store build-trace` [#16000](https://github.com/NixOS/nix/pull/16000) [#15948](https://github.com/NixOS/nix/pull/15948)
+- `nix realisation` 命令已更名为 `nix store build-trace` [#16000](https://github.com/NixOS/nix/pull/16000) [#15948](https://github.com/NixOS/nix/pull/15948)
 
-## Build performance improvements
+## 构建性能改进
 
-- Make post-build-hook asynchronous [#15406](https://github.com/NixOS/nix/issues/15406) [#15451](https://github.com/NixOS/nix/pull/15451)
+- 将 post-build-hook 改为异步执行 [#15406](https://github.com/NixOS/nix/issues/15406) [#15451](https://github.com/NixOS/nix/pull/15451)
 
-  The [`post-build-hook`](@docroot@/command-ref/conf-file.md#conf-post-build-hook) now runs asynchronously, without blocking the build event loop.
-  Dependent builds are not started until the hook finishes, but multiple hook instances are now launched concurrently -- up to the [`max-jobs`](@docroot@/command-ref/conf-file.md#conf-max-jobs) limit.
+  [`post-build-hook`](@docroot@/command-ref/conf-file.md#conf-post-build-hook) 现在异步运行，不再阻塞构建事件循环。
+  依赖的构建仍要等 hook 结束才会启动，但多个 hook 实例现在会并发启动——上限为 [`max-jobs`](@docroot@/command-ref/conf-file.md#conf-max-jobs) 限制。
 
-- zstd compression now emits multi-frame output and uses less memory [#15550](https://github.com/NixOS/nix/pull/15550)
+- zstd 压缩现在输出多帧结果并使用更少的内存 [#15550](https://github.com/NixOS/nix/pull/15550)
 
-  zstd-compressed NARs are now written as a sequence of independent 16 MiB frames instead of a single large frame.
-  This lays the groundwork for parallel decompression in a future release without requiring caches to be repopulated, and significantly lowers peak memory use during compression
-  (e.g. from ~600 MiB to ~100 MiB for a 1 GiB store path).
+  zstd 压缩的 NAR 现在写为一系列独立的 16 MiB 帧，而不是单个大帧。
+  这为未来版本中的并行解压奠定了基础，且无需重新填充缓存，并显著降低了压缩期间的峰值内存占用
+  （例如对于 1 GiB 的存储路径，从约 600 MiB 降到约 100 MiB）。
 
-  The output remains standard zstd and is decoded unchanged by existing Nix binaries and the `zstd` CLI; compression ratio is effectively unchanged.
+  输出仍是标准 zstd，可被现有的 Nix 二进制文件和 `zstd` CLI 原样解码；压缩比实际上没有变化。
 
-  Per-frame compression now uses up to 4 worker threads. For zstd this is the new default: the [`parallel-compression`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-parallel-compression) store setting defaults to `true` when `compression=zstd` (it remains `false` for other compression algorithms like `xz`).
-  Set `?parallel-compression=false` to opt out.
+  每帧压缩现在最多使用 4 个工作线程。对于 zstd 这是新的默认值：当 `compression=zstd` 时，[`parallel-compression`](@docroot@/store/types/http-binary-cache-store.md#store-http-binary-cache-store-parallel-compression) store 设置默认为 `true`（对于 `xz` 等其他压缩算法仍为 `false`）。
+  设置 `?parallel-compression=false` 可选择退出。
 
-- More parallelism for binary cache uploads [#15957](https://github.com/NixOS/nix/pull/15957)
+- 二进制缓存上传获得更多并行度 [#15957](https://github.com/NixOS/nix/pull/15957)
 
-  Uploads of NARs now start without waiting for all references to be uploaded.
-  Also, NARs are now uploaded in order of descending (decompressed) NAR size.
-  The closure invariant is still maintained by copying `.narinfo` in a topologically sorted order.
+  NAR 的上传现在不必等待所有引用上传完毕即可开始。
+  此外，NAR 现在按（解压后）NAR 大小降序上传。
+  闭包不变性仍通过以拓扑排序的顺序复制 `.narinfo` 来维护。
 
-- The derivation build scheduler memory usage reduction and performance improvements [#15611](https://github.com/NixOS/nix/pull/15611) [#15695](https://github.com/NixOS/nix/pull/15695)
+- derivation 构建调度器的内存占用降低与性能改进 [#15611](https://github.com/NixOS/nix/pull/15611) [#15695](https://github.com/NixOS/nix/pull/15695)
 
-  Memory usage of the derivation build scheduler has been improved to allow more state sharing.
-  Inefficiencies leading to quadratic complexity of scheduling build/substitution jobs have been addressed.
-  Scheduling resources are allocated more sparingly and freed earlier to reduce peak consumption.
+  derivation 构建调度器的内存占用得到改进，以允许更多的状态共享。
+  导致构建/substitute 任务调度出现平方复杂度的低效问题已被解决。
+  调度资源现在更节约地分配并更早地释放，以降低峰值消耗。
 
-  These improvements amount to ~2-8x less `nix-daemon` memory usage for typical workloads and more in larger derivation graphs, not accounting for short-lived allocations used during substitution.
+  这些改进使得典型工作负载下 `nix-daemon` 的内存占用降低约 2-8 倍，在更大的 derivation 图中效果更明显，其中不包括 substitute 期间使用的短生命周期分配。
 
-  Notably, the current architecture of the build scheduler gets proportionally slower on Linux with larger heaps as derivation "builder" processes are `fork`-ed directly from the Nix process, which blocks the builder event loop for the duration of the `fork`. Thus, smaller heap of `nix-daemon` translates into faster build startups.
+  值得注意的是，当前构建调度器架构在 Linux 上会随着堆的增大而按比例变慢，因为 derivation "builder" 进程是直接从 Nix 进程 `fork` 出来的，这会在 `fork` 期间阻塞 builder 事件循环。因此，`nix-daemon` 更小的堆意味着更快的构建启动。
 
-- Concurrent path substitutions and eval-time fetches of the same inputs now run only once [#15555](https://github.com/NixOS/nix/pull/15555) [#15644](https://github.com/NixOS/nix/pull/15644)
+- 相同输入的并发路径 substitute 与求值期抓取现在只会运行一次 [#15555](https://github.com/NixOS/nix/pull/15555) [#15644](https://github.com/NixOS/nix/pull/15644)
 
-  This avoids redundant work in case multiple Nix processes try to substitute/download the same resource concurrently.
+  这避免了多个 Nix 进程并发尝试 substitute/下载同一资源时的冗余工作。
 
-- `.narinfo` lookups in binary caches are more concurrent
+- 二进制缓存中的 `.narinfo` 查询更具并发性
 
-  Querying the existence and path metadata in binary caches is now more asynchronous. Operations like `nix path-info` on large closures are faster and more efficient.
-  The build scheduler event loop now doesn't block on `.narinfo` queries, which improves performance with passthru binary caches.
+  在二进制缓存中查询存在性与路径元数据的操作现在更加异步。像 `nix path-info` 这样针对大型闭包的操作更快、更高效。
+  构建调度器事件循环现在不再阻塞在 `.narinfo` 查询上，这提升了使用 passthru 二进制缓存时的性能。
 
-## Bug fixes
+## 修复
 
-- Fix hash collision between store paths with self-references and their zeroed-out equivalents [#15837](https://github.com/NixOS/nix/issues/15837) [#15931](https://github.com/NixOS/nix/pull/15931)
+- 修复带自引用的存储路径与其清零等价物之间的哈希碰撞 [#15837](https://github.com/NixOS/nix/issues/15837) [#15931](https://github.com/NixOS/nix/pull/15931)
 
-  When computing the hash of a NAR with self-references, Nix zeroes out the self-references but also hashes their positions.
-  The latter was accidentally lost in Nix 2.17.0, which meant a NAR with self-references could hash to the same store path as an otherwise-identical NAR in which some of the self-references had been zeroed out.
+  在计算带自引用的 NAR 的哈希时，Nix 会将自引用清零，但同时对它们的位置做哈希。
+  后者在 Nix 2.17.0 中被意外丢失，这意味着一个带自引用的 NAR 可能与另一个内容完全相同但部分自引用被清零的 NAR 哈希出相同的存储路径。
 
-  This release restores hashing the positions of self-references.
-  As a consequence, content-addressed store paths derived from self-referential NARs will differ from those produced by Nix 2.17 through 2.34.
-  This affects users of the experimental `ca-derivations` features, as well as users of `nix store make-content-addressed`.
+  本版本恢复了对自引用位置做哈希。
+  其结果是，由带自引用的 NAR 得到的内容寻址存储路径将与 Nix 2.17 至 2.34 产生的不同。
+  这会影响实验性 `ca-derivations` 特性的用户，以及 `nix store make-content-addressed` 的用户。
 
-- C API: Fix `EvalState` pointer passed to primop callbacks [#15300](https://github.com/NixOS/nix/pull/15300) [#15383](https://github.com/NixOS/nix/pull/15383)
+- C API：修复传递给 primop 回调的 `EvalState` 指针 [#15300](https://github.com/NixOS/nix/pull/15300) [#15383](https://github.com/NixOS/nix/pull/15383)
 
-  The `EvalState *` passed to C API primop callbacks was incorrectly pointing to the internal `nix::EvalState` rather than the C API wrapper struct.
-  This caused a segfault when the callback used the pointer with C API functions such as `nix_alloc_value()`.
-  The same issue affected `printValueAsJSON` and `printValueAsXML` callbacks on external values.
+  传递给 C API primop 回调的 `EvalState *` 错误地指向内部的 `nix::EvalState`，而不是 C API 包装结构体。
+  当回调将该指针与 `nix_alloc_value()` 等 C API 函数一起使用时，会导致段错误。
+  同样的问题也影响了外部值的 `printValueAsJSON` 和 `printValueAsXML` 回调。
 
-- GitHub fetcher now validates URL parameters [#15304](https://github.com/NixOS/nix/issues/15304) [#15331](https://github.com/NixOS/nix/pull/15331)
+- GitHub 抓取器现在校验 URL 参数 [#15304](https://github.com/NixOS/nix/issues/15304) [#15331](https://github.com/NixOS/nix/pull/15331)
 
-  The `github:` fetcher now validates URL parameters, and will error if an invalid parameter like `tag` is provided.
+  `github:` 抓取器现在会校验 URL 参数，如果提供了像 `tag` 这样的无效参数将会报错。
 
-- Fixed a bug where keep-outputs and keep-derivations can interfere with delete commands [#15776](https://github.com/NixOS/nix/pull/15776)
+- 修复 keep-outputs 和 keep-derivations 可能干扰删除命令的 bug [#15776](https://github.com/NixOS/nix/pull/15776)
 
-  Setting [`keep-derivations`](@docroot@/command-ref/conf-file.md#conf-keep-derivations) to `true` and trying to delete a derivation with realised outputs would previously fail.
-  Same with [`keep-outputs`](@docroot@/command-ref/conf-file.md#conf-keep-outputs) and trying to delete an output that still has derivers.
-  These options no longer affect the deletion commands, and are now documented as such.
+  之前，将 [`keep-derivations`](@docroot@/command-ref/conf-file.md#conf-keep-derivations) 设为 `true` 并尝试删除一个已实现（realised）输出的 derivation 会失败。
+  [`keep-outputs`](@docroot@/command-ref/conf-file.md#conf-keep-outputs) 同理，尝试删除一个仍有 derivers 的输出也会失败。
+  这些选项不再影响删除命令，文档也相应更新。
 
-- S3 substituters fall back to the URL's region for STS WebIdentity auth [#15594](https://github.com/NixOS/nix/pull/15594)
+- S3 substituter 在 STS WebIdentity 认证时回退到 URL 中的 region [#15594](https://github.com/NixOS/nix/pull/15594)
 
-  When authenticating to an S3 binary cache via STS WebIdentity (EKS IRSA, GitHub Actions OIDC), Nix now uses the `?region=` parameter from the S3 URL as a fallback for the STS endpoint region if neither `AWS_REGION` nor `AWS_DEFAULT_REGION` is set.
-  Previously, IRSA setups that exported `AWS_WEB_IDENTITY_TOKEN_FILE` and `AWS_ROLE_ARN` but no region would fail with a misleading "IMDS provider" error.
+  通过 STS WebIdentity（EKS IRSA、GitHub Actions OIDC）向 S3 二进制缓存认证时，如果既未设置 `AWS_REGION` 也未设置 `AWS_DEFAULT_REGION`，Nix 现在会使用 S3 URL 中的 `?region=` 参数作为 STS 端点 region 的回退值。
+  之前，导出了 `AWS_WEB_IDENTITY_TOKEN_FILE` 和 `AWS_ROLE_ARN` 但未导出 region 的 IRSA 配置会因一条误导性的 "IMDS provider" 错误而失败。
 
-- S3: restore STS WebIdentity and ECS container credential providers [#15507](https://github.com/NixOS/nix/pull/15507)
+- S3：恢复 STS WebIdentity 与 ECS 容器凭证提供者 [#15507](https://github.com/NixOS/nix/pull/15507)
 
-  Nix 2.33 replaced the S3 backend's `aws-sdk-cpp` credential chain with a custom chain built on `aws-c-auth`.
-  That chain omitted two providers, breaking S3 binary cache access in container workloads:
+  Nix 2.33 将 S3 后端的 `aws-sdk-cpp` 凭证链替换为基于 `aws-c-auth` 构建的自定义凭证链。
+  该链遗漏了两个提供者，破坏了容器工作负载中的 S3 二进制缓存访问：
 
-  - **STS WebIdentity** (`AWS_WEB_IDENTITY_TOKEN_FILE`, `AWS_ROLE_ARN`, `AWS_ROLE_SESSION_NAME`) -- used by EKS IRSA, GitHub Actions OIDC, and any `sts:AssumeRoleWithWebIdentity` federation.
-  - **ECS container metadata** (`AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`, `AWS_CONTAINER_CREDENTIALS_FULL_URI`) -- used by ECS tasks and EKS Pod Identity.
+  - **STS WebIdentity**（`AWS_WEB_IDENTITY_TOKEN_FILE`、`AWS_ROLE_ARN`、`AWS_ROLE_SESSION_NAME`）——被 EKS IRSA、GitHub Actions OIDC 以及任何 `sts:AssumeRoleWithWebIdentity` 联合认证使用。
+  - **ECS 容器元数据**（`AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`、`AWS_CONTAINER_CREDENTIALS_FULL_URI`）——被 ECS 任务和 EKS Pod Identity 使用。
 
-  The typical symptom was a misleading IMDS error (`Valid credentials could not be sourced by the IMDS provider`), because IMDS is the last provider tried after the correct one was skipped.
+  典型症状是一条误导性的 IMDS 错误（`Valid credentials could not be sourced by the IMDS provider`），因为 IMDS 是在正确的提供者被跳过之后最后尝试的提供者。
 
-  Both providers are now part of the chain, ordered to match the pre-2.33 behaviour.
-  As in both the old and new AWS SDK default chains, ECS and IMDS are mutually exclusive: when container credential environment variables are set, IMDS is skipped.
+  这两个提供者现在都已加入凭证链，顺序与 2.33 之前的行为一致。
+  与新旧 AWS SDK 的默认凭证链一样，ECS 与 IMDS 互斥：当设置了容器凭证环境变量时，会跳过 IMDS。
 
-- HTTP 401 and 407 responses from binary caches are no longer treated as missing files [#15877](https://github.com/NixOS/nix/pull/15877)
+- 来自二进制缓存的 HTTP 401 和 407 响应不再被视为文件缺失 [#15877](https://github.com/NixOS/nix/pull/15877)
 
-  Nix no longer treats `Unauthorized` and `Proxy Authentication Required` HTTP codes as an indication of a missing file. This used to be the case because AWS S3 returns 403 `Forbidden` for missing objects in unlistable buckets. 401/407 were accidentally included and this workaround is now tightly scoped to 403 responses.
+  Nix 不再将 `Unauthorized` 和 `Proxy Authentication Required` HTTP 状态码视为文件缺失的标志。之所以曾经如此，是因为 AWS S3 对不可列举桶中的缺失对象返回 403 `Forbidden`。401/407 被意外地包含进来，现在该变通处理被严格限定为 403 响应。
 
-- Fixed `nixbld` gid in `/etc/group` in the Linux build sandbox when user namespaces are not supported [#15131](https://github.com/NixOS/nix/pull/15131)
+- 修复 Linux 构建沙箱在不支持用户命名空间时 `/etc/group` 中的 `nixbld` gid [#15131](https://github.com/NixOS/nix/pull/15131)
 
-- Store garbage collection is now more robust [#15992](https://github.com/NixOS/nix/pull/15992) [#15720](https://github.com/NixOS/nix/pull/15720) [#15616](https://github.com/NixOS/nix/pull/15616)
+- store 垃圾回收现在更加健壮 [#15992](https://github.com/NixOS/nix/pull/15992) [#15720](https://github.com/NixOS/nix/pull/15720) [#15616](https://github.com/NixOS/nix/pull/15616)
 
-- Fixed deadlock for hash-mismatching fixed-output derivations [#15874](https://github.com/NixOS/nix/pull/15874)
+- 修复哈希不匹配的 fixed-output derivation 的死锁 [#15874](https://github.com/NixOS/nix/pull/15874)
 
-- `nix-copy-closure` no longer ignores `--include-outputs` flag [#15896](https://github.com/NixOS/nix/pull/15896)
+- `nix-copy-closure` 不再忽略 `--include-outputs` 标志 [#15896](https://github.com/NixOS/nix/pull/15896)
 
-- Fixes to `recursive-nix` experimental feature
+- 修复 `recursive-nix` 实验性特性
 
-  Prior to this release, internal datastructures used to implement this feature were not used in a thread-safe manner.
-  Threads handling daemon connections are now reaped promptly, fixing resource leaks.
+  在本版本之前，实现该特性所用的内部数据结构没有以线程安全的方式使用。
+  处理 daemon 连接的线程现在会被及时回收，修复了资源泄漏。
 
-## Contributors
+## Contributors（贡献者）
 
-This release was made possible by the following 59 contributors:
+本版本得益于以下 59 位贡献者：
 
 - Michael Wang [**(@zwang20)**](https://github.com/zwang20)
 - Amaan Qureshi [**(@amaanq)**](https://github.com/amaanq)

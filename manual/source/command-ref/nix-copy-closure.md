@@ -1,8 +1,8 @@
 # Name
 
-`nix-copy-closure` - copy store objects to or from a remote machine via SSH
+`nix-copy-closure` - 通过 SSH 向远程机器复制或从远程机器复制 store objects
 
-# Synopsis
+# 概要
 
 `nix-copy-closure`
   [`--to` | `--from` ]
@@ -12,61 +12,59 @@
   [`-v`]
   [_user_@]_machine_[:_port_] _paths_
 
-# Description
+# 描述
 
-Given _paths_ from one machine, `nix-copy-closure` computes the [closure](@docroot@/glossary.md#gloss-closure) of those paths (i.e. all their dependencies in the Nix store), and copies [store objects](@docroot@/glossary.md#gloss-store-object) in that closure to another machine via SSH.
-It doesn’t copy store objects that are already present on the other machine.
+给定一台机器上的 _paths_，`nix-copy-closure` 会计算这些路径的 [closure（闭包）](@docroot@/glossary.md#gloss-closure)（即它们在 Nix store 中的全部依赖），并通过 SSH 将该闭包中的 [store objects](@docroot@/glossary.md#gloss-store-object) 复制到另一台机器。
+它不会复制另一台机器上已经存在的 store objects。
 
-> **Note**
+> **注意**
 >
-> While the Nix store to use on the local machine can be specified on the command line with the [`--store`](@docroot@/command-ref/conf-file.md#conf-store) option, the Nix store to be accessed on the remote machine can only be [configured statically](@docroot@/command-ref/conf-file.md#configuration-file) on that remote machine.
+> 虽然本地机器使用的 Nix store 可以在命令行上通过 [`--store`](@docroot@/command-ref/conf-file.md#conf-store) 选项指定，但远程机器上要访问的 Nix store 只能在该远程机器上[静态配置](@docroot@/command-ref/conf-file.md#configuration-file)。
 
-Since `nix-copy-closure` calls `ssh`, you may need to authenticate with the remote machine.
-In fact, you may be asked for authentication _twice_ because `nix-copy-closure` currently connects twice to the remote machine: first to get the set of paths missing on the target machine, and second to send the dump of those paths.
-When using public key authentication, you can avoid typing the passphrase with `ssh-agent`.
+由于 `nix-copy-closure` 会调用 `ssh`，你可能需要向远程机器进行身份验证。实际上，你可能会被要求进行 _两次_ 身份验证，因为 `nix-copy-closure` 当前会连接远程机器两次：第一次获取目标机器上缺失的路径集合，第二次发送这些路径的转储。使用公钥身份验证时，可以用 `ssh-agent` 避免输入口令。
 
-# Options
+# 选项
 
 - `--to`
 
-  Copy the closure of _paths_ from a Nix store accessible from the local machine to the Nix store on the remote _machine_.
-  This is the default behavior.
+  将 _paths_ 的闭包从本地机器可访问的 Nix store 复制到远程 _machine_ 的 Nix store。
+  这是默认行为。
 
 - `--from`
 
-  Copy the closure of _paths_ from the Nix store on the remote _machine_ to the local machine's specified Nix store.
+  将 _paths_ 的闭包从远程 _machine_ 的 Nix store 复制到本地机器指定的 Nix store。
 
 - `--gzip`
 
-  Enable compression of the SSH connection.
+  启用 SSH 连接的压缩。
 
 - `--include-outputs`
 
-  Also copy the outputs of [store derivation]s included in the closure.
+  同时复制闭包中包含的 [store derivation] 的输出。
 
   [store derivation]: @docroot@/glossary.md#gloss-store-derivation
 
 - `--use-substitutes` / `-s`
 
-  Attempt to download missing store objects on the target from [substituters](@docroot@/command-ref/conf-file.md#conf-substituters).
-  Any store objects that cannot be substituted on the target are still copied normally from the source.
-  This is useful, for instance, if the connection between the source and target machine is slow, but the connection between the target machine and `cache.nixos.org` (the default binary cache server) is fast.
+  尝试从 [substitute（替代）源](@docroot@/command-ref/conf-file.md#conf-substituters) 下载目标上缺失的 store objects。
+  目标上无法被替代的 store objects 仍会从源正常复制。
+  例如，当源机器与目标机器之间的连接很慢，而目标机器与 `cache.nixos.org`（默认的二进制缓存服务器）之间的连接很快时，这就很有用。
 
 {{#include ./opt-common.md}}
 
-# Environment variables
+# 环境变量
 
 - `NIX_SSHOPTS`
 
-  Additional options to be passed to `ssh` on the command line.
+  在命令行上传递给 `ssh` 的附加选项。
 
 {{#include ./env-common.md}}
 
-# Examples
+# 示例
 
-> **Example**
+> **示例**
 >
-> Copy GNU Hello with all its dependencies to a remote machine:
+> 将 GNU Hello 及其全部依赖复制到一台远程机器：
 >
 > ```shell-session
 > $ storePath="$(nix-build '<nixpkgs>' -I nixpkgs=channel:nixpkgs-unstable -A hello --no-out-link)"
@@ -79,9 +77,9 @@ When using public key authentication, you can avoid typing the passphrase with `
 > copying path '/nix/store/0dklv59zppdsqdvgf0qdvjgzcs5wbwxa-hello-2.12.1' to 'ssh://alice@itchy.example.org'...
 > ```
 
-> **Example**
+> **示例**
 >
-> Copy GNU Hello from a remote machine using a known store path, and run it:
+> 使用已知的存储路径从远程机器复制 GNU Hello，并运行它：
 >
 > ```shell-session
 > $ storePath="$(nix-instantiate --eval --raw '<nixpkgs>' -I nixpkgs=channel:nixpkgs-unstable -A hello.outPath)"

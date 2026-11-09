@@ -1,8 +1,8 @@
 ## `manifest.json`
 
-The manifest file records the provenance of the packages that are installed in a [profile](./profiles.md) managed by [`nix profile`](@docroot@/command-ref/new-cli/nix3-profile.md) (experimental).
+manifest 文件记录了由 [`nix profile`](@docroot@/command-ref/new-cli/nix3-profile.md)（实验性）管理的 [profile](./profiles.md) 中所安装软件包的来源信息。
 
-Here is an example of what the file might look like after installing `zoom-us` from Nixpkgs:
+以下示例展示了从 Nixpkgs 安装 `zoom-us` 后该文件可能的样子：
 
 ```json
 {
@@ -22,24 +22,20 @@ Here is an example of what the file might look like after installing `zoom-us` f
 }
 ```
 
-Each object in the array `elements` denotes an installed package and
-has the following fields:
+数组 `elements` 中的每个对象表示一个已安装的软件包，
+并包含以下字段：
 
-* `originalUrl`: The [flake reference](@docroot@/command-ref/new-cli/nix3-flake.md) specified by
-  the user at the time of installation (e.g. `nixpkgs`). This is also
-  the flake reference that will be used by `nix profile upgrade`.
+* `originalUrl`：用户在安装时指定的 [flake 引用](@docroot@/command-ref/new-cli/nix3-flake.md)（例如 `nixpkgs`）。
+  这也是 `nix profile upgrade` 将使用的 flake 引用。
 
-* `uri`: The locked flake reference to which `originalUrl` resolved.
+* `uri`：`originalUrl` 解析后得到的锁定 flake 引用。
 
-* `attrPath`: The flake output attribute that provided this
-  package. Note that this is not necessarily the attribute that the
-  user specified, but the one resulting from applying the default
-  attribute paths and prefixes; for instance, `hello` might resolve to
-  `packages.x86_64-linux.hello` and the empty string to
-  `packages.x86_64-linux.default`.
+* `attrPath`：提供该软件包的 flake 输出属性。
+  注意，这未必是用户指定的属性，而是应用了默认属性路径和前缀之后得到的结果；例如，`hello` 可能解析为
+  `packages.x86_64-linux.hello`，而空字符串解析为
+  `packages.x86_64-linux.default`。
 
-* `storePath`: The paths in the Nix store containing the package.
+* `storePath`：Nix store 中包含该软件包的路径。
 
-* `active`: Whether the profile contains symlinks to the files of this
-  package. If set to false, the package is kept in the Nix store, but
-  is not "visible" in the profile's symlink tree.
+* `active`：profile 中是否包含指向该软件包文件的符号链接。
+  如果设置为 false，该软件包仍保留在 Nix store 中，但在 profile 的符号链接树中"不可见"。

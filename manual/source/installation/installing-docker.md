@@ -1,6 +1,6 @@
-# Using Nix within Docker
+# 在 Docker 中使用 Nix
 
-To run the latest stable release of Nix with Docker run the following command:
+要用 Docker 运行最新的稳定版 Nix，请运行以下命令：
 
 ```console
 $ docker run -ti docker.io/nixos/nix
@@ -16,30 +16,25 @@ nix (Nix) 2.3.12
 35ca4ada6e96:/# exit
 ```
 
-> If you want the latest pre-release you can use ghcr.io/nixos/nix and view them at https://github.com/nixos/nix/pkgs/container/nix
+> 如果你想要最新的预发布版本，可以使用 ghcr.io/nixos/nix，并可在 https://github.com/nixos/nix/pkgs/container/nix 查看它们
 
-# What is included in Nix's Docker image?
+# Nix 的 Docker 镜像包含什么？
 
-The official Docker image is created using `pkgs.dockerTools.buildLayeredImage`
-(and not with `Dockerfile` as it is usual with Docker images). You can still
-base your custom Docker image on it as you would do with any other Docker
-image.
+官方 Docker 镜像是使用 `pkgs.dockerTools.buildLayeredImage` 创建的（而不是像通常的 Docker 镜像那样使用 `Dockerfile`）。你仍然可以像基于其他任何 Docker 镜像那样，把自定义的 Docker 镜像构建在它之上。
 
-The Docker image is not based on any other image and includes a minimal set
-of runtime dependencies that are required to use Nix.
+该 Docker 镜像不基于任何其他镜像，并且只包含使用 Nix 所需的最小运行时依赖集。
 
 
-# Docker image with the latest development version of Nix
+# 包含最新开发版 Nix 的 Docker 镜像
 
-To get the latest image that was built by [Hydra](https://hydra.nixos.org) run
-the following command:
+要获取由 [Hydra](https://hydra.nixos.org) 构建的最新镜像，请运行以下命令：
 
 ```console
 $ curl -L https://hydra.nixos.org/job/nix/master/dockerImage.x86_64-linux/latest/download/1 | docker load
 $ docker run -ti nix:2.5pre20211105
 ```
 
-You can also build a Docker image from source yourself:
+你也可以自己从源码构建 Docker 镜像：
 
 ```console
 $ nix build ./\#hydraJobs.dockerImage.x86_64-linux
@@ -47,11 +42,9 @@ $ docker load -i ./result/image.tar.gz
 $ docker run -ti nix:2.5pre20211105
 ```
 
-# Docker image with non-root Nix
+# 以非 root 用户运行 Nix 的 Docker 镜像
 
-If you would like to run Nix in a container under a user other than `root`,
-you can build an image with a non-root single-user installation of Nix
-by specifying the `uid`, `gid`, `uname`, and `gname` arguments to `docker.nix`:
+如果你想在容器中以 `root` 以外的用户运行 Nix，可以通过向 `docker.nix` 指定 `uid`、`gid`、`uname` 和 `gname` 参数，构建一个采用非 root 单用户安装的 Nix 镜像：
 
 ```console
 $ nix build --file docker.nix \

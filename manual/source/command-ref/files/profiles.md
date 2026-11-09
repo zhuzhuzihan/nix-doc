@@ -1,17 +1,17 @@
 ## Profiles
 
-A directory that contains links to profiles managed by [`nix-env`] and [`nix profile`]:
+一个包含指向 profile 链接的目录，这些 profile 由 [`nix-env`] 和 [`nix profile`] 管理：
 
-- `$XDG_STATE_HOME/nix/profiles` for regular users
-- `$NIX_STATE_DIR/profiles/per-user/root` if the user is `root`
+- 普通用户为 `$XDG_STATE_HOME/nix/profiles`
+- 用户为 `root` 时为 `$NIX_STATE_DIR/profiles/per-user/root`
 
-A profile is a directory of symlinks to files in the Nix store.
+profile 是一个目录，其中是指向 Nix store 中文件的符号链接。
 
-### Filesystem layout
+### 文件系统布局
 
-Profiles are versioned as follows. When using a profile named *path*, *path* is a symlink to *path*`-`*N*`-link`, where *N* is the version of the profile.
-In turn, *path*`-`*N*`-link` is a symlink to a path in the Nix store.
-For example:
+profile 按如下方式进行版本管理。使用名为 *path* 的 profile 时，*path* 是指向 *path*`-`*N*`-link` 的符号链接，其中 *N* 是该 profile 的版本号。
+而 *path*`-`*N*`-link` 又是一个指向 Nix store 中某个路径的符号链接。
+例如：
 
 ```console
 $ ls -l ~alice/.local/state/nix/profiles/profile*
@@ -21,11 +21,9 @@ lrwxrwxrwx 1 alice users 51 Oct 29 13:20 /home/alice/.local/state/nix/profiles/p
 lrwxrwxrwx 1 alice users 51 Nov 25 14:35 /home/alice/.local/state/nix/profiles/profile-7-link -> /nix/store/mp0x6xnsg0b8qhswy6riqvimai4gm677-profile
 ```
 
-Each of these symlinks is a root for the Nix garbage collector.
+这些符号链接中的每一个都是 Nix 垃圾回收器的一个根。
 
-The contents of the store path corresponding to each version of the
-profile is a tree of symlinks to the files of the installed packages,
-e.g.
+profile 每个版本对应的存储路径内容，是一棵指向已安装软件包文件的符号链接树，例如：
 
 ```console
 $ ll -R ~eelco/.local/state/nix/profiles/profile-7-link/
@@ -50,24 +48,24 @@ lrwxrwxrwx 3 root root 107 Jan  1  1970 us.zoom.Zoom.desktop -> /nix/store/wbhg2
 …
 ```
 
-Each profile version contains a manifest file:
-- [`manifest.nix`](@docroot@/command-ref/files/manifest.nix.md) used by [`nix-env`](@docroot@/command-ref/nix-env.md).
-- [`manifest.json`](@docroot@/command-ref/files/manifest.json.md) used by [`nix profile`](@docroot@/command-ref/new-cli/nix3-profile.md) (experimental).
+每个 profile 版本都包含一个 manifest 文件：
+- [`manifest.nix`](@docroot@/command-ref/files/manifest.nix.md)，由 [`nix-env`](@docroot@/command-ref/nix-env.md) 使用。
+- [`manifest.json`](@docroot@/command-ref/files/manifest.json.md)，由 [`nix profile`](@docroot@/command-ref/new-cli/nix3-profile.md)（实验性）使用。
 
-## User profile link
+## 用户 profile 链接
 
-A symbolic link to the user's current profile:
+指向用户当前 profile 的符号链接：
 
 - `~/.nix-profile`
-- `$XDG_STATE_HOME/nix/profile` if [`use-xdg-base-directories`] is set to `true`.
+- 如果 [`use-xdg-base-directories`] 设置为 `true`，则为 `$XDG_STATE_HOME/nix/profile`。
 
-By default, this symlink points to:
+默认情况下，该符号链接指向：
 
-- `$XDG_STATE_HOME/nix/profiles/profile` for regular users
-- `$NIX_STATE_DIR/profiles/per-user/root/profile` for `root`
+- 普通用户为 `$XDG_STATE_HOME/nix/profiles/profile`
+- `root` 用户为 `$NIX_STATE_DIR/profiles/per-user/root/profile`
 
-The `PATH` environment variable should include `/bin` subdirectory of the profile link (e.g. `~/.nix-profile/bin`) for the user environment to be visible to the user.
-The [installer](@docroot@/installation/installing-binary.md) sets this up by default, unless you enable [`use-xdg-base-directories`].
+`PATH` 环境变量应当包含 profile 链接的 `/bin` 子目录（例如 `~/.nix-profile/bin`），用户环境才能对用户可见。
+[安装程序](@docroot@/installation/installing-binary.md)默认会进行此设置，除非你启用了 [`use-xdg-base-directories`]。
 
 [`nix-env`]: @docroot@/command-ref/nix-env.md
 [`nix profile`]: @docroot@/command-ref/new-cli/nix3-profile.md

@@ -1,9 +1,3 @@
-# Single-User Mode
+# 单用户模式
 
-In single-user mode, all Nix operations that access the database in
-`prefix/var/nix/db` or modify the Nix store in `prefix/store` must be
-performed under the user ID that owns those directories. This is
-typically root. (If you install from RPM packages, that’s in fact the
-default ownership.) However, on single-user machines, it is often
-convenient to `chown` those directories to your normal user account so
-that you don’t have to `su` to root all the time.
+在单用户模式下，所有访问 `prefix/var/nix/db` 中数据库或修改 `prefix/store` 中 Nix store 的 Nix 操作，都必须在拥有这些目录的用户 ID 下执行。该用户通常是 root。（如果通过 RPM 软件包安装，默认的所有者事实上正是 root。）不过，在单用户机器上，把这些目录 `chown` 给你的普通用户账户通常更为方便，这样你就不必总是 `su` 到 root。

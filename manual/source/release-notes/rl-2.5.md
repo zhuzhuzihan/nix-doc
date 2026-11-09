@@ -1,16 +1,13 @@
 # Release 2.5 (2021-12-13)
 
-* The garbage collector no longer blocks new builds, so the message
-  `waiting for the big garbage collector lock...` is a thing of the
-  past.
+* 垃圾回收器不再阻塞新的构建，因此 `waiting for the big garbage collector lock...` 这条消息已成为历史。
 
-* Binary cache stores now have a setting `compression-level`.
+* 二进制缓存类 store 现在有了 `compression-level` 设置项。
 
-* `nix develop` now has a flag `--unpack` to run `unpackPhase`.
+* `nix develop` 新增 `--unpack` 标志，用于运行 `unpackPhase`。
 
-* Lists can now be compared lexicographically using the `<` operator.
+* 列表现在可以使用 `<` 运算符按字典序比较。
 
-* New built-in function: `builtins.groupBy`, with the same functionality as
-  Nixpkgs' `lib.groupBy`, but faster.
+* 新增内置函数：`builtins.groupBy`，功能与 Nixpkgs 的 `lib.groupBy` 相同，但速度更快。
 
-* `nix repl` now has a `:log` command.
+* `nix repl` 现在有了 `:log` 命令。

@@ -1,27 +1,27 @@
 # Name
 
-`nix-store --export` - export store paths to a [Nix Archive]
+`nix-store --export` - 将存储路径导出为 [Nix Archive]
 
-## Synopsis
+## 概要
 
 `nix-store` `--export` *paths…*
 
-## Description
+## 描述
 
-The operation `--export` writes a serialisation of the given [store objects](@docroot@/glossary.md#gloss-store-object) to standard output in a format that can be imported into another [Nix store](@docroot@/store/index.md) with [`nix-store --import`](./import.md).
+`--export` 操作将给定 [store 对象](@docroot@/glossary.md#gloss-store-object) 的序列化结果写入标准输出，其格式可以通过 [`nix-store --import`](./import.md) 导入到另一个 [Nix store](@docroot@/store/index.md) 中。
 
-> **Warning**
+> **警告**
 >
-> This command *does not* produce a [closure](@docroot@/glossary.md#gloss-closure) of the specified store paths.
-> Trying to import a store object that refers to store paths not available in the target Nix store will fail.
+> 此命令*不会*生成指定存储路径的[闭包](@docroot@/glossary.md#gloss-closure)。
+> 尝试导入一个引用了目标 Nix store 中不存在的存储路径的 store 对象将会失败。
 >
-> Use [`nix-store --query`](@docroot@/command-ref/nix-store/query.md) to obtain the closure of a store path.
+> 使用 [`nix-store --query`](@docroot@/command-ref/nix-store/query.md) 来获取某个存储路径的闭包。
 
-This command is different from [`nix-store --dump`](./dump.md), which produces a [Nix archive](@docroot@/glossary.md#gloss-nar) that *does not* contain the set of [references](@docroot@/glossary.md#gloss-reference) of a given store path.
+此命令不同于 [`nix-store --dump`](./dump.md)，后者生成的 [Nix 归档](@docroot@/glossary.md#gloss-nar)*不*包含给定存储路径的[引用](@docroot@/glossary.md#gloss-reference)集合。
 
-> **Note**
+> **注意**
 >
-> For efficient transfer of closures to remote machines over SSH, use [`nix-copy-closure`](@docroot@/command-ref/nix-copy-closure.md).
+> 若要通过 SSH 高效地向远程机器传输闭包，请使用 [`nix-copy-closure`](@docroot@/command-ref/nix-copy-closure.md)。
 
 [Nix Archive]: @docroot@/store/file-system-object/content-address.md#serial-nix-archive
 
@@ -31,20 +31,20 @@ This command is different from [`nix-store --dump`](./dump.md), which produces a
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
-> **Example**
+> **示例**
 >
-> Deploy GNU Hello to an airgapped machine via USB stick.
+> 通过 U 盘将 GNU Hello 部署到一台物理隔离（airgapped）的机器上。
 >
-> Write the closure to the block device on a machine with internet connection:
+> 在一台有网络连接的机器上，将闭包写入块设备：
 >
 > ```shell-session
 > [alice@itchy]$ storePath=$(nix-build '<nixpkgs>' -I nixpkgs=channel:nixpkgs-unstable -A hello --no-out-link)
 > [alice@itchy]$ nix-store --export $(nix-store --query --requisites $storePath) | sudo dd of=/dev/usb
 > ```
 >
-> Read the closure from the block device on the machine without internet connection:
+> 在没有网络连接的机器上，从块设备读取闭包：
 >
 > ```shell-session
 > [bob@scratchy]$ hello=$(sudo dd if=/dev/usb | nix-store --import | tail -1)

@@ -1,10 +1,6 @@
 # Release 2.9 (2022-05-30)
 
-* Running Nix with the new `--debugger` flag will cause it to start a
-  repl session if an exception is thrown during evaluation, or if
-  `builtins.break` is called.  From there you can inspect the values
-  of variables and evaluate Nix expressions.  In debug mode, the
-  following new repl commands are available:
+* 使用新的 `--debugger` 标志运行 Nix 时，如果求值过程中抛出异常，或者调用了 `builtins.break`，它将启动一个 repl 会话。在那里你可以检查变量的值并求值 Nix 表达式。在调试模式下，以下新的 repl 命令可用：
 
   ```
   :env          Show env stack
@@ -15,33 +11,16 @@
   :s            Go one step
   ```
 
-  Read more about the debugger
-  [here](https://www.zknotes.com/note/5970).
+  更多关于调试器的信息请阅读[这里](https://www.zknotes.com/note/5970)。
 
-* Nix now provides better integration with zsh's `run-help`
-  feature. It is now included in the Nix installation in the form of
-  an autoloadable shell function, `run-help-nix`. It picks up Nix
-  subcommands from the currently typed in command and directs the user
-  to the associated man pages.
+* Nix 现在提供了与 zsh 的 `run-help` 功能更好的集成。它现在以可自动加载的 shell 函数 `run-help-nix` 的形式包含在 Nix 的安装中。它会从当前输入的命令中识别 Nix 子命令，并引导用户查阅相关的 man 手册页。
 
-* `nix repl` has a new build-and-link (`:bl`) command that builds a
-  derivation while creating GC root symlinks.
+* `nix repl` 新增了构建并链接（`:bl`）命令，它在构建 derivation（派生）的同时创建 GC root 符号链接。
 
-* The path produced by `builtins.toFile` is now allowed to be imported
-  or read even with restricted evaluation. Note that this will not
-  work with a read-only store.
+* `builtins.toFile` 产生的路径现在即使在受限求值（restricted evaluation）下也允许被导入或读取。注意这在只读 store 上不可行。
 
-* `nix build` has a new `--print-out-paths` flag to print the
-  resulting output paths.  This matches the default behaviour of
-  `nix-build`.
+* `nix build` 新增了 `--print-out-paths` 标志，用于打印产生的输出路径。这与 `nix-build` 的默认行为一致。
 
-* You can now specify which outputs of a derivation `nix` should
-  operate on using the syntax `installable^outputs`,
-  e.g. `nixpkgs#glibc^dev,static` or `nixpkgs#glibc^*`. By default,
-  `nix` will use the outputs specified by the derivation's
-  `meta.outputsToInstall` attribute if it exists, or all outputs
-  otherwise.
+* 你现在可以使用 `installable^outputs` 语法指定 `nix` 应操作 derivation 的哪些输出，例如 `nixpkgs#glibc^dev,static` 或 `nixpkgs#glibc^*`。默认情况下，`nix` 会使用 derivation 的 `meta.outputsToInstall` 属性（如果存在）所指定的输出，否则使用全部输出。
 
-* `builtins.fetchTree` (and flake inputs) can now be used to fetch
-  plain files over the `http(s)` and `file` protocols in addition to
-  directory tarballs.
+* `builtins.fetchTree`（以及 Flakes 输入）现在除了目录 tarball 之外，还可以通过 `http(s)` 和 `file` 协议获取普通文件。

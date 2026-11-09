@@ -1,32 +1,30 @@
-# Quick Start
+# 快速上手
 
-This chapter is for impatient people who don't like reading documentation.
-For more in-depth information you are kindly referred to subsequent chapters.
+本章面向不喜欢阅读文档的急性子。如需更深入的信息，请参阅后续章节。
 
-1. Install Nix:
+1. 安装 Nix：
 
    ```console
    $ curl -L https://nixos.org/nix/install | sh
    ```
 
-   The install script will use `sudo`, so make sure you have sufficient rights.
+   安装脚本会使用 `sudo`，因此请确保你拥有足够的权限。
 
-   For other installation methods, see the detailed [installation instructions](installation/index.md).
+   有关其他安装方式，请参见详细的[安装说明](installation/index.md)。
 
-1. Run software without installing it permanently:
+1. 无需永久安装即可运行软件：
 
    ```console
    $ nix-shell --packages cowsay lolcat
    ```
 
-   This downloads the specified packages with all their dependencies, and drops you into a Bash shell where the commands provided by those packages are present.
-   This will not affect your normal environment:
+   该命令会下载指定的软件包及其全部依赖，并把你带入一个 Bash shell，其中这些软件包提供的命令均可使用。这不会影响你的正常环境：
 
    ```console
    [nix-shell:~]$ cowsay Hello, Nix! | lolcat
    ```
 
-   Exiting the shell will make the programs disappear again:
+   退出 shell 后，这些程序就会消失：
 
    ```console
    [nix-shell:~]$ exit
@@ -34,9 +32,9 @@ For more in-depth information you are kindly referred to subsequent chapters.
    lolcat: command not found
    ```
 
-1. Search for more packages on [search.nixos.org](https://search.nixos.org/) to try them out.
+1. 在 [search.nixos.org](https://search.nixos.org/) 上搜索更多软件包并试用。
 
-1. Free up storage space:
+1. 释放存储空间：
 
    ```console
    $ nix-collect-garbage

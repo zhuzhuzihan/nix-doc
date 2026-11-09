@@ -1,8 +1,8 @@
 {{#include store-path-v1-fixed.md}}
 
-## Examples
+## 示例
 
-### Simple store path
+### 简单存储路径
 
 ```json
 {{#include schema/store-path-v1/simple.json}}

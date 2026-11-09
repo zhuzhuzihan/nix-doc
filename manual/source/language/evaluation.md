@@ -1,64 +1,64 @@
-# Evaluation
+# 求值
 
-Evaluation is the process of turning a Nix expression into a [Nix value](types.md).
+求值（evaluation）是把 Nix 表达式转换为 [Nix 值](types.md)的过程。
 
-This happens by a number of rules, such as:
-- Constructing values from literals. 
-  For example the number literal `1` is turned into the number value `1`.
-- Applying operators
-  For example the addition operator `+` is applied to two number values to produce a new number value.
-- Applying built-in functions
-  For example the expression `builtins.isInt 1` is evaluated to `true`.
-- Applying user-defined functions
-  For example the expression `(x: x + 1) 10` can[*](#laziness) be thought of rewriting `x` in the function body to the argument, `10 + 1`, which is then evaluated to `11`.
+这个过程遵循若干规则，例如：
+- 从字面量构造值。
+  例如，数字字面量 `1` 被转换为数字值 `1`。
+- 应用运算符。
+  例如，加法运算符 `+` 作用于两个数字值，产生一个新的数字值。
+- 应用内置函数。
+  例如，表达式 `builtins.isInt 1` 求值为 `true`。
+- 应用用户自定义函数。
+  例如，表达式 `(x: x + 1) 10` 可以[*](#laziness)被理解为把函数体中的 `x` 重写为实参，即 `10 + 1`，随后求值为 `11`。
 
-These rules are applied as needed, driven by the specific use of the expression. For example, this can occur in the Nix command line interface or interactively with the [repl (read-eval-print loop)](@docroot@/command-ref/new-cli/nix3-repl.md), which is a useful tool when learning about evaluation.
+这些规则按需应用，由表达式的具体使用方式驱动。例如，这可能发生在 Nix 命令行界面中，或者通过 [repl（读取-求值-打印循环）](@docroot@/command-ref/new-cli/nix3-repl.md)交互式地进行——后者是学习求值机制的有用工具。
 
-# Details
+# 细节
 
-## Values {#values}
+## 值 {#values}
 
-Nix values can be thought of as a subset of Nix expressions.
-For example, the expression `1 + 2` is not a value, because it can be reduced to `3`. The expression `3` is a value, because it cannot be reduced any further.
+Nix 值可以被看作 Nix 表达式的一个子集。
+例如，表达式 `1 + 2` 不是一个值，因为它可以被归约为 `3`。而表达式 `3` 是一个值，因为它不能再被进一步归约。
 
-Evaluation normally happens by applying rules to the "head" of the expression, which is the outermost part of the expression. The head of an expression like `[ 1 2 ]` is the list literal (`[ a1 a2 ]`), for `1 + 2` it is the addition operator (`+`), and for `f 1` it is the function application "operator" (` `).
+求值通常是把规则应用到表达式的"头部（head）"来进行的，头部是表达式的最外层部分。像 `[ 1 2 ]` 这样的表达式，其头部是列表字面量（`[ a1 a2 ]`）；对于 `1 + 2`，头部是加法运算符（`+`）；对于 `f 1`，头部则是函数应用"运算符"（` `）。
 
-After applying all possible rules to the head until no rules can be applied, the expression is in "weak head normal form" (WHNF). This means that the outermost constructor of the expression is evaluated, but the inner values may or may not be. "Weak" only signifies that the expression may be a function. This is an historical or academic artifact, and Nix has no use for the non-weak "head normal form".
+在把所有可能的规则应用到头部、直到没有任何规则可以应用之后，该表达式就处于"弱头部规范形"（weak head normal form，WHNF）。这意味着表达式最外层的构造器已被求值，但内部的值可能已求值，也可能没有。"弱"仅仅表示该表达式可能是一个函数。这是一个历史性的或学术性的概念产物，Nix 并不使用非弱的"头部规范形"。
 
-## Laziness and thunks {#laziness}
+## 惰性与 thunk {#laziness}
 
-The Nix language implements _call by need_ (as opposed to _call by value_ or _call by reference_). <!-- No wikipedia link, which would be a huge distraction. --> Call by need is commonly known as laziness in functional programming, as it is a specific implementation of the concept where evaluation is deferred until the result is required, aiming to only evaluate the parts of an expression that are needed to produce the final result.
+Nix 语言实现了_按需调用（call by need）_（而不是_按值调用（call by value）_或_按引用调用（call by reference）_）。 <!-- No wikipedia link, which would be a huge distraction. --> 按需调用在函数式编程中通常被称为惰性求值（laziness），它是该概念的一种具体实现：求值被推迟到需要结果时才进行，目标是只对产生最终结果所需的那部分表达式进行求值。
 
-Furthermore, the result of evaluation is preserved, in values, in `let` bindings, in function _parameters_, which behave a lot like `let` bindings, but with the notable exception of function _calls_. Results of function calls rely on being put into `let` bindings, etc to be reused. <!-- which would be prohibitively expensive and too strict, or we wouldn't have a cache key for the argument -->
+此外，求值的结果会被保留在值中、`let` 绑定中以及函数_形参_中——函数形参的行为很像 `let` 绑定——但函数_调用_的结果是一个显著的例外。函数调用的结果依赖于被放进 `let` 绑定等位置才能被复用。 <!-- which would be prohibitively expensive and too strict, or we wouldn't have a cache key for the argument -->
 
-When discussing the process of evaluation in lower level terms, we may define values not as a subset of expressions, but separately, where each "value" is either a data constructor, a function or a _thunk_. A thunk is a delayed computation, represented by an expression reference and a "closure" &ndash; the values for the lexical scope around the delayed expression.
+在以更底层的视角讨论求值过程时，我们可以不把值定义为表达式的子集，而是单独定义，其中每个"值"要么是一个数据构造器，要么是一个函数，要么是一个 _thunk_。thunk 是一个被延迟的计算，由一个表达式引用和一个"闭包"表示——闭包包含了该延迟表达式周围的词法作用域中的值。
 
-As a user of the language, you generally don't have to think about thunks, as they are not part of the language semantics, but you may encounter them in the repl, in the [C API] or in discussions.
+作为语言的使用者，你通常不需要考虑 thunk，因为它们不属于语言语义的一部分，但你可能会在 repl、[C API] 或相关讨论中遇到它们。
 
-## Strictness
+## 严格性
 
-Instead of thinking about thunks, it is often more productive to think in terms of _strictness_.
-This term is used in functional programming to refer to the opposite of laziness, i.e. not just for something like error propagation. It refers to the need to evaluate certain expressions before evaluation can produce any result.
+与其考虑 thunk，更有成效的做法往往是从_严格性（strictness）_的角度来思考。
+这个术语在函数式编程中指代惰性的反面，而不仅仅是错误传播之类的东西。它指的是：在求值能够产生任何结果之前，必须先求值某些表达式。
 
-Statements about strictness usually implicitly refer to weak head normal form.
-For example, we can say that the following function is strict in its argument:
+关于严格性的论述通常隐含地指弱头部规范形。
+例如，我们可以说下面这个函数对其参数是严格的：
 
 ```nix
 x: isAttrs x || isFunction x
 ```
 
-The above function must be strict in its argument `x` because determining its type requires evaluating `x` to at least some degree.
+上述函数对其参数 `x` 必须是严格的，因为要确定它的类型，就必须至少在一定程度上求值 `x`。
 
-The following function is not strict in its argument:
+下面这个函数对其参数则不是严格的：
 
 ```nix
 x: { isOk = isAttrs x || isFunction x; }
 ```
 
-It is not strict, because it can return the attribute set before evaluating `x`.
-The attribute value for `isOk` _is_ strict in `x`.
+它不是严格的，因为它可以在求值 `x` 之前就返回属性集。
+但 `isOk` 的属性值对 `x` _是_严格的。
 
-A function with a _set pattern_ is always strict in its argument, as a consequence of checking the argument's type and/or attribute names:
+带有_集合模式（set pattern）_的函数对其参数总是严格的，这是检查参数的类型和/或属性名的结果：
 
 ```nix
 let f = { ... }: "ok";
@@ -66,7 +66,7 @@ in f (throw "kablam")
 => error: kablam
 ```
 
-However, a set pattern does not add any strictness beyond WHNF of the attribute set argument.
+不过，集合模式带来的严格性仅限于属性集参数的 WHNF，不会更进一步。
 
 ```nix
 let f = orig@{ x, ... }: "ok";
@@ -74,40 +74,40 @@ in f { x = throw "error"; y = throw "error"; }
 => "ok"
 ```
 
-## Evaluation order
+## 求值顺序
 
-The order in which expressions are evaluated is generally unspecified, because it does not affect successful evaluation outcomes.
-This allows more freedom for the evaluator to evolve and to evaluate efficiently.
+表达式被求值的顺序通常是不确定的，因为它不会影响成功求值的结果。
+这为求值器的演进和高效求值留出了更多自由。
 
-Data dependencies naturally impose some ordering constraints: a value cannot be used before it is computed.
-Beyond these constraints, the evaluator is free to choose any order.
+数据依赖自然会带来一些顺序上的约束：一个值在被计算出来之前不能被使用。
+在这些约束之外，求值器可以自由选择任何顺序。
 
-The order in which side effects such as [`builtins.trace`](@docroot@/language/builtins.md#builtins-trace) output occurs is not defined, but may be expected to follow data dependencies. <!-- we may want to be more specific about this. -->
+诸如 [`builtins.trace`](@docroot@/language/builtins.md#builtins-trace) 输出这类副作用的产生顺序也没有定义，但可以预期它们会遵循数据依赖。 <!-- we may want to be more specific about this. -->
 
-In a lazy language, evaluation order is often opposite to expectations from strict languages.
-For example, in `let wrap = x: { wrapped = x; }; in wrap (1 + 2)`, the function body produces a result (`{ wrapped = ...; }`) *before* evaluating `x`.
+在惰性语言中，求值顺序往往与严格语言的直觉相反。
+例如，在 `let wrap = x: { wrapped = x; }; in wrap (1 + 2)` 中，函数体会在求值 `x` *之前*就产生结果（`{ wrapped = ...; }`）。
 
-## Infinite recursion and stack overflow
+## 无限递归与栈溢出
 
-During evaluation, two types of errors can occur when expressions reference themselves or call functions too deeply:
+在求值期间，当表达式引用自身或函数调用嵌套过深时，会发生两类错误：
 
-### Infinite recursion
+### 无限递归
 
-This error occurs when a value depends on itself through a cycle, making it impossible to compute.
+当一个值通过循环依赖于自身，导致无法计算时，会发生这种错误。
 
 ```nix
 let x = x; in x
 => error: infinite recursion encountered
 ```
 
-Infinite recursion happens at the value level when evaluating an expression requires evaluating the same expression again.
+无限递归发生在值的层面：求值某个表达式时又需要再次求值同一个表达式。
 
-Despite the name, infinite recursion is cheap to compute and does not involve a stack overflow.
-The cycle is finite and fairly easy to detect.
+尽管名字如此，无限递归的计算开销很小，且不会导致栈溢出。
+这个循环是有限的，而且相当容易检测。
 
-### Stack overflow
+### 栈溢出
 
-This error occurs when the call depth exceeds the maximum allowed limit.
+当调用深度超过允许的最大上限时，会发生这种错误。
 
 ```nix
 let f = x: f (x + 1);
@@ -115,7 +115,7 @@ in f 0
 => error: stack overflow; max-call-depth exceeded
 ```
 
-Stack overflow happens when too many function calls are nested without returning.
-The maximum call depth is controlled by the [`max-call-depth` setting](@docroot@/command-ref/conf-file.md#conf-max-call-depth).
+栈溢出发生在过多的函数调用嵌套而没有返回时。
+最大调用深度由 [`max-call-depth` 设置项](@docroot@/command-ref/conf-file.md#conf-max-call-depth)控制。
 
 [C API]: @docroot@/c-api.md

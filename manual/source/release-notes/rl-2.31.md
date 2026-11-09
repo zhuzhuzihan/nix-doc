@@ -1,63 +1,63 @@
 # Release 2.31.0 (2025-08-21)
 
-- `build-cores = 0` now auto-detects CPU cores [#13402](https://github.com/NixOS/nix/pull/13402)
+- `build-cores = 0` 现在会自动检测 CPU 核心数 [#13402](https://github.com/NixOS/nix/pull/13402)
 
-  When `build-cores` is set to `0`, Nix now automatically detects the number of available CPU cores and passes this value via `NIX_BUILD_CORES`, instead of passing `0` directly. This matches the behavior when `build-cores` is unset. This prevents the builder from having to detect the number of cores.
+  当 `build-cores` 设置为 `0` 时，Nix 现在会自动检测可用的 CPU 核心数，并通过 `NIX_BUILD_CORES` 传递该值，而不是直接传递 `0`。这与未设置 `build-cores` 时的行为一致。这避免了构建器不得不自行检测核心数。
 
-- Fix Git LFS SSH issues [#13337](https://github.com/NixOS/nix/issues/13337) [#13743](https://github.com/NixOS/nix/pull/13743)
+- 修复 Git LFS SSH 问题 [#13337](https://github.com/NixOS/nix/issues/13337) [#13743](https://github.com/NixOS/nix/pull/13743)
 
-  Fixed some outstanding issues with Git LFS and SSH.
+  修复了 Git LFS 与 SSH 相关的一些遗留问题。
 
-  * Added support for `NIX_SSHOPTS`.
-  * Properly use the parsed port from URL.
-  * Better use of the response of `git-lfs-authenticate` to determine API endpoint when the API is not exposed on port 443.
+  * 新增对 `NIX_SSHOPTS` 的支持。
+  * 正确使用从 URL 中解析出的端口。
+  * 在 API 未暴露在 443 端口时，更好地利用 `git-lfs-authenticate` 的响应来确定 API 端点。
 
-- Add support for `user@address:port` syntax in store URIs [#7044](https://github.com/NixOS/nix/issues/7044) [#3425](https://github.com/NixOS/nix/pull/3425)
+- 在 store URI 中支持 `user@address:port` 语法 [#7044](https://github.com/NixOS/nix/issues/7044) [#3425](https://github.com/NixOS/nix/pull/3425)
 
-  It's now possible to specify the port used for SSH stores directly in the store URL in accordance with [RFC3986](https://datatracker.ietf.org/doc/html/rfc3986). Previously the only way to specify custom ports was via `ssh_config` or the `NIX_SSHOPTS` environment variable, because Nix incorrectly passed the port number together with the host name to the SSH executable.
+  现在可以按照 [RFC3986](https://datatracker.ietf.org/doc/html/rfc3986) 直接在 store URL 中指定 SSH store 所使用的端口。此前指定自定义端口的唯一方式是通过 `ssh_config` 或 `NIX_SSHOPTS` 环境变量，因为 Nix 此前错误地将端口号连同主机名一起传给了 SSH 可执行文件。
 
-  This change affects [store references](@docroot@/store/types/index.md#store-url-format) passed via the `--store` and similar flags in CLI as well as in the configuration for [remote builders](@docroot@/command-ref/conf-file.md#conf-builders). For example, the following store URIs now work:
+  此变更影响在 CLI 中通过 `--store` 及类似标志传递的 [store 引用](@docroot@/store/types/index.md#store-url-format)，以及[远程构建器](@docroot@/command-ref/conf-file.md#conf-builders)的配置。例如，以下 store URI 现在均可正常工作：
 
   - `ssh://127.0.0.1:2222`
   - `ssh://[b573:6a48:e224:840b:6007:6275:f8f7:ebf3]:22`
   - `ssh-ng://[b573:6a48:e224:840b:6007:6275:f8f7:ebf3]:22`
 
-- Represent IPv6 RFC4007 ZoneId literals in conformance with RFC6874 [#13445](https://github.com/NixOS/nix/pull/13445)
+- 按照 RFC6874 表示 IPv6 RFC4007 ZoneId 字面量 [#13445](https://github.com/NixOS/nix/pull/13445)
 
-  Prior versions of Nix since [#4646](https://github.com/NixOS/nix/pull/4646) accepted [IPv6 scoped addresses](https://datatracker.ietf.org/doc/html/rfc4007) in URIs like [store references](@docroot@/store/types/index.md#store-url-format) in the textual representation with a literal percent character: `[fe80::1%18]`. This was ambiguous, because the the percent literal `%` is reserved by [RFC3986](https://datatracker.ietf.org/doc/html/rfc3986), since it's used to indicate percent encoding. Nix now requires that the percent `%` symbol is percent-encoded as `%25`. This implements [RFC6874](https://datatracker.ietf.org/doc/html/rfc6874), which defines the representation of zone identifiers in URIs. The example from above now has to be specified as `[fe80::1%2518]`.
+  自 [#4646](https://github.com/NixOS/nix/pull/4646) 以来，Nix 的早期版本接受 URI 中的 [IPv6 作用域地址](https://datatracker.ietf.org/doc/html/rfc4007)（如 [store 引用](@docroot@/store/types/index.md#store-url-format)）以字面百分号字符表示的文本形式：`[fe80::1%18]`。这是有歧义的，因为百分号字面量 `%` 被 [RFC3986](https://datatracker.ietf.org/doc/html/rfc3986) 保留用于指示百分号编码。Nix 现在要求将百分号 `%` 符号百分号编码为 `%25`。这实现了 [RFC6874](https://datatracker.ietf.org/doc/html/rfc6874)，它定义了 URI 中区域标识符（zone identifier）的表示方式。上面示例中的地址现在必须写成 `[fe80::1%2518]`。
 
-- Use WAL mode for SQLite cache databases [#13800](https://github.com/NixOS/nix/pull/13800)
+- 为 SQLite 缓存数据库启用 WAL 模式 [#13800](https://github.com/NixOS/nix/pull/13800)
 
-  Previously, Nix used SQLite's "truncate" mode for caches. However, this could cause a Nix process to block if another process was updating the cache. This was a problem for the flake evaluation cache in particular, since it uses long-running transactions. Thus, concurrent Nix commands operating on the same flake could be blocked for an unbounded amount of time. WAL mode avoids this problem.
+  此前，Nix 对缓存使用 SQLite 的 "truncate" 模式。然而，当另一个进程正在更新缓存时，这可能导致某个 Nix 进程被阻塞。这对 flake 求值缓存来说尤其是个问题，因为它使用长时间运行的事务。因此，操作同一 flake 的并发 Nix 命令可能被阻塞任意长的时间。WAL 模式避免了这个问题。
 
-  This change required updating the versions of the SQLite caches. For instance, `eval-cache-v5.sqlite` is now `eval-cache-v6.sqlite`.
+  此变更要求更新 SQLite 缓存的版本。例如，`eval-cache-v5.sqlite` 现在变为 `eval-cache-v6.sqlite`。
 
-- Enable parallel marking in bdwgc [#13708](https://github.com/NixOS/nix/pull/13708)
+- 在 bdwgc 中启用并行标记 [#13708](https://github.com/NixOS/nix/pull/13708)
 
-  Previously marking was done by only one thread, which takes a long time if the heap gets big. Enabling parallel marking speeds up evaluation a lot, for example (on a Ryzen 9 5900X 12-Core):
+  此前标记（marking）只由单个线程完成，当堆变大时耗时很长。启用并行标记大幅加速了求值，例如（在 Ryzen 9 5900X 12 核上）：
 
-  * `nix search nixpkgs` from 24.3s to 18.9s.
-  * Evaluating the `NixOS/nix/2.21.2` flake regression test from 86.1s to 71.2s.
+  * `nix search nixpkgs` 从 24.3 秒降到 18.9 秒。
+  * 对 `NixOS/nix/2.21.2` flake 回归测试的求值从 86.1 秒降到 71.2 秒。
 
-- New command `nix flake prefetch-inputs` [#13565](https://github.com/NixOS/nix/pull/13565)
+- 新命令 `nix flake prefetch-inputs` [#13565](https://github.com/NixOS/nix/pull/13565)
 
-  This command fetches all inputs of a flake in parallel. This can be a lot faster than the serialized on-demand fetching during regular flake evaluation. The downside is that it may fetch inputs that aren't normally used.
+  该命令并行抓取一个 flake 的所有输入。这比常规 flake 求值期间串行的按需抓取快得多。缺点是它可能会抓取一些通常不会用到的输入。
 
-- Add `warn-short-path-literals` setting [#13489](https://github.com/NixOS/nix/pull/13489)
+- 新增 `warn-short-path-literals` 设置 [#13489](https://github.com/NixOS/nix/pull/13489)
 
-  This setting, when enabled, causes Nix to emit warnings when encountering relative path literals that don't start with `.` or `/`, for instance suggesting that `foo/bar` should be rewritten to `./foo/bar`.
+  启用该设置后，当 Nix 遇到不以 `.` 或 `/` 开头的相对路径字面量时会发出警告，例如建议将 `foo/bar` 改写为 `./foo/bar`。
 
-- When updating a lock, respect the input's lock file [#13437](https://github.com/NixOS/nix/pull/13437)
+- 更新锁文件时尊重输入自身的锁文件 [#13437](https://github.com/NixOS/nix/pull/13437)
 
-  For example, if a flake has a lock for `a` and `a/b`, and we change the flakeref for `a`, previously Nix would fetch the latest version of `b` rather than using the lock for `b` from `a`.
+  例如，如果一个 flake 对 `a` 和 `a/b` 都持有锁，而我们修改了 `a` 的 flakeref，此前 Nix 会抓取 `b` 的最新版本，而不是使用 `a` 中对 `b` 的锁。
 
-- Implement support for Git hashing with SHA-256 [#13543](https://github.com/NixOS/nix/pull/13543)
+- 实现使用 SHA-256 的 Git 哈希支持 [#13543](https://github.com/NixOS/nix/pull/13543)
 
-  The experimental support for [Git-hashing](@docroot@/development/experimental-features.md#xp-feature-git-hashing) store objects now also includes support for SHA-256, not just SHA-1, in line with upstream Git.
+  [Git 哈希](@docroot@/development/experimental-features.md#xp-feature-git-hashing) store 对象的实验性支持现在不仅支持 SHA-1，也支持 SHA-256，与上游 Git 保持一致。
 
-## Contributors
+## Contributors（贡献者）
 
-This release was made possible by the following 34 contributors:
+本次发布由以下 34 位贡献者共同完成：
 
 - John Soo [**(@jsoo1)**](https://github.com/jsoo1)
 - Alan Urmancheev [**(@alurm)**](https://github.com/alurm)

@@ -1,21 +1,21 @@
 ## Channels
 
-A directory containing symlinks to Nix channels, managed by [`nix-channel`]:
+包含指向 Nix channel 的符号链接的目录，由 [`nix-channel`] 管理：
 
-- `$XDG_STATE_HOME/nix/profiles/channels` for regular users
-- `$NIX_STATE_DIR/profiles/per-user/root/channels` for `root`
+- 普通用户为 `$XDG_STATE_HOME/nix/profiles/channels`
+- `root` 用户为 `$NIX_STATE_DIR/profiles/per-user/root/channels`
 
-[`nix-channel`] uses a [profile](@docroot@/command-ref/files/profiles.md) to store channels.
-This profile contains symlinks to the contents of those channels.
+[`nix-channel`] 使用一个 [profile](@docroot@/command-ref/files/profiles.md) 来存储 channel。
+该 profile 包含指向这些 channel 内容的符号链接。
 
-## Subscribed channels
+## 已订阅的 channel
 
-The list of subscribed channels is stored in
+已订阅 channel 的列表存储在以下位置：
 
 - `~/.nix-channels`
-- `$XDG_STATE_HOME/nix/channels` if [`use-xdg-base-directories`] is set to `true`
+- 如果 [`use-xdg-base-directories`] 设置为 `true`，则为 `$XDG_STATE_HOME/nix/channels`
 
-in the following format:
+格式如下：
 
 ```
 <url> <name>

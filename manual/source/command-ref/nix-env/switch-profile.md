@@ -1,15 +1,15 @@
 # Name
 
-`nix-env --switch-profile` - set user environment to given profile
+`nix-env --switch-profile` - 将用户环境切换到给定的 profile
 
-# Synopsis
+概要
 
 `nix-env` {`--switch-profile` | `-S`} *path*
 
-# Description
+# 描述
 
-This operation makes *path* the current profile for the user. That is,
-the symlink `~/.nix-profile` is made to point to *path*.
+该操作使 *path* 成为该用户的当前 profile。
+也就是说，符号链接 `~/.nix-profile` 会被指向 *path*。
 
 {{#include ./opt-common.md}}
 
@@ -19,7 +19,7 @@ the symlink `~/.nix-profile` is made to point to *path*.
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
 ```console
 $ nix-env --switch-profile ~/my-profile

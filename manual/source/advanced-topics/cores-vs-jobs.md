@@ -1,39 +1,25 @@
-# Tuning Cores and Jobs
+# 调整 Cores 与 Jobs
 
-Nix has two relevant settings with regards to how your CPU cores will
-be utilized: `cores` and `max-jobs`. This chapter will talk about what
-they are, how they interact, and their configuration trade-offs.
+关于 CPU 核心如何被利用，Nix 有两个相关的设置：`cores` 和 `max-jobs`。本章将介绍它们是什么、如何相互作用，以及配置它们时的权衡。
 
   - `max-jobs`\
-    Dictates how many separate derivations will be built at the same
-    time. If you set this to zero, the local machine will do no
-    builds.  Nix will still substitute from binary caches, and build
-    remotely if remote builders are configured.
+    决定同一时间可以构建多少个相互独立的 derivation（派生）。如果把它设为 0，本地机器将不执行任何构建。Nix 仍然会从二进制缓存获取替代产物，并且在配置了远程构建机的情况下进行远程构建。
 
   - `cores`\
-    Suggests how many cores each derivation should use. Similar to
-    `make -j`.
+    建议每个 derivation 使用多少个核心。类似于 `make -j`。
 
-The `cores` setting determines the value of
-`NIX_BUILD_CORES`. `NIX_BUILD_CORES` is equal to `cores`, unless
-`cores` equals `0`, in which case `NIX_BUILD_CORES` will be the total
-number of cores in the system.
+`cores` 设置决定 `NIX_BUILD_CORES` 的值。`NIX_BUILD_CORES` 等于 `cores`，除非 `cores` 等于 `0`，此时 `NIX_BUILD_CORES` 将是系统中的核心总数。
 
-The maximum number of consumed cores is a simple multiplication,
-`max-jobs` \* `NIX_BUILD_CORES`.
+消耗核心的最大数量是一个简单的乘法：`max-jobs` \* `NIX_BUILD_CORES`。
 
-The balance on how to set these two independent variables depends upon
-each builder's workload and hardware. Here are a few example scenarios
-on a machine with 24 cores:
+这两个独立变量的设置如何平衡，取决于每台构建机的工作负载和硬件。以下是在一台 24 核心机器上的几个示例场景：
 
-| `max-jobs` | `cores` | `NIX_BUILD_CORES` | Maximum Processes | Result                                                                                                                                                                                                                                                                                 |
+| `max-jobs` | `cores` | `NIX_BUILD_CORES` | 最大进程数 | 结果                                                                                                                                                                                                                                                                                 |
 | --------------------- | ------------------ | ----------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1                     | 24                 | 24                | 24                | One derivation will be built at a time, each one can use 24 cores. Undersold if a job can’t use 24 cores.                                                                                                                                                                              |
-| 4                     | 6                  | 6                 | 24                | Four derivations will be built at once, each given access to six cores.                                                                                                                                                                                                                |
-| 12                    | 6                  | 6                 | 72                | 12 derivations will be built at once, each given access to six cores. This configuration is over-sold. If all 12 derivations being built simultaneously try to use all six cores, the machine's performance will be degraded due to extensive context switching between the 12 builds. |
-| 24                    | 1                  | 1                 | 24                | 24 derivations can build at the same time, each using a single core. Never oversold, but derivations which require many cores will be very slow to compile.                                                                                                                            |
-| 24                    | 0                  | 24                | 576               | 24 derivations can build at the same time, each using all the available cores of the machine. Very likely to be oversold, and very likely to suffer context switches.                                                                                                                  |
+| 1                     | 24                 | 24                | 24                | 一次构建一个 derivation，每个可以使用 24 个核心。如果某个任务用不满 24 个核心，就会造成核心闲置。                                                                                                                                                                              |
+| 4                     | 6                  | 6                 | 24                | 同时构建 4 个 derivation，每个可以使用 6 个核心。                                                                                                                                                                                                                |
+| 12                    | 6                  | 6                 | 72                | 同时构建 12 个 derivation，每个可以使用 6 个核心。这种配置属于超卖（over-sold）。如果这 12 个同时构建的 derivation 都试图用满 6 个核心，机器的性能会因为 12 个构建之间频繁的上下文切换而下降。 |
+| 24                    | 1                  | 1                 | 24                | 24 个 derivation 可以同时构建，每个使用单个核心。永远不会超卖，但需要大量核心的 derivation 编译起来会非常慢。                                                                                                                            |
+| 24                    | 0                  | 24                | 576               | 24 个 derivation 可以同时构建，每个可以使用机器上所有可用核心。很可能超卖，也很容易发生上下文切换。                                                                                                                  |
 
-It is up to the derivations' build script to respect host's requested
-cores-per-build by following the value of the `NIX_BUILD_CORES`
-environment variable.
+构建脚本是否遵循构建机为每次构建请求的核心数，取决于其是否遵照 `NIX_BUILD_CORES` 环境变量的值行事。

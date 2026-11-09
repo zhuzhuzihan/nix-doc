@@ -1,20 +1,20 @@
 {{#include build-result-v1-fixed.md}}
 
-## Examples
+## 示例
 
-### Successful build
+### 构建成功
 
 ```json
 {{#include schema/build-result-v1/success.json}}
 ```
 
-### Failed build (output rejected)
+### 构建失败（输出被拒绝）
 
 ```json
 {{#include schema/build-result-v1/output-rejected.json}}
 ```
 
-### Failed build (non-deterministic)
+### 构建失败（非确定性）
 
 ```json
 {{#include schema/build-result-v1/not-deterministic.json}}

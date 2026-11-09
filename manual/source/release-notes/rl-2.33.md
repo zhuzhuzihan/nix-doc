@@ -1,107 +1,103 @@
 # Release 2.33.0 (2025-12-09)
 
-## New features
+## 新特性
 
-- New command `nix registry resolve` [#14595](https://github.com/NixOS/nix/pull/14595)
+- 新命令 `nix registry resolve` [#14595](https://github.com/NixOS/nix/pull/14595)
 
-  This command looks up a flake registry input name and returns the flakeref it resolves to.
+  该命令查询 Flakes registry 中的输入名称，并返回其解析到的 flakeref。
 
-  For example, looking up Nixpkgs:
+  例如查询 Nixpkgs：
 
   ```
   $ nix registry resolve nixpkgs
   github:NixOS/nixpkgs/nixpkgs-unstable
   ```
 
-  Upstreamed from [Determinate Nix 3.14.0](https://github.com/DeterminateSystems/nix-src/pull/273).
+  自 [Determinate Nix 3.14.0](https://github.com/DeterminateSystems/nix-src/pull/273) 上游合并而来。
 
-- `nix flake clone` supports all input types [#14581](https://github.com/NixOS/nix/pull/14581)
+- `nix flake clone` 支持所有输入类型 [#14581](https://github.com/NixOS/nix/pull/14581)
 
-  `nix flake clone` now supports arbitrary input types. In particular, this allows you to clone tarball flakes, such as flakes on FlakeHub.
+  `nix flake clone` 现已支持任意输入类型。尤其值得一提的是，这使得克隆 tarball 类型的 Flakes 成为可能，例如 FlakeHub 上的 Flakes。
 
-  Upstreamed from [Determinate Nix 3.12.0](https://github.com/DeterminateSystems/nix-src/pull/229).
+  自 [Determinate Nix 3.12.0](https://github.com/DeterminateSystems/nix-src/pull/229) 上游合并而来。
 
-## Performance improvements
+## 性能改进
 
-- Git fetcher computes `revCount`s using multiple threads [#14462](https://github.com/NixOS/nix/pull/14462)
+- Git fetcher 使用多线程计算 `revCount` [#14462](https://github.com/NixOS/nix/pull/14462)
 
-  When using Git repositories with a long history, calculating the `revCount` attribute can take a long time. Nix now computes `revCount` using multiple threads, making it much faster (e.g. 9.1s to 3.7s for Nixpkgs).
+  当使用具有较长历史的 Git 仓库时，计算 `revCount` 属性可能耗时很长。Nix 现在使用多线程计算 `revCount`，速度大幅提升（例如对 Nixpkgs 从 9.1 秒缩短到 3.7 秒）。
 
-  Note that if you don't need `revCount`, you can disable it altogether by setting the flake input attribute `shallow = true`.
+  请注意，如果你不需要 `revCount`，可以通过设置 Flakes 输入属性 `shallow = true` 完全禁用它。
 
-  Upstreamed from [Determinate Nix 3.12.2](https://github.com/DeterminateSystems/nix-src/pull/245).
+  自 [Determinate Nix 3.12.2](https://github.com/DeterminateSystems/nix-src/pull/245) 上游合并而来。
 
-- `builtins.stringLength` now runs in constant time [#14442](https://github.com/NixOS/nix/pull/14442)
+- `builtins.stringLength` 现在以常数时间运行 [#14442](https://github.com/NixOS/nix/pull/14442)
 
-  The internal representation of strings has been replaced with a size-prefixed Pascal style string. Previously Nix stored strings as a NUL-terminated array of bytes, necessitating a linear scan to calculate the length.
+  字符串的内部表示已被替换为带长度前缀的 Pascal 风格字符串。此前 Nix 将字符串存储为以 NUL 结尾的字节数组，计算长度时需要进行线性扫描。
 
-- Uploads to `http://` and `https://` binary cache stores now run in constant memory [#14390](https://github.com/NixOS/nix/pull/14390)
+- 向 `http://` 和 `https://` 二进制缓存存储的上传现在以常数内存运行 [#14390](https://github.com/NixOS/nix/pull/14390)
 
-  Nix used to buffer the whole compressed NAR contents in memory. It now reads it in a streaming fashion.
+  Nix 过去会将整个压缩后的 NAR 内容缓冲在内存中，现在改为以流式方式读取。
 
-- Channel URLs migrated to channels.nixos.org subdomain [#14517](https://github.com/NixOS/nix/issues/14517) [#14518](https://github.com/NixOS/nix/pull/14518)
+- Channel URL 迁移到 channels.nixos.org 子域名 [#14517](https://github.com/NixOS/nix/issues/14517) [#14518](https://github.com/NixOS/nix/pull/14518)
 
-  Channel URLs have been updated from `https://nixos.org/channels/` to `https://channels.nixos.org/` throughout Nix. This subdomain provides better reliability with IPv6 support and improved CDN distribution. The old domain apex (`nixos.org/channels/`) currently redirects to the new location but may be deprecated in the future.
+  Nix 中所有的 Channel URL 已从 `https://nixos.org/channels/` 更新为 `https://channels.nixos.org/`。该子域名具备 IPv6 支持和改进的 CDN 分发，可靠性更好。旧域名根路径（`nixos.org/channels/`）目前会重定向到新位置，但未来可能会被弃用。
 
-- Fix `download buffer is full; consider increasing the 'download-buffer-size' setting` warning [#11728](https://github.com/NixOS/nix/issues/11728) [#14614](https://github.com/NixOS/nix/pull/14614)
+- 修复 `download buffer is full; consider increasing the 'download-buffer-size' setting` 警告 [#11728](https://github.com/NixOS/nix/issues/11728) [#14614](https://github.com/NixOS/nix/pull/14614)
 
-  The underlying issue that led to [#11728](https://github.com/NixOS/nix/issues/11728) has been resolved by utilizing
-  [libcurl write pausing functionality](https://curl.se/libcurl/c/curl_easy_pause.html) to control backpressure when unpacking to slow destinations like the git-backed tarball cache. The default value of `download-buffer-size` is now 1 MiB and it's no longer recommended to increase it, since the root cause has been fixed.
+  导致 [#11728](https://github.com/NixOS/nix/issues/11728) 的根本问题已通过使用 [libcurl 写暂停功能](https://curl.se/libcurl/c/curl_easy_pause.html)来控制背压而得到解决，适用于向较慢的目标（如基于 git 的 tarball 缓存）解包的场景。`download-buffer-size` 的默认值现为 1 MiB，并且由于根本原因已经修复，不再建议增大该值。
 
-  This is expected to improve download performance on fast connections, since previously a single slow download consumer would stall the thread and prevent any other transfers from progressing.
+  这有望改善快速网络连接下的下载性能，因为此前单个缓慢的下载消费者会阻塞线程，导致其他传输无法推进。
 
-  Many thanks go out to the [Lix project](https://lix.systems/) for the [implementation](https://git.lix.systems/lix-project/lix/commit/4ae6fb5a8f0d456b8d2ba2aaca3712b4e49057fc) that served as inspiration for this change and for triaging libcurl [issues with pausing](https://github.com/curl/curl/issues/19334).
+  非常感谢 [Lix 项目](https://lix.systems/)，其[实现](https://git.lix.systems/lix-project/lix/commit/4ae6fb5a8f0d456b8d2ba2aaca3712b4e49057fc)为本变更提供了灵感，并协助排查了 libcurl [与暂停相关的问题](https://github.com/curl/curl/issues/19334)。
 
-- Significantly improve tarball unpacking performance [#14689](https://github.com/NixOS/nix/pull/14689) [#14696](https://github.com/NixOS/nix/pull/14696) [#10683](https://github.com/NixOS/nix/issues/10683) [#11098](https://github.com/NixOS/nix/issues/11098)
+- 显著提升 tarball 解包性能 [#14689](https://github.com/NixOS/nix/pull/14689) [#14696](https://github.com/NixOS/nix/pull/14696) [#10683](https://github.com/NixOS/nix/issues/10683) [#11098](https://github.com/NixOS/nix/issues/11098)
 
-  Nix uses a content-addressed cache backed by libgit2 for deduplicating files fetched via `fetchTarball` and `github`, `tarball` flake inputs. Its usage has been significantly optimised to reduce the amount of I/O operations that are performed. For a typical nixpkgs source tarball this results in 200 times fewer system calls on Linux. In combination with libcurl pausing this alleviates performance regressions stemming from the tarball cache.
+  Nix 使用由 libgit2 支持的内容寻址缓存来对通过 `fetchTarball` 以及 `github`、`tarball` Flakes 输入获取的文件进行去重。其使用方式已得到显著优化，以减少执行的 I/O 操作数量。对于一个典型的 nixpkgs 源码 tarball，在 Linux 上系统调用次数减少了 200 倍。结合 libcurl 暂停功能，这缓解了 tarball 缓存带来的性能回退。
 
-- Already valid derivations are no longer copied to the store [#14219](https://github.com/NixOS/nix/pull/14219)
+- 已经有效的 derivation（派生）不再被复制到 store [#14219](https://github.com/NixOS/nix/pull/14219)
 
-  This results in a modest speedup when using the Nix daemon.
+  在使用 Nix daemon（守护进程）时，这会带来一定的提速。
 
-- `nix nar ls` and `nix nar cat` are significantly faster and no longer buffer the whole NAR in memory [#14273](https://github.com/NixOS/nix/pull/14273) [#14732](https://github.com/NixOS/nix/pull/14732)
+- `nix nar ls` 和 `nix nar cat` 速度显著提升，且不再将整个 NAR 缓冲在内存中 [#14273](https://github.com/NixOS/nix/pull/14273) [#14732](https://github.com/NixOS/nix/pull/14732)
 
-## S3 improvements
+## S3 改进
 
-- Improved S3 binary cache support via HTTP [#11748](https://github.com/NixOS/nix/issues/11748) [#12403](https://github.com/NixOS/nix/issues/12403) [#12671](https://github.com/NixOS/nix/issues/12671) [#13084](https://github.com/NixOS/nix/issues/13084) [#13752](https://github.com/NixOS/nix/pull/13752) [#13823](https://github.com/NixOS/nix/pull/13823) [#14026](https://github.com/NixOS/nix/pull/14026) [#14120](https://github.com/NixOS/nix/pull/14120) [#14131](https://github.com/NixOS/nix/pull/14131) [#14135](https://github.com/NixOS/nix/pull/14135) [#14144](https://github.com/NixOS/nix/pull/14144) [#14170](https://github.com/NixOS/nix/pull/14170) [#14190](https://github.com/NixOS/nix/pull/14190) [#14198](https://github.com/NixOS/nix/pull/14198) [#14206](https://github.com/NixOS/nix/pull/14206) [#14209](https://github.com/NixOS/nix/pull/14209) [#14222](https://github.com/NixOS/nix/pull/14222) [#14223](https://github.com/NixOS/nix/pull/14223) [#14330](https://github.com/NixOS/nix/pull/14330) [#14333](https://github.com/NixOS/nix/pull/14333) [#14335](https://github.com/NixOS/nix/pull/14335) [#14336](https://github.com/NixOS/nix/pull/14336) [#14337](https://github.com/NixOS/nix/pull/14337) [#14350](https://github.com/NixOS/nix/pull/14350) [#14356](https://github.com/NixOS/nix/pull/14356) [#14357](https://github.com/NixOS/nix/pull/14357) [#14374](https://github.com/NixOS/nix/pull/14374) [#14375](https://github.com/NixOS/nix/pull/14375) [#14376](https://github.com/NixOS/nix/pull/14376) [#14377](https://github.com/NixOS/nix/pull/14377) [#14391](https://github.com/NixOS/nix/pull/14391) [#14393](https://github.com/NixOS/nix/pull/14393) [#14420](https://github.com/NixOS/nix/pull/14420) [#14421](https://github.com/NixOS/nix/pull/14421)
+- 通过 HTTP 改进 S3 二进制缓存支持 [#11748](https://github.com/NixOS/nix/issues/11748) [#12403](https://github.com/NixOS/nix/issues/12403) [#12671](https://github.com/NixOS/nix/issues/12671) [#13084](https://github.com/NixOS/nix/issues/13084) [#13752](https://github.com/NixOS/nix/pull/13752) [#13823](https://github.com/NixOS/nix/pull/13823) [#14026](https://github.com/NixOS/nix/pull/14026) [#14120](https://github.com/NixOS/nix/pull/14120) [#14131](https://github.com/NixOS/nix/pull/14131) [#14135](https://github.com/NixOS/nix/pull/14135) [#14144](https://github.com/NixOS/nix/pull/14144) [#14170](https://github.com/NixOS/nix/pull/14170) [#14190](https://github.com/NixOS/nix/pull/14190) [#14198](https://github.com/NixOS/nix/pull/14198) [#14206](https://github.com/NixOS/nix/pull/14206) [#14209](https://github.com/NixOS/nix/pull/14209) [#14222](https://github.com/NixOS/nix/pull/14222) [#14223](https://github.com/NixOS/nix/pull/14223) [#14330](https://github.com/NixOS/nix/pull/14330) [#14333](https://github.com/NixOS/nix/pull/14333) [#14335](https://github.com/NixOS/nix/pull/14335) [#14336](https://github.com/NixOS/nix/pull/14336) [#14337](https://github.com/NixOS/nix/pull/14337) [#14350](https://github.com/NixOS/nix/pull/14350) [#14356](https://github.com/NixOS/nix/pull/14356) [#14357](https://github.com/NixOS/nix/pull/14357) [#14374](https://github.com/NixOS/nix/pull/14374) [#14375](https://github.com/NixOS/nix/pull/14375) [#14376](https://github.com/NixOS/nix/pull/14376) [#14377](https://github.com/NixOS/nix/pull/14377) [#14391](https://github.com/NixOS/nix/pull/14391) [#14393](https://github.com/NixOS/nix/pull/14393) [#14420](https://github.com/NixOS/nix/pull/14420) [#14421](https://github.com/NixOS/nix/pull/14421)
 
-  S3 binary cache operations now happen via HTTP, leveraging `libcurl`'s native AWS SigV4 authentication instead of the AWS C++ SDK, providing significant improvements:
+  S3 二进制缓存操作现在通过 HTTP 进行，利用 `libcurl` 原生的 AWS SigV4 认证，而不是 AWS C++ SDK，带来了显著的改进：
 
-  - **Reduced memory usage**: Eliminates memory buffering issues that caused segfaults with large files
-  - **Fixed upload reliability**: Resolves AWS SDK chunking errors (`InvalidChunkSizeError`)
-  - **Lighter dependencies**: Uses lightweight `aws-crt-cpp` instead of full `aws-cpp-sdk`, reducing build complexity
+  - **内存占用降低**：消除了导致大文件段错误的内存缓冲问题
+  - **上传可靠性修复**：解决了 AWS SDK 的分块错误（`InvalidChunkSizeError`）
+  - **依赖更轻量**：使用轻量的 `aws-crt-cpp` 而非完整的 `aws-cpp-sdk`，降低构建复杂度
 
-  The new implementation requires curl >= 7.75.0 and `aws-crt-cpp` for credential management.
+  新实现要求 curl >= 7.75.0，并使用 `aws-crt-cpp` 进行凭据管理。
 
-  All existing S3 URL formats and parameters remain supported, however the store settings for configuring multipart uploads have changed:
+  所有现有的 S3 URL 格式和参数均继续受支持，但用于配置分段上传（multipart upload）的 store 设置发生了变化：
 
-  - **`multipart-upload`** (default: `false`): Enable multipart uploads for large files. When enabled, files exceeding the multipart threshold will be uploaded in multiple parts.
+  - **`multipart-upload`**（默认值：`false`）：为大型文件启用分段上传。启用后，超过分段阈值的文件将被分成多个部分上传。
 
-  - **`multipart-threshold`** (default: `100 MiB`): Minimum file size for using multipart uploads. Files smaller than this will use regular PUT requests. Only takes effect when `multipart-upload` is enabled.
+  - **`multipart-threshold`**（默认值：`100 MiB`）：使用分段上传的最小文件大小。小于该值的文件将使用常规 PUT 请求。仅在 `multipart-upload` 启用时生效。
 
-  - **`multipart-chunk-size`** (default: `5 MiB`): Size of each part in multipart uploads. Must be at least 5 MiB (AWS S3 requirement). Larger chunk sizes reduce the number of requests but use more memory.
+  - **`multipart-chunk-size`**（默认值：`5 MiB`）：分段上传中每个部分的大小。必须至少为 5 MiB（AWS S3 的要求）。较大的分块大小会减少请求数量，但会占用更多内存。
 
-  - **`buffer-size`**: Has been replaced by `multipart-chunk-size` and is now an alias to it.
+  - **`buffer-size`**：已被 `multipart-chunk-size` 取代，现在是它的别名。
 
-  Note that this change also means Nix now supports S3 binary cache stores even if built without `aws-crt-cpp`, but only for public buckets which do not require authentication.
+  请注意，这一变更还意味着即使 Nix 在构建时未包含 `aws-crt-cpp`，现在也支持 S3 二进制缓存存储，但仅限于无需认证的公开存储桶（public bucket）。
 
-- S3 URLs now support object versioning via `versionId` parameter [#13955](https://github.com/NixOS/nix/issues/13955) [#14274](https://github.com/NixOS/nix/pull/14274)
+- S3 URL 现在通过 `versionId` 参数支持对象版本控制 [#13955](https://github.com/NixOS/nix/issues/13955) [#14274](https://github.com/NixOS/nix/pull/14274)
 
-  S3 URLs now support a `versionId` query parameter to fetch specific versions
-  of objects from S3 buckets with versioning enabled. This allows pinning to
-  exact object versions for reproducibility and protection against unexpected
-  changes:
+  S3 URL 现在支持 `versionId` 查询参数，用于从启用了版本控制的 S3 存储桶中获取特定版本的对象。这允许固定到确切的对象版本，以保证可复现性并防止意外变更：
 
   ```
   s3://bucket/key?region=us-east-1&versionId=abc123def456
   ```
 
-- S3 binary cache stores now support storage class configuration [#7015](https://github.com/NixOS/nix/issues/7015) [#14464](https://github.com/NixOS/nix/pull/14464)
+- S3 二进制缓存存储现在支持存储类配置 [#7015](https://github.com/NixOS/nix/issues/7015) [#14464](https://github.com/NixOS/nix/pull/14464)
 
-  S3 binary cache stores now support configuring the storage class for uploaded objects via the `storage-class` parameter. This allows users to optimize costs by selecting appropriate storage tiers based on access patterns.
+  S3 二进制缓存存储现在支持通过 `storage-class` 参数为上传的对象配置存储类。这使得用户可以根据访问模式选择合适的存储层级来优化成本。
 
-  Example usage:
+  用法示例：
 
   ```bash
   # Use Glacier storage for long-term archival
@@ -111,35 +107,35 @@
   nix copy --to 's3://my-bucket?storage-class=INTELLIGENT_TIERING' /nix/store/...
   ```
 
-  The storage class applies to both regular uploads and multipart uploads. When not specified, objects use the bucket's default storage class.
+  存储类同时适用于常规上传和分段上传。未指定时，对象将使用存储桶的默认存储类。
 
-  See the [S3 storage classes documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html) for available storage classes and their characteristics.
+  可用的存储类及其特性请参阅 [S3 存储类文档](https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html)。
 
 
-## Store path info JSON format changes
+## 存储路径信息 JSON 格式变更
 
-The JSON format emitted by `nix path-info --json` has been updated to a new version with improved structure.
+`nix path-info --json` 输出的 JSON 格式已更新为一个结构更完善的新版本。
 
-To maintain compatibility, `nix path-info --json` now requires a `--json-format` flag to specify the output format version.
-Using `--json` without `--json-format` is deprecated and will become an error in a future release.
-For now, it defaults to version 1 with a warning, for a smoother migration.
+为保持兼容性，`nix path-info --json` 现在需要一个 `--json-format` 选项来指定输出格式版本。
+使用不带 `--json-format` 的 `--json` 已被弃用，并将在未来的版本中变为错误。
+目前它会默认使用版本 1 并给出警告，以便更平滑地迁移。
 
-### Version 1 (`--json-format 1`)
+### 版本 1（`--json-format 1`）
 
-This is the legacy format, preserved for backwards compatibility:
+这是为了向后兼容而保留的旧版格式：
 
-- String-based hash values (e.g., `"narHash": "sha256:FePFYIlM..."`)
-- String-based content addresses (e.g., `"ca": "fixed:r:sha256:1abc..."`)
-- Full store paths for map keys and references (e.g., `"/nix/store/abc...-foo"`)
-- Now includes `"storeDir"` field at the top level
+- 基于字符串的哈希值（例如 `"narHash": "sha256:FePFYIlM..."`）
+- 基于字符串的内容地址（例如 `"ca": "fixed:r:sha256:1abc..."`）
+- 映射键和引用使用完整的存储路径（例如 `"/nix/store/abc...-foo"`）
+- 现在在顶层包含 `"storeDir"` 字段
 
-### Version 2 (`--json-format 2`)
+### 版本 2（`--json-format 2`）
 
-The new structured format follows the [data modeling guidelines](@docroot@/development/data-modeling.md) with the following changes:
+新的结构化格式遵循[数据建模指南](@docroot@/development/data-modeling.md)，包含以下变更：
 
-- **Nested structure with top-level metadata**:
+- **带顶层元数据的嵌套结构**：
 
-  The output is now wrapped in an object with `version`, `storeDir`, and `info` fields:
+  输出现在被包裹在一个包含 `version`、`storeDir` 和 `info` 字段的对象中：
 
   ```json
   {
@@ -149,40 +145,40 @@ The new structured format follows the [data modeling guidelines](@docroot@/devel
   }
   ```
 
-  The map from [store path base names](@docroot@/store/store-path.md#base-name) to store object info is nested under the `info` field.
+  从[存储路径基础名称](@docroot@/store/store-path.md#base-name)到存储对象信息的映射嵌套在 `info` 字段之下。
 
-- **[Store path base names](@docroot@/store/store-path.md#base-name) instead of full paths**:
+- **使用[存储路径基础名称](@docroot@/store/store-path.md#base-name)而非完整路径**：
 
-  Map keys and references use store path base names (e.g., `"abc...-foo"`) instead of full absolute store paths.
-  Combined with `storeDir`, the full path can be reconstructed.
+  映射键和引用使用存储路径基础名称（例如 `"abc...-foo"`），而不是完整的绝对存储路径。
+  结合 `storeDir` 即可重建完整路径。
 
-- **Structured `ca` field**:
+- **结构化的 `ca` 字段**：
 
-  Content address is now a structured JSON object instead of a string:
+  内容地址现在是一个结构化的 JSON 对象，而不是字符串：
 
-  - Old: `"ca": "fixed:r:sha256:1abc..."`
-  - New: `"ca": {"method": "nar", "hash": "sha256-ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="}`
-  - Still `null` values for input-addressed store objects
+  - 旧：`"ca": "fixed:r:sha256:1abc..."`
+  - 新：`"ca": {"method": "nar", "hash": "sha256-ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="}`
+  - 对于输入寻址（input-addressed）的存储对象，其值仍为 `null`
 
-  The `hash` field uses the [SRI](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) format like other hashes.
+  `hash` 字段与其他哈希一样使用 [SRI](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) 格式。
 
-Additionally the following fields are added to both formats:
+此外，两种格式都新增了以下字段：
 
-  - **`version` field**:
+  - **`version` 字段**：
 
-    All store path info JSON now includes `"version": <1|2>`. The `version` tracks breaking changes, and adding fields to outputted JSON is not a breaking change.
+    所有存储路径信息 JSON 现在都包含 `"version": <1|2>`。`version` 用于追踪破坏性变更；向输出的 JSON 中添加字段不属于破坏性变更。
 
-  - **`storeDir` field**:
+  - **`storeDir` 字段**：
 
-    Top-level `"storeDir"` field contains the store directory path (e.g., `"/nix/store"`).
+    顶层的 `"storeDir"` 字段包含 store 目录路径（例如 `"/nix/store"`）。
 
-## Derivation JSON format changes
+## derivation JSON 格式变更
 
-The derivation JSON format has been updated from version 3 to version 4:
+derivation JSON 格式已从版本 3 更新到版本 4：
 
-- **Nested structure with top-level metadata**:
+- **带顶层元数据的嵌套结构**：
 
-  The output of `nix derivation show` is now wrapped in an object with `version` and `derivations` fields:
+  `nix derivation show` 的输出现在被包裹在一个包含 `version` 和 `derivations` 字段的对象中：
 
   ```json
   {
@@ -191,60 +187,59 @@ The derivation JSON format has been updated from version 3 to version 4:
   }
   ```
 
-  The map from derivation paths to derivation info is nested under the `derivations` field.
+  从 derivation 路径到 derivation 信息的映射嵌套在 `derivations` 字段之下。
 
-  This matches the structure used for `nix path-info --json --json-format 2`, and likewise brings this command into compliance with the JSON guidelines.
+  这与 `nix path-info --json --json-format 2` 所使用的结构一致，同样使该命令符合 JSON 指南的要求。
 
-- **Restructured inputs**:
+- **重构后的输入（inputs）**：
 
-  Inputs are now nested under an `inputs` object:
+  输入现在嵌套在一个 `inputs` 对象之下：
 
-  - Old: `"inputSrcs": [...], "inputDrvs": {...}`
-  - New: `"inputs": {"srcs": [...], "drvs": {...}}`
+  - 旧：`"inputSrcs": [...], "inputDrvs": {...}`
+  - 新：`"inputs": {"srcs": [...], "drvs": {...}}`
 
-- **Consistent content addresses**:
+- **一致的内容地址**：
 
-  Fixed content-addressed outputs now use structured JSON format.
-  This is the same format as `ca` in store path info (after the new version).
+  固定内容寻址（fixed content-addressed）输出现在使用结构化的 JSON 格式。
+  该格式与存储路径信息中的 `ca` 字段（新版本之后）相同。
 
-Version 3 and earlier formats are *not* accepted when reading.
+读取时*不*接受版本 3 及更早的格式。
 
-**Affected command**: `nix derivation`, namely its `show` and `add` sub-commands.
+**受影响的命令**：`nix derivation`，即其 `show` 和 `add` 子命令。
 
-## Miscellaneous changes
+## 杂项变更
 
-- Git fetcher: Restore progress indication [#14487](https://github.com/NixOS/nix/pull/14487)
+- Git fetcher：恢复进度指示 [#14487](https://github.com/NixOS/nix/pull/14487)
 
-  Nix used to feel "stuck" while it was cloning large repositories. Nix now shows Git's native progress indicator while fetching.
+  过去在克隆大型仓库时，Nix 会让人感觉"卡住"了。Nix 现在会在获取（fetch）时显示 Git 原生的进度指示。
 
-  Upstreamed from [Determinate Nix 3.13.0](https://github.com/DeterminateSystems/nix-src/pull/250).
+  自 [Determinate Nix 3.13.0](https://github.com/DeterminateSystems/nix-src/pull/250) 上游合并而来。
 
-- Interrupting REPL commands works more than once [#13481](https://github.com/NixOS/nix/issues/13481)
+- 中断 REPL 命令可以多次生效 [#13481](https://github.com/NixOS/nix/issues/13481)
 
-  Previously, this only worked once per REPL session; further attempts would be ignored.
-  This issue is now fixed, so REPL commands such as `:b` or `:p` can be canceled consistently.
-  This is a cherry-pick of the change from the [Lix project](https://gerrit.lix.systems/c/lix/+/1097).
+  此前，每个 REPL 会话中该操作只能生效一次；后续尝试会被忽略。
+  此问题现已修复，因此 `:b` 或 `:p` 等 REPL 命令可以稳定地被取消。
+  这是对 [Lix 项目](https://gerrit.lix.systems/c/lix/+/1097)中相应变更的 cherry-pick。
 
-- NAR unpacking code has been rewritten to make use of dirfd-based `openat` and `openat2` system calls when available [#14597](https://github.com/NixOS/nix/pull/14597)
+- NAR 解包代码已重写，在可用时改用基于 dirfd 的 `openat` 和 `openat2` 系统调用 [#14597](https://github.com/NixOS/nix/pull/14597)
 
-- Dynamic size unit rendering [#14423](https://github.com/NixOS/nix/pull/14423) [#14364](https://github.com/NixOS/nix/pull/14364)
+- 动态大小单位渲染 [#14423](https://github.com/NixOS/nix/pull/14423) [#14364](https://github.com/NixOS/nix/pull/14364)
 
-  Various commands and the progress bar now use dynamically determined size units instead
-  of always using `MiB`. For example, the progress bar now reports download status like:
+  各种命令和进度条现在使用动态确定的大小单位，而不是始终使用 `MiB`。例如，进度条现在报告的下载状态如下所示：
 
   ```
   [1/196/197 copied (773.7 MiB/2.1 GiB), 172.4/421.5 MiB DL]
   ```
 
-  Instead of:
+  而不是：
 
   ```
   [1/196/197 copied (773.7/2147.3 MiB), 172.4/421.5 MiB DL]
   ```
 
-## Contributors
+## Contributors（贡献者）
 
-This release was made possible by the following 33 contributors:
+本次发布离不开以下 33 位贡献者：
 
 - Adam Dinwoodie [**(@me-and)**](https://github.com/me-and)
 - jonhermansen [**(@jonhermansen)**](https://github.com/jonhermansen)

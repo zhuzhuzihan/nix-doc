@@ -1,54 +1,54 @@
-# Data Modeling Guidelines
+# 数据建模 guideline
 
-Nix consumes and produces JSON and attribute sets in a variety of contexts.
-These guidelines ensure consistent practices for our interfaces, for ease of use, and so that experience in one part carries over to another.
+Nix 在各种场景中消费和产生 JSON 与属性集（attribute set）。
+这些 guideline 确保我们的接口保持一致的做法，以便于使用，并使在一部分积累的经验能迁移到另一部分。
 
-For these guidelines, we will use JSON terminology, but they apply equally well to new attribute set interfaces (primops, etc.).
-Note that these are guidelines first and foremost. Exceptions include:
-- Feature testing: e.g., it is OK to do `builtins?frobnicate`.
-- Compatibility: we generally do not change stable interfaces just to make them comply. New replacements can be added with care.
+在这些 guideline 中，我们将使用 JSON 术语，但它们同样适用于新的属性集接口（primop 等）。
+注意，这些首先且最重要的是 guideline。例外情况包括：
+- 功能试探：例如，`builtins?frobnicate` 是可以接受的。
+- 兼容性：我们一般不会仅仅为了让稳定接口符合规范而修改它们。可以谨慎地添加新的替代接口。
 
-## Extensibility
+## 可扩展性
 
-The schema of JSON input and output should allow for backwards compatible extension.
-This section explains how to achieve this.
+JSON 输入和输出的 schema 应当允许向后兼容的扩展。
+本节解释如何做到这一点。
 
-Two definitions are helpful here, because while JSON only defines one "key-value" object type, we use it to cover two use cases:
+这里有两个有用的定义，因为虽然 JSON 只定义了一种“键-值”对象类型，我们用它涵盖了两种用例：
 
- - **dictionary**: a map from names to value that all have the same type.
-   In C++ this would be a `std::map` with string keys.
+ - **字典（dictionary）**：从名称到值的映射，其中所有值具有相同的类型。
+   在 C++ 中，这对应一个以字符串为键的 `std::map`。
 
- - **record**: a fixed set of attributes each with their own type.
-   In C++, this would be represented by a `struct`.
+ - **记录（record）**：一组固定的属性，各有自己的类型。
+   在 C++ 中，这对应一个 `struct`。
 
-It is best not to mix these use cases, as that may lead to incompatibilities when the schema changes.
-For example, adding a record field to a dictionary breaks consumers that assume all JSON object fields to have the same meaning and type, and dictionary items with a colliding name can not be represented anymore.
+最好不要混用这两种用例，否则在 schema 变更时可能导致不兼容。
+例如，向字典中添加一个记录字段，会破坏那些假定所有 JSON 对象字段具有相同含义和类型的消费者，并且与新增字段同名的字典项将无法再表示。
 
-This leads to the following guidelines:
+由此得出以下 guideline：
 
- - The top-level (root) value must be a record.
+ - 顶层（根）值必须是记录。
 
-   Otherwise, one can not change the structure of a command's output.
+   否则，无法更改命令输出的结构。
 
- - The value of a dictionary item must be a record.
+ - 字典项的值必须是记录。
 
-   Otherwise, the item type can not be extended.
+   否则，项的类型无法扩展。
 
- - List items should be records.
+ - 列表项应当是记录。
 
-   Otherwise, one can not change the structure of the list items.
+   否则，无法更改列表项的结构。
 
-   If the order of the items does not matter, and each item has a unique key that is a string, consider representing the list as a dictionary instead.
-   If the order of the items needs to be preserved, return a list of records.
+   如果各项的顺序无关紧要，并且每一项都有一个唯一的字符串键，可以考虑改为用字典表示该列表。
+   如果需要保留各项的顺序，则返回记录列表。
 
- - Streaming JSON should return records.
+ - 流式 JSON 应当返回记录。
 
-   An example of a streaming JSON format is [JSON lines](https://jsonlines.org/), where each line represents a JSON value.
-   These JSON values can be considered top-level values or list items, and they must be records.
+   流式 JSON 格式的一个例子是 [JSON lines](https://jsonlines.org/)，其中每一行代表一个 JSON 值。
+   这些 JSON 值可以被视为顶层值或列表项，它们必须是记录。
 
-### Examples
+### 示例
 
-This is bad, because all keys must be assumed to be store types:
+下面这样是不好的，因为所有键都必须被假定为存储类型：
 
 ```json
 {
@@ -58,7 +58,7 @@ This is bad, because all keys must be assumed to be store types:
 }
 ```
 
-This is good, because the it is extensible at the root, and is somewhat self-documenting:
+下面这样是好的，因为它在根层级是可扩展的，并且具有一定的自解释性：
 
 ```json
 {
@@ -67,41 +67,41 @@ This is good, because the it is extensible at the root, and is somewhat self-doc
 }
 ```
 
-While the dictionary of store types seems like a very complete response at first, a use case may arise that warrants returning additional information.
-For example, the presence of plugin support may be crucial information for a client to proceed when their desired store type is missing.
+虽然 store 类型的字典乍看像一个非常完整的响应，但可能出现需要返回额外信息的用例。
+例如，当客户端所期望的 store 类型缺失时，是否支持插件可能是其能否继续的关键信息。
 
 
 
-The following representation is bad because it is not extensible:
+下面这种表示是不好的，因为它不可扩展：
 
 ```json
 { "outputs": [ "out" "bin" ] }
 ```
 
-However, simply converting everything to records is not enough, because the order of outputs must be preserved:
+然而，仅仅把所有东西都转换为记录是不够的，因为输出的顺序必须被保留：
 
 ```json
 { "outputs": { "bin": {}, "out": {} } }
 ```
 
-The first item is the default output. Deriving this information from the outputs ordering is not great, but this is how Nix currently happens to work.
-While it is possible for a JSON parser to preserve the order of fields, we can not rely on this capability to be present in all JSON libraries.
+第一个项是默认输出。从输出的排列顺序中推导这一信息并不理想，但 Nix 目前恰好就是这样工作的。
+虽然 JSON 解析器有可能保留字段的顺序，但我们不能指望所有 JSON 库都具备这一能力。
 
-This representation is extensible and preserves the ordering:
+下面这种表示既可扩展又保留了顺序：
 
 ```json
 { "outputs": [ { "outputName": "out" }, { "outputName": "bin" } ] }
 ```
 
-## Self-describing values
+## 自描述的值
 
-As described in the previous section, it's crucial that schemas can be extended with new fields without breaking compatibility.
-However, that should *not* mean we use the presence/absence of fields to indicate optional information *within* a version of the schema.
-Instead, always include the field, and use `null` to indicate the "nothing" case.
+如前一节所述，关键在于 schema 能够在不破坏兼容性的前提下扩展新字段。
+然而，这*不*意味着我们要在 schema 的某一版本*内部*用字段的有无来表示可选信息。
+相反，应始终包含该字段，并用 `null` 表示“无”的情形。
 
-### Examples
+### 示例
 
-Here are two JSON objects:
+以下是两个 JSON 对象：
 
 ```json
 {
@@ -115,12 +115,12 @@ Here are two JSON objects:
 }
 ```
 
-Since they differ in which fields they contain, they should *not* both be valid values of the same schema.
-At most, they can match two different schemas where the second (with `foo` and `bar`) is considered a newer version of the first (with just `foo`).
-Within each version, all fields are mandatory (always `foo`, and always `foo` and `bar`).
-Only *between* each version, `bar` gets added as a new mandatory field.
+由于它们包含的字段不同，它们*不*应当同时成为同一个 schema 的合法值。
+它们至多可以匹配两个不同的 schema，其中第二个（含 `foo` 和 `bar`）被视为第一个（仅含 `foo`）的更新版本。
+在每个版本内部，所有字段都是必需的（总是有 `foo`，总是有 `foo` 和 `bar`）。
+只有在*版本之间*，`bar` 才作为一个新的必需字段被加入。
 
-Here are another two JSON objects:
+以下是另外两个 JSON 对象：
 
 ```json
 { "foo": null }
@@ -129,5 +129,5 @@ Here are another two JSON objects:
 { "foo": { "bar": 1 } }
 ```
 
-Since they both contain a `foo` field, they could be valid values of the same schema.
-The schema would have `foo` has an optional field, which is either `null` or an object where `bar` is an integer.
+由于二者都包含 `foo` 字段，它们可以是同一个 schema 的合法值。
+该 schema 会将 `foo` 定义为可选字段，其值要么为 `null`，要么是一个 `bar` 为整数的对象。

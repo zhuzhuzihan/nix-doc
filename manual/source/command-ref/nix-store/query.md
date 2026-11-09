@@ -1,8 +1,8 @@
 # Name
 
-`nix-store --query` - display information about store paths
+`nix-store --query` - 显示存储路径的信息
 
-# Synopsis
+# 概要
 
 `nix-store` {`--query` | `-q`}
   {`--outputs` | `--requisites` | `-R` | `--references` | `--referrers` |
@@ -12,155 +12,104 @@
   [`--use-output`] [`-u`] [`--force-realise`] [`-f`]
   *paths…*
 
-# Description
+# 描述
 
-The operation `--query` displays various bits of information about the
-store paths . The queries are described below. At most one query can be
-specified. The default query is `--outputs`.
+`--query` 操作显示有关存储路径的各种信息。各查询项在下面描述。最多只能指定一个查询。默认查询为 `--outputs`。
 
-The paths *paths* may also be symlinks from outside of the Nix store, to
-the Nix store. In that case, the query is applied to the target of the
-symlink.
+*paths* 路径也可以是来自 Nix store 之外、指向 Nix store 的符号链接。在这种情况下，查询将作用于符号链接的目标。
 
-# Common query options
+# 通用查询选项
 
 - `--use-output` / `-u`
 
-  For each argument to the query that is a [store derivation], apply the
-  query to the output path of the derivation instead.
+  对于查询参数中每个是 [store derivation] 的参数，改为对该 derivation 的输出路径应用查询。
 
 - `--force-realise` / `-f`
 
-  Realise each argument to the query first (see [`nix-store --realise`](./realise.md)).
+  先对每个查询参数进行实化（realise）（参见 [`nix-store --realise`](./realise.md)）。
 
 [store derivation]: @docroot@/glossary.md#gloss-store-derivation
 
-# Queries
+# 查询
 
 - `--outputs`
 
-  Prints out the [output paths] of the store
-  derivations *paths*. These are the paths that will be produced when
-  the derivation is built.
+  打印 store derivation *paths* 的[输出路径]。这些是构建该 derivation 时会产生的路径。
 
   [output paths]: @docroot@/glossary.md#gloss-output-path
 
 - `--references`
 
-  Prints the set of [references] of the store paths
-  *paths*, that is, their immediate dependencies. (For *all*
-  dependencies, use `--requisites`.)
+  打印存储路径 *paths* 的[引用]集合，即它们的直接依赖。（要获取*所有*依赖，请使用 `--requisites`。）
 
   [references]: @docroot@/glossary.md#gloss-reference
 
 - `--requisites` / `-R`
 
-  Prints out the set of [*requisites*][requisite] (better known as the [closure]) of the store path *paths*.
+  打印存储路径 *paths* 的[*requisites* 集合][requisite]（更常见的叫法是[闭包]）。
 
   [requisite]: @docroot@/glossary.md#gloss-requisite
   [closure]: @docroot@/glossary.md#gloss-closure
 
-  This query has one option:
+  此查询有一个选项：
 
     - `--include-outputs`
-      Also include the existing output paths of [store derivation]s,
-      and their closures.
+      同时包含 [store derivation] 现有的输出路径及其闭包。
 
-  This query can be used to implement various kinds of deployment. A
-  *source deployment* is obtained by distributing the closure of a
-  store derivation. A *binary deployment* is obtained by distributing
-  the closure of an output path. A *cache deployment* (combined
-  source/binary deployment, including binaries of build-time-only
-  dependencies) is obtained by distributing the closure of a store
-  derivation and specifying the option `--include-outputs`.
+  此查询可用于实现各种类型的部署。*源码部署*（source deployment）通过分发一个 store derivation 的闭包实现。*二进制部署*（binary deployment）通过分发一个输出路径的闭包实现。*缓存部署*（cache deployment，即源码/二进制的组合部署，包含仅构建时依赖的二进制文件）通过分发一个 store derivation 的闭包并指定选项 `--include-outputs` 实现。
 
 - `--referrers`
 
-  Prints the set of [*referrers*][referrer] of the store paths *paths*, that is,
-  the store paths currently existing in the Nix store that refer to
-  one of *paths*. Note that contrary to the references, the set of
-  referrers is not constant; it can change as store paths are added or
-  removed.
+  打印存储路径 *paths* 的[*referrer* 集合][referrer]，即当前 Nix store 中引用了 *paths* 之一的存储路径。注意，与 references 不同，referrer 集合不是恒定的；随着存储路径被添加或删除，它可能会发生变化。
 
   [referrer]: @docroot@/glossary.md#gloss-referrer
 
 - `--referrers-closure`
 
-  Prints the closure of the set of store paths *paths* under the
-  [referrers relation][referrer]; that is, all store paths that directly or
-  indirectly refer to one of *paths*. These are all the path currently
-  in the Nix store that are dependent on *paths*.
+  打印存储路径集合 *paths* 在 [referrer 关系][referrer]下的闭包；也就是说，所有直接或间接引用 *paths* 之一的存储路径。这些是当前 Nix store 中依赖于 *paths* 的全部路径。
 
   [referrer]: @docroot@/glossary.md#gloss-referrer
 
 - `--deriver` / `-d`
 
-  Prints the [deriver] that was used to build the store paths *paths*. If
-  the path has no deriver (e.g., if it is a source file), or if the
-  deriver is not known (e.g., in the case of a binary-only
-  deployment), the string `unknown-deriver` is printed.
-  The returned deriver is not guaranteed to exist in the local store, for
-  example when *paths* were substituted from a binary cache.
-  Use `--valid-derivers` instead to obtain valid paths only.
+  打印用于构建存储路径 *paths* 的 [deriver]。如果该路径没有 deriver（例如它是一个源文件），或者 deriver 未知（例如在仅二进制部署的情况下），则打印字符串 `unknown-deriver`。
+  返回的 deriver 不保证在本地 store 中存在，例如当 *paths* 是从二进制缓存通过 substitute（替代）获取时。
+  请改用 `--valid-derivers` 来获取有效路径。
 
   [deriver]: @docroot@/glossary.md#gloss-deriver
 
 - `--valid-derivers`
 
-  Prints a set of derivation files (`.drv`) which are supposed produce
-  said paths when realized. Might print nothing, for example for source paths
-  or paths substituted from a binary cache.
+  打印一组 derivation 文件（`.drv`），这些文件在实化时应当产生所述路径。可能什么都不打印，例如对于源码路径或从二进制缓存通过 substitute 获取的路径。
 
 - `--graph`
 
-  Prints the references graph of the store paths *paths* in the format
-  of the `dot` tool of AT\&T's [Graphviz
-  package](http://www.graphviz.org/). This can be used to visualise
-  dependency graphs. To obtain a build-time dependency graph, apply
-  this to a store derivation. To obtain a runtime dependency graph,
-  apply it to an output path.
+  以 AT\&T [Graphviz
+  软件包](http://www.graphviz.org/)的 `dot` 工具格式打印存储路径 *paths* 的引用图。这可用于可视化依赖图。要获得构建时依赖图，请对 store derivation 应用此查询。要获得运行时依赖图，请对输出路径应用此查询。
 
 - `--tree`
 
-  Prints the references graph of the store paths *paths* as a nested
-  ASCII tree. References are ordered by descending closure size; this
-  tends to flatten the tree, making it more readable. The query only
-  recurses into a store path when it is first encountered; this
-  prevents a blowup of the tree representation of the graph.
+  以嵌套 ASCII 树的形式打印存储路径 *paths* 的引用图。引用按闭包大小降序排列；这往往会使树更扁平、更易读。该查询只在首次遇到某个存储路径时才递归进入它；这可以防止图的树形表示爆炸式增长。
 
 - `--graphml`
 
-  Prints the references graph of the store paths *paths* in the
-  [GraphML](http://graphml.graphdrawing.org/) file format. This can be
-  used to visualise dependency graphs. To obtain a build-time
-  dependency graph, apply this to a [store derivation]. To obtain a
-  runtime dependency graph, apply it to an output path.
+  以 [GraphML](http://graphml.graphdrawing.org/) 文件格式打印存储路径 *paths* 的引用图。这可用于可视化依赖图。要获得构建时依赖图，请对 [store derivation] 应用此查询。要获得运行时依赖图，请对输出路径应用此查询。
 
 - `--binding` *name* / `-b` *name*
 
-  Prints the value of the attribute *name* (i.e., environment
-  variable) of the [store derivation]s *paths*. It is an error for a
-  derivation to not have the specified attribute.
+  打印 store derivation *paths* 的属性 *name*（即环境变量）的值。如果某个 derivation 没有指定的属性，则是一个错误。
 
 - `--hash`
 
-  Prints the SHA-256 hash of the contents of the store paths *paths*
-  (that is, the hash of the output of `nix-store --dump` on the given
-  paths). Since the hash is stored in the Nix database, this is a fast
-  operation.
+  打印存储路径 *paths* 内容的 SHA-256 哈希（即对给定路径执行 `nix-store --dump` 的输出的哈希）。由于哈希存储在 Nix 数据库中，这是一个快速操作。
 
 - `--size`
 
-  Prints the size in bytes of the contents of the store paths *paths*
-  — to be precise, the size of the output of `nix-store --dump` on
-  the given paths. Note that the actual disk space required by the
-  store paths may be higher, especially on filesystems with large
-  cluster sizes.
+  打印存储路径 *paths* 内容的字节大小——确切地说，是对给定路径执行 `nix-store --dump` 的输出的大小。注意，存储路径实际占用的磁盘空间可能更高，尤其是在簇（cluster）较大的文件系统上。
 
 - `--roots`
 
-  Prints the garbage collector roots that point, directly or
-  indirectly, at the store paths *paths*.
+  打印直接或间接指向存储路径 *paths* 的垃圾回收器 root（GC root）。
 
 {{#include ./opt-common.md}}
 
@@ -168,10 +117,9 @@ symlink.
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
-Print the closure (runtime dependencies) of the `svn` program in the
-current user environment:
+打印当前用户环境中 `svn` 程序的闭包（运行时依赖）：
 
 ```console
 $ nix-store --query --requisites $(which svn)
@@ -180,7 +128,7 @@ $ nix-store --query --requisites $(which svn)
 ...
 ```
 
-Print the build-time dependencies of `svn`:
+打印 `svn` 的构建时依赖：
 
 ```console
 $ nix-store --query --requisites $(nix-store --query --deriver $(which svn))
@@ -190,11 +138,9 @@ $ nix-store --query --requisites $(nix-store --query --deriver $(which svn))
 ... lots of other paths ...
 ```
 
-The difference with the previous example is that we ask the closure of
-the derivation (`-qd`), not the closure of the output path that contains
-`svn`.
+与上一个示例的区别在于，我们查询的是 derivation（`-qd`）的闭包，而不是包含 `svn` 的输出路径的闭包。
 
-Show the build-time dependencies as a tree:
+以树形显示构建时依赖：
 
 ```console
 $ nix-store --query --tree $(nix-store --query --deriver $(which svn))
@@ -206,7 +152,7 @@ $ nix-store --query --tree $(nix-store --query --deriver $(which svn))
 ...
 ```
 
-Show all paths that depend on the same OpenSSL library as `svn`:
+显示所有与 `svn` 使用同一个 OpenSSL 库的路径：
 
 ```console
 $ nix-store --query --referrers $(nix-store --query --binding openssl $(nix-store --query --deriver $(which svn)))
@@ -216,8 +162,7 @@ $ nix-store --query --referrers $(nix-store --query --binding openssl $(nix-stor
 /nix/store/l51240xqsgg8a7yrbqdx1rfzyv6l26fx-lynx-2.8.5
 ```
 
-Show all paths that directly or indirectly depend on the Glibc (C
-library) used by `svn`:
+显示所有直接或间接依赖于 `svn` 所使用的 Glibc（C 库）的路径：
 
 ```console
 $ nix-store --query --referrers-closure $(ldd $(which svn) | grep /libc.so | awk '{print $3}')
@@ -226,19 +171,16 @@ $ nix-store --query --referrers-closure $(ldd $(which svn) | grep /libc.so | awk
 ...
 ```
 
-Note that `ldd` is a command that prints out the dynamic libraries used
-by an ELF executable.
+注意，`ldd` 是一个打印 ELF 可执行文件所使用的动态库的命令。
 
-Make a picture of the runtime dependency graph of the current user
-environment:
+为当前用户环境的运行时依赖图生成一张图片：
 
 ```console
 $ nix-store --query --graph ~/.nix-profile | dot -Tps > graph.ps
 $ gv graph.ps
 ```
 
-Show every garbage collector root that points to a store path that
-depends on `svn`:
+显示所有指向依赖于 `svn` 的存储路径的垃圾回收器 root：
 
 ```console
 $ nix-store --query --roots $(which svn)

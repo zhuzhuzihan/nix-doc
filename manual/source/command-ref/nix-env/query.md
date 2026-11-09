@@ -1,8 +1,8 @@
 # Name
 
-`nix-env --query` - display information about packages
+`nix-env --query` - 显示软件包信息
 
-# Synopsis
+概要
 
 `nix-env` {`--query` | `-q`} *names…*
   [`--installed` | `--available` | `-a`]
@@ -20,130 +20,113 @@
   [{`--prebuilt-only` | `-b`}]
   [{`--attr` | `-A`} *attribute-path*]
 
-# Description
+# 描述
 
-The query operation displays information about either the store paths
-that are installed in the current generation of the active profile
-(`--installed`), or the derivations that are available for installation
-in the active Nix expression (`--available`). It only prints information
-about derivations whose symbolic name matches one of *names*.
+query 操作显示的信息要么关于安装在当前激活 profile 的当前 generation 中的存储路径（`--installed`），要么关于当前激活 Nix 表达式中可供安装的 derivation（派生）（`--available`）。
+它只打印符号名称与 *names* 中某一项匹配的 derivation 的信息。
 
-The derivations are sorted by their `name` attributes.
+derivation 按 `name` 属性排序。
 
-# Source selection
+# 来源选择
 
-The following flags specify the set of things on which the query
-operates.
+以下标志指定查询操作所针对的对象集合。
 
   - `--installed`
 
-    The query operates on the store paths that are installed in the
-    current generation of the active profile. This is the default.
+    查询操作针对安装在当前激活 profile 的当前 generation 中的存储路径。
+    这是默认值。
 
   - `--available` / `-a`
 
-    The query operates on the derivations that are available in the
-    active Nix expression.
+    查询操作针对当前激活 Nix 表达式中可用的 derivation。
 
-# Queries
+# 查询项
 
-The following flags specify what information to display about the
-selected derivations. Multiple flags may be specified, in which case the
-information is shown in the order given here. Note that the name of the
-derivation is shown unless `--no-name` is specified.
+以下标志指定对选定的 derivation 显示哪些信息。
+可以指定多个标志，此时信息按此处给出的顺序显示。
+注意，除非指定了 `--no-name`，否则总是显示 derivation 的名称。
 
   - `--xml`
 
-    Print the result in an XML representation suitable for automatic
-    processing by other tools. The root element is called `items`, which
-    contains a `item` element for each available or installed
-    derivation. The fields discussed below are all stored in attributes
-    of the `item` elements.
+    以适合其他工具自动处理的 XML 表示形式打印结果。
+    根元素名为 `items`，其中每个可用或已安装的 derivation 对应一个 `item` 元素。
+    下文讨论的字段都存储在 `item` 元素的属性中。
 
   - `--json`
 
-    Print the result in a JSON representation suitable for automatic
-    processing by other tools.
+    以适合其他工具自动处理的 JSON 表示形式打印结果。
 
   - `--prebuilt-only` / `-b`
 
-    Show only derivations for which a substitute is registered, i.e.,
-    there is a pre-built binary available that can be downloaded in lieu
-    of building the derivation. Thus, this shows all packages that
-    probably can be installed quickly.
+    只显示已注册了 substitute 的 derivation，即存在可以直接下载的预构建二进制文件，用来替代构建该 derivation。
+    因此，这会显示所有可能可以快速安装的软件包。
 
   - `--status` / `-s`
 
-    Print the *status* of the derivation. The status consists of three
-    characters. The first is `I` or `-`, indicating whether the
-    derivation is currently installed in the current generation of the
-    active profile. This is by definition the case for `--installed`,
-    but not for `--available`. The second is `P` or `-`, indicating
-    whether the derivation is present on the system. This indicates
-    whether installation of an available derivation will require the
-    derivation to be built. The third is `S` or `-`, indicating whether
-    a substitute is available for the derivation.
+    打印 derivation 的*状态*。
+    状态由三个字符组成。
+    第一个是 `I` 或 `-`，表示该 derivation 当前是否安装在当前激活 profile 的当前 generation 中。
+    对于 `--installed`，按定义这总是成立，但对 `--available` 则不然。
+    第二个是 `P` 或 `-`，表示该 derivation 是否存在于系统中。
+    这表明安装一个可用的 derivation 是否需要构建。
+    第三个是 `S` 或 `-`，表示该 derivation 是否有可用的 substitute。
 
   - `--attr-path` / `-P`
 
-    Print the *attribute path* of the derivation, which can be used to
-    unambiguously select it using the `--attr` option available in
-    commands that install derivations like `nix-env --install`. This
-    option only works together with `--available`
+    打印 derivation 的*属性路径*，可以使用 `--attr` 选项（在 `nix-env --install` 等安装 derivation 的命令中可用）无歧义地选中它。
+    此选项只能与 `--available` 一起使用
 
   - `--no-name`
 
-    Suppress printing of the `name` attribute of each derivation.
+    不打印每个 derivation 的 `name` 属性。
 
   - `--compare-versions` / `-c`
 
-    Compare installed versions to available versions, or vice versa (if
-    `--available` is given). This is useful for quickly seeing whether
-    upgrades for installed packages are available in a Nix expression. A
-    column is added with the following meaning:
+    比较已安装版本与可用版本，反之亦然（如果给定了
+    `--available`）。
+    这有助于快速查看已安装软件包在 Nix 表达式中是否有可用的升级。
+    会添加一个具有以下含义的列：
 
       - `<` *version*
 
-        A newer version of the package is available or installed.
+        有更新版本的软件包可用或已安装。
 
       - `=` *version*
 
-        At most the same version of the package is available or
-        installed.
+        可用或已安装的软件包版本至多相同。
 
       - `>` *version*
 
-        Only older versions of the package are available or installed.
+        只有更旧版本的软件包可用或已安装。
 
       - `- ?`
 
-        No version of the package is available or installed.
+        该软件包没有任何版本可用或已安装。
 
   - `--system`
 
-    Print the `system` attribute of the derivation.
+    打印 derivation 的 `system` 属性。
 
   - `--drv-path`
 
-    Print the [store path] to the [store derivation].
+    打印指向 [store derivation] 的[存储路径]。
 
     [store path]: @docroot@/glossary.md#gloss-store-path
     [store derivation]: @docroot@/glossary.md#gloss-derivation
 
   - `--out-path`
 
-    Print the output path of the derivation.
+    打印 derivation 的输出路径。
 
   - `--description`
 
-    Print a short (one-line) description of the derivation, if
-    available. The description is taken from the `meta.description`
-    attribute of the derivation.
+    打印 derivation 的简短（单行）描述（如果有）。
+    描述取自 derivation 的 `meta.description` 属性。
 
   - `--meta`
 
-    Print all of the meta-attributes of the derivation. This option is
-    only available with `--xml` or `--json`.
+    打印 derivation 的所有元属性。
+    此选项只能与 `--xml` 或 `--json` 一起使用。
 
 {{#include ./opt-common.md}}
 
@@ -153,9 +136,9 @@ derivation is shown unless `--no-name` is specified.
 
 {{#include ../env-common.md}}
 
-# Examples
+# 示例
 
-To show installed packages:
+显示已安装的软件包：
 
 ```console
 $ nix-env --query
@@ -167,7 +150,7 @@ ORBit2-2.8.3
 …
 ```
 
-To show available packages:
+显示可用的软件包：
 
 ```console
 $ nix-env --query --available
@@ -178,7 +161,7 @@ ORBit2-2.8.3
 …
 ```
 
-To show the status of available packages:
+显示可用软件包的状态：
 
 ```console
 $ nix-env --query --available --status
@@ -189,14 +172,14 @@ IP- ORBit2-2.8.3    (installed and by definition present)
 …
 ```
 
-To show available packages in the Nix expression `foo.nix`:
+显示 Nix 表达式 `foo.nix` 中的可用软件包：
 
 ```console
 $ nix-env --file ./foo.nix --query --available
 foo-1.2.3
 ```
 
-To compare installed versions to what’s available:
+比较已安装版本与可用版本：
 
 ```console
 $ nix-env --query --compare-versions
@@ -207,7 +190,7 @@ firefox-1.0.4      < 1.0.7  (a more recent version is available)
 ...
 ```
 
-To show all packages with “`zip`” in the name:
+显示名称中包含 “`zip`” 的所有软件包：
 
 ```console
 $ nix-env --query --available '.*zip.*'
@@ -217,7 +200,7 @@ zip-3.0
 …
 ```
 
-To show all packages with “`firefox`” or “`chromium`” in the name:
+显示名称中包含 “`firefox`” 或 “`chromium`” 的所有软件包：
 
 ```console
 $ nix-env --query --available '.*(firefox|chromium).*'
@@ -228,9 +211,8 @@ firefox-with-plugins-13.0.1
 …
 ```
 
-To show all packages in the latest revision of the Nixpkgs repository:
+显示 Nixpkgs 仓库最新版本中的所有软件包：
 
 ```console
 $ nix-env --file https://github.com/NixOS/nixpkgs/archive/master.tar.gz --query --available
 ```
-
