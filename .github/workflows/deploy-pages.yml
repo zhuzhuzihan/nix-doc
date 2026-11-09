@@ -37,12 +37,12 @@ jobs:
           git -c user.email=ci@local -c user.name=ci commit -m "overlay zh manual" --no-verify || true
 
       - name: Build manual
-        run: nix build ../nix-upstream#nix-manual^site --out-link result
+        run: nix build ../nix-upstream#nix-manual^out --out-link result
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: result
+          path: result/share/doc/nix/manual
 
   deploy:
     needs: build
