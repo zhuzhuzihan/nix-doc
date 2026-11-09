@@ -1,0 +1,56 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixpkgs-unstable
+
+      - name: Checkout upstream Nix
+        run: git clone --depth 1 https://github.com/NixOS/nix.git ../nix-upstream
+
+      - name: Overlay translated manual
+        run: |
+          rm -rf ../nix-upstream/doc/manual
+          cp -r manual ../nix-upstream/doc/manual
+          cd ../nix-upstream
+          git add -A
+          git -c user.email=ci@local -c user.name=ci commit -m "overlay zh manual" --no-verify || true
+
+      - name: Build manual
+        run: nix build ../nix-upstream#nix-manual.site --out-link result
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: result
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
