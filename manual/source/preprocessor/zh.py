@@ -22,10 +22,26 @@ def main():
     context, book = data[0], data[1]
     with open(os.path.join(HERE, 'zh-map.json'), encoding='utf-8') as f:
         pairs = json.load(f)
+    def build_pattern(text):
+        # 空白鲁棒 + 智能标点归一（mdbook 渲染时 ' -> ’、" -> ""、- -> –— 等）
+        text = re.sub(r'\s+', ' ', text).strip()
+        out = []
+        for ch in text:
+            if ch.isspace():
+                out.append(r'\s+')
+            elif ch == "'":
+                out.append("['\u2019\u2018]")
+            elif ch == '"':
+                out.append('[\"\u201c\u201d]')
+            elif ch in '-\u2013\u2014':
+                out.append('[-\u2013\u2014]')
+            else:
+                out.append(re.escape(ch))
+        return re.compile(''.join(out))
+
     rules = []
     for en, zh in pairs:
-        pat = re.compile(r'\s+'.join(map(re.escape, en.split(' '))))
-        rules.append((pat, zh.replace('\\', '\\\\')))
+        rules.append((build_pattern(en), zh.replace('\\', '\\\\')))
 
     def repl(content):
         for pat, zh in rules:
