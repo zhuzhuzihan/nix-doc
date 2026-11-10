@@ -35,6 +35,10 @@ jobs:
         run: |
           rm -rf ../nix-upstream/doc/manual
           cp -r manual ../nix-upstream/doc/manual
+          # 中文 store types 文档经 #embed 进入 nix-cli 的 char 数组，
+          # g++ 对 int->char narrowing 报错；-Wno-narrowing 下字节值无损（UTF-8 输出正常）
+          sed -i 's|^  pname = "nix";$|  pname = "nix";\n\n  env.NIX_CFLAGS_COMPILE = "-Wno-narrowing";|' ../nix-upstream/src/nix/package.nix
+          grep -A1 'pname = "nix"' ../nix-upstream/src/nix/package.nix
           cd ../nix-upstream
           git add -A
           git -c user.email=ci@local -c user.name=ci commit -m "overlay zh manual" --no-verify || true
