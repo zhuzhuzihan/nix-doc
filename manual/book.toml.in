@@ -2,11 +2,16 @@
 title = "Nix 参考手册（@version@ 中文版）"
 src = "source"
 
+[preprocessor.zh-store]
+command = "python3"
+args = ["preprocessor/zh.py"]
+renderers = ["html"]
+
 [output.html]
 additional-css = ["custom.css"]
 additional-js = ["redirects.js"]
-edit-url-template = "https://github.com/NixOS/nix/tree/master/doc/manual/{path}"
-git-repository-url = "https://github.com/NixOS/nix"
+edit-url-template = "https://github.com/zhuzhuzihan/nix-doc/tree/master/manual/{path}"
+git-repository-url = "https://github.com/zhuzhuzihan/nix-doc"
 mathjax-support = true
 
 # Handles replacing @docroot@ with a path to ./source relative to that markdown file,

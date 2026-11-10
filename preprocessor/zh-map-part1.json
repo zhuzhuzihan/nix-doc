@@ -1,0 +1,234 @@
+[
+ [
+  "Size of the in-memory store path metadata cache.",
+  "内存中存储路径元数据缓存的大小。"
+ ],
+ [
+  "**Default:** `65536`",
+  "**默认值：** `65536`"
+ ],
+ [
+  "Priority of this store when used as a [substituter](../../command-ref/conf-file.html#conf-substituters). A lower value means a higher priority.",
+  "当此 Store 用作 [substituter（替代源）](../../command-ref/conf-file.html#conf-substituters) 时的优先级。数值越低表示优先级越高。"
+ ],
+ [
+  "**Default:** `0`",
+  "**默认值：** `0`"
+ ],
+ [
+  "Make any sort of write fail instead of succeeding. No additional memory will be used, because no information needs to be stored.",
+  "让任何写操作都失败而不是成功。不会占用额外内存，因为不需要存储任何信息。"
+ ],
+ [
+  "**Default:** `true`",
+  "**默认值：** `true`"
+ ],
+ [
+  "Logical location of the Nix store, usually `/nix/store`.",
+  "Nix store 的逻辑位置，通常为 `/nix/store`。"
+ ],
+ [
+  "Defaults to [`NIX_STORE_DIR`](../../command-ref/env-common.html#env-NIX_STORE_DIR) if unset.",
+  "未设置时默认为 [`NIX_STORE_DIR`](../../command-ref/env-common.html#env-NIX_STORE_DIR)。"
+ ],
+ [
+  "Note that you can only copy store paths between stores if they have the same `store` setting.",
+  "注意，只有当各 Store 的 `store` 设置相同时，才能在它们之间复制存储路径。"
+ ],
+ [
+  "**Default:** `/nix/store`",
+  "**默认值：** `/nix/store`"
+ ],
+ [
+  "Optional [system features](../../command-ref/conf-file.html#conf-system-features) available on the system this store uses to build derivations.",
+  "此 Store 用于构建 derivation（派生）的系统上可用的可选[系统特性](../../command-ref/conf-file.html#conf-system-features)。"
+ ],
+ [
+  "Example: `\"kvm\"`",
+  "示例：`\"kvm\"`"
+ ],
+ [
+  "**Default:** *machine-specific*",
+  "**默认值：** *因机器而异*"
+ ],
+ [
+  "Whether paths from this store can be used as substitutes even if they are not signed by a key listed in the [`trusted-public-keys`](../../command-ref/conf-file.html#conf-trusted-public-keys) setting.",
+  "即使来自此 Store 的路径未由 [`trusted-public-keys`](../../command-ref/conf-file.html#conf-trusted-public-keys) 设置中列出的密钥签名，是否也可以将其用作替代品。"
+ ],
+ [
+  "**Default:** `false`",
+  "**默认值：** `false`"
+ ],
+ [
+  "Whether this store can be queried efficiently for path validity when used as a [substituter](../../command-ref/conf-file.html#conf-substituters).",
+  "当此 Store 用作 [substituter（替代源）](../../command-ref/conf-file.html#conf-substituters) 时，是否能被高效地查询路径有效性。"
+ ],
+ [
+  "The directory on the host, in which derivations’ temporary build directories are created.",
+  "宿主机上用于创建 derivation（派生）临时构建目录的目录。"
+ ],
+ [
+  "If not set, Nix will use the `builds` subdirectory of its configured state directory.",
+  "如果未设置，Nix 将使用其配置的状态目录下的 `builds` 子目录。"
+ ],
+ [
+  "Note that builds are often performed by the Nix daemon, so its `build-dir` applies.",
+  "注意，构建通常由 Nix daemon（守护进程）执行，因此适用的是它的 `build-dir`。"
+ ],
+ [
+  "Nix will create this directory automatically with suitable permissions if it does not exist. Otherwise its permissions must allow all users to traverse the directory (i.e. it must have `o+x` set, in unix parlance) for non-sandboxed builds to work correctly.",
+  "如果该目录不存在，Nix 会自动以合适的权限创建它。否则，其权限必须允许所有用户遍历该目录（即按 unix 的说法必须设置 `o+x`），非沙箱构建才能正常工作。"
+ ],
+ [
+  "This is also the location where [`--keep-failed`](../../command-ref/opt-common.html#opt-keep-failed) leaves its files.",
+  "这也是 [`--keep-failed`](../../command-ref/opt-common.html#opt-keep-failed) 保留其文件的位置。"
+ ],
+ [
+  "If Nix runs without sandbox, or if the platform does not support sandboxing with bind mounts (e.g. macOS), then the [`builder`](../../language/derivations.html#attr-builder)’s environment will contain this directory, instead of the virtual location [`sandbox-build-dir`](../../command-ref/conf-file.html#conf-sandbox-build-dir).",
+  "如果 Nix 在无沙箱的情况下运行，或者平台不支持基于 bind mount 的沙箱（例如 macOS），那么 [`builder`](../../language/derivations.html#attr-builder) 的环境中将包含此目录，而不是虚拟位置 [`sandbox-build-dir`](../../command-ref/conf-file.html#conf-sandbox-build-dir)。"
+ ],
+ [
+  "**Warning**",
+  "**警告**"
+ ],
+ [
+  "`build-dir` must not be set to a world-writable directory. Placing temporary build directories in a world-writable place allows other users to access or modify build data that is currently in use. This alone is merely an impurity, but combined with another factor this has allowed malicious derivations to escape the build sandbox.",
+  "`build-dir` 不能设置为对所有用户可写的目录。将临时构建目录放在所有用户可写的位置，会让其他用户能够访问或修改正在使用中的构建数据。这本身只是一种不纯净（impurity），但与其他因素结合后，曾使恶意 derivation（派生）得以逃逸出构建沙箱。"
+ ],
+ [
+  "See also the global [`build-dir`](../../command-ref/conf-file.html#conf-build-dir) setting.",
+  "另请参见全局 [`build-dir`](../../command-ref/conf-file.html#conf-build-dir) 设置。"
+ ],
+ [
+  "**Default:** ``",
+  "**默认值：** ``"
+ ],
+ [
+  "Check that the overlay filesystem is correctly mounted.",
+  "检查 overlay 文件系统是否已正确挂载。"
+ ],
+ [
+  "Nix does not manage the overlayfs mount point itself, but the correct functioning of the overlay store does depend on this mount point being set up correctly. Rather than just assume this is the case, check that the lowerdir and upperdir options are what we expect them to be. This check is on by default, but can be disabled if needed.",
+  "Nix 本身不管理 overlayfs 挂载点，但 overlay store 的正常工作确实依赖于该挂载点被正确设置。与其只是假设情况如此，不如检查 lowerdir 和 upperdir 选项是否符合预期。此检查默认开启，但如有需要可以禁用。"
+ ],
+ [
+  "This setting is part of an [experimental feature](../../development/experimental-features.html).",
+  "此设置属于某个[实验性特性](../../development/experimental-features.html)。"
+ ],
+ [
+  "To change this setting, make sure the [`local-overlay-store` experimental feature](../../development/experimental-features.html#xp-feature-local-overlay-store) is enabled. For example, include the following in [`nix.conf`](../../command-ref/conf-file.html):",
+  "要更改此设置，请确保已启用 [`local-overlay-store` 实验性特性](../../development/experimental-features.html#xp-feature-local-overlay-store)。例如，在 [`nix.conf`](../../command-ref/conf-file.html) 中加入以下内容："
+ ],
+ [
+  "Whether to ignore failures when deleting items with the garbage collector.",
+  "使用垃圾回收器删除条目时是否忽略失败。"
+ ],
+ [
+  "Normally the garbage collector will fail with an error if the nix daemon cannot delete a file, with this setting such errors will only be printed as warnings.",
+  "通常情况下，如果 nix daemon（守护进程）无法删除某个文件，垃圾回收器会报错终止；启用此设置后，这类错误只会以警告形式打印。"
+ ],
+ [
+  "Directory where Nix stores log files.",
+  "Nix 存储日志文件的目录。"
+ ],
+ [
+  "Defaults to [`NIX_LOG_DIR`](../../command-ref/env-common.html#env-NIX_LOG_DIR) when [`root`](#store-experimental-local-overlay-store-root) is not set.",
+  "当未设置 [`root`](#store-experimental-local-overlay-store-root) 时，默认为 [`NIX_LOG_DIR`](../../command-ref/env-common.html#env-NIX_LOG_DIR)。"
+ ],
+ [
+  "**Default:** `/nix/var/log/nix`",
+  "**默认值：** `/nix/var/log/nix`"
+ ],
+ [
+  "[Store URL](../../command-ref/new-cli/nix3-help-stores.html#store-url-format) for the lower store. The default is `auto` (i.e. use the Nix daemon or `/nix/store` directly).",
+  "下层 store 的 [Store URL](../../command-ref/new-cli/nix3-help-stores.html#store-url-format)。默认值为 `auto`（即使用 Nix daemon（守护进程）或直接使用 `/nix/store`）。"
+ ],
+ [
+  "Must be a store with a store dir on the file system. Must be used as OverlayFS lower layer for this store’s store dir.",
+  "必须是文件系统上带有 store 目录的 store，并且必须用作此 store 的 store 目录的 OverlayFS 下层。"
+ ],
+ [
+  "**Default:** *empty*",
+  "**默认值：** *空*"
+ ],
+ [
+  "Allow this store to be opened when its [database](../../glossary.html#gloss-nix-database) is on a read-only filesystem.",
+  "允许在此 Store 的[数据库](../../glossary.html#gloss-nix-database)位于只读文件系统上时打开它。"
+ ],
+ [
+  "Normally Nix attempts to open the store database in read-write mode, even for querying (when write access is not needed), causing it to fail if the database is on a read-only filesystem.",
+  "通常 Nix 会尝试以读写模式打开 store 数据库，即使只是查询（不需要写权限）也是如此，因此当数据库位于只读文件系统上时会失败。"
+ ],
+ [
+  "Enable read-only mode to disable locking and open the SQLite database with the [`immutable` parameter](https://www.sqlite.org/c3ref/open.html) set.",
+  "启用只读模式可以禁用锁定，并以设置 [`immutable` 参数](https://www.sqlite.org/c3ref/open.html) 的方式打开 SQLite 数据库。"
+ ],
+ [
+  "**Warning** Do not use this unless the filesystem is read-only.",
+  "**警告** 除非文件系统是只读的，否则请勿使用此选项。"
+ ],
+ [
+  "Using it when the filesystem is writable can cause incorrect query results or corruption errors if the database is changed by another process. While the filesystem the database resides on might appear to be read-only, consider whether another user or system might have write access to it.",
+  "在文件系统可写时使用此选项，如果数据库被另一个进程修改，可能导致错误的查询结果或损坏错误。虽然数据库所在的文件系统看起来可能是只读的，但请考虑其他用户或系统是否可能对它拥有写权限。"
+ ],
+ [
+  "Physical path of the Nix store.",
+  "Nix store 的物理路径。"
+ ],
+ [
+  "Defaults to [`store`](#store-experimental-local-overlay-store-store) when [`root`](#store-experimental-local-overlay-store-root) is not set.",
+  "当未设置 [`root`](#store-experimental-local-overlay-store-root) 时，默认为 [`store`](#store-experimental-local-overlay-store-store)。"
+ ],
+ [
+  "Script or other executable to run when overlay filesystem needs remounting.",
+  "当 overlay 文件系统需要重新挂载时运行的脚本或其他可执行文件。"
+ ],
+ [
+  "This is occasionally necessary when deleting a store path that exists in both upper and lower layers. In such a situation, bypassing OverlayFS and deleting the path in the upper layer directly is the only way to perform the deletion without creating a “whiteout”. However this causes the OverlayFS kernel data structures to get out-of-sync, and can lead to ‘stale file handle’ errors; remounting solves the problem.",
+  "删除同时存在于上层和下层的存储路径时，偶尔需要这样做。在这种情况下，绕过 OverlayFS 并直接删除上层的该路径，是执行删除而不创建“whiteout”的唯一方法。然而这会导致 OverlayFS 内核数据结构失去同步，并可能引发“stale file handle”（过期文件句柄）错误；重新挂载可以解决该问题。"
+ ],
+ [
+  "The store directory is passed as an argument to the invoked executable.",
+  "store 目录会作为参数传递给被调用的可执行文件。"
+ ],
+ [
+  "Whether store paths copied into this store should have a trusted signature.",
+  "复制到此 store 中的存储路径是否应具有受信任的签名。"
+ ],
+ [
+  "Directory prefixed to all other paths.",
+  "作为所有其他路径前缀的目录。"
+ ],
+ [
+  "Directory where Nix stores state.",
+  "Nix 存储状态数据的目录。"
+ ],
+ [
+  "Defaults to [`NIX_STATE_DIR`](../../command-ref/env-common.html#env-NIX_STATE_DIR) when [`root`](#store-experimental-local-overlay-store-root) is not set.",
+  "当未设置 [`root`](#store-experimental-local-overlay-store-root) 时，默认为 [`NIX_STATE_DIR`](../../command-ref/env-common.html#env-NIX_STATE_DIR)。"
+ ],
+ [
+  "**Default:** `/dummy`",
+  "**默认值：** `/dummy`"
+ ],
+ [
+  "Directory containing the OverlayFS upper layer for this store’s store dir.",
+  "包含此 store 的 store 目录对应的 OverlayFS 上层的目录。"
+ ],
+ [
+  "**Default:** `/upper-layer-must-be-set`",
+  "**默认值：** `/upper-layer-must-be-set`"
+ ],
+ [
+  "Whether to request garbage collector roots from an external daemon.",
+  "是否从外部 daemon（守护进程）请求垃圾回收器根（GC roots）。"
+ ],
+ [
+  "When enabled, the garbage collector connects to a Unix domain socket at [`&lt;state-dir&gt;`](../../store/types/local-store.html#store-local-store-state)`/gc-roots-socket/socket` to discover additional roots that should not be collected. This is useful when the Nix daemon runs without root privileges and cannot scan `/proc` for runtime roots.",
+  "启用后，垃圾回收器会连接到位于 [`&lt;state-dir&gt;`](../../store/types/local-store.html#store-local-store-state)`/gc-roots-socket/socket` 的 Unix 域套接字，以发现其他不应被回收的根。当 Nix daemon（守护进程）以非 root 权限运行、无法扫描 `/proc` 查找运行时根时，这很有用。"
+ ],
+ [
+  "The daemon can be started with [`nix store roots-daemon`](../../command-ref/new-cli/nix3-store-roots-daemon.html).",
+  "该 daemon（守护进程）可以通过 [`nix store roots-daemon`](../../command-ref/new-cli/nix3-store-roots-daemon.html) 启动。"
+ ]
+]
