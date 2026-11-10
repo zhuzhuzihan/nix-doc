@@ -29,9 +29,9 @@ def main():
         for ch in text:
             if ch.isspace():
                 out.append(r'\s+')
-            elif ch == "'":
+            elif ch in "'’‘":
                 out.append("['\u2019\u2018]")
-            elif ch == '"':
+            elif ch in '"“”':
                 out.append('[\"\u201c\u201d]')
             elif ch in '-\u2013\u2014':
                 out.append('[-\u2013\u2014]')
