@@ -14,9 +14,13 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 def main():
-    data = json.load(sys.stdin)
+    raw = sys.stdin.read()
+    sys.stderr.write('ZH-DEBUG input head: ' + repr(raw[:300]) + '\n')
+    data = json.loads(raw)
+    sys.stderr.write('ZH-DEBUG parsed: ' + repr(type(data)) + ' keys/len: ' + str(list(data.keys()) if isinstance(data, dict) else len(data)) + '\n')
     if isinstance(data, dict) and 'supports' in data:
-        json.dump({'supports': data['supports']}, sys.stdout)
+        sys.stderr.write('ZH-DEBUG supports branch\n')
+        json.dump({'supports': True}, sys.stdout)
         return
     context, book = data[0], data[1]
     with open(os.path.join(HERE, 'zh-map.json'), encoding='utf-8') as f:
@@ -39,7 +43,9 @@ def main():
                 walk(ch.get('sub_items', []))
 
     walk(book['items'])
-    json.dump([context, book], sys.stdout, ensure_ascii=False)
+    out = [context, book]
+    sys.stderr.write('ZH-DEBUG output: array len ' + str(len(out)) + '\n')
+    json.dump(out, sys.stdout, ensure_ascii=False)
 
 if __name__ == '__main__':
     main()
