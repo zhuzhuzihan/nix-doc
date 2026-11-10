@@ -35,6 +35,8 @@ jobs:
         run: |
           rm -rf ../nix-upstream/doc/manual
           cp -r manual ../nix-upstream/doc/manual
+          # store 类型文档（src/libstore/*.md）中文化：手册页 + CLI help 共用此源
+          cp src-zh/libstore/*.md ../nix-upstream/src/libstore/
           # 中文 store types 文档经 #embed 进入 nix-cli 的 char 数组，
           # g++ 对 int->char narrowing 报错；-Wno-narrowing 下字节值无损（UTF-8 输出正常）
           sed -i 's|^  pname = "nix";$|  pname = "nix";\n\n  env.NIX_CFLAGS_COMPILE = "-Wno-narrowing";|' ../nix-upstream/src/nix/package.nix
