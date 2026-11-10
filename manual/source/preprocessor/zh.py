@@ -38,7 +38,7 @@ def main():
                 ch['content'] = repl(ch['content'])
                 walk(ch.get('sub_items', []))
 
-    walk(book['sections'])
+    walk(book['items'])
     json.dump([context, book], sys.stdout, ensure_ascii=False)
 
 if __name__ == '__main__':
