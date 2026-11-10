@@ -26,7 +26,10 @@ jobs:
           nix_path: nixpkgs=channel:nixpkgs-unstable
 
       - name: Checkout upstream Nix
-        run: git clone --depth 1 https://github.com/NixOS/nix.git ../nix-upstream
+        run: |
+          git clone --filter=blob:none https://github.com/NixOS/nix.git ../nix-upstream
+          # 锁定验证过可构建的 master 版本（升级时改这里；master 可能出现编译回归）
+          git -C ../nix-upstream checkout b0c0e02
 
       - name: Overlay translated manual
         run: |
