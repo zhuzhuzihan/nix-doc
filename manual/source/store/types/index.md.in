@@ -1,45 +1,34 @@
-Nix supports different types of stores:
+Nix 支持多种不同类型的存储（store）：
 
 @store-types@
 
-## Store URL format
+## Store URL 格式
 
-Stores are specified using a URL-like syntax. For example, the command
+存储通过类似 URL 的语法来指定。例如，命令
 
 ```console
 # nix path-info --store https://cache.nixos.org/ --json \
   /nix/store/1542dip9i7k4f24y6hqgd04hmvid9hr5-coreutils-9.1
 ```
 
-fetches information about a store path in the HTTP binary cache
-located at https://cache.nixos.org/, which is a type of store.
+会从位于 https://cache.nixos.org/ 的 HTTP 二进制缓存中获取某个存储路径的信息，该缓存就是一种 store 类型。
 
-Store URLs can specify **store settings** using URL query strings,
-i.e. by appending `?name1=value1&name2=value2&...` to the URL. For
-instance,
+Store URL 可以通过 URL 查询字符串指定 **store 设置**，即在 URL 后追加 `?name1=value1&name2=value2&...`。例如，
 
 ```
 --store ssh://machine.example.org?ssh-key=/path/to/my/key
 ```
 
-tells Nix to access the store on a remote machine via the SSH
-protocol, using `/path/to/my/key` as the SSH private key. The
-supported settings for each store type are documented below.
+告诉 Nix 通过 SSH 协议访问远程机器上的 store，并使用 `/path/to/my/key` 作为 SSH 私钥。每种 store 类型支持的设置在下面的文档中逐一说明。
 
-### `auto` special URL {#auto}
+### `auto` 特殊 URL {#auto}
 
-The special store URL `auto` causes Nix to automatically select a
-store as follows:
+特殊的 store URL `auto` 会让 Nix 按如下规则自动选择 store：
 
-* Use the [local store](./local-store.md) `/nix/store` if `/nix/var/nix`
-  is writable by the current user.
+* 如果 `/nix/var/nix` 对当前用户可写，使用[本地 store](./local-store.md) `/nix/store`。
 
-* Otherwise, if `/nix/var/nix/daemon-socket/socket` exists, [connect
-  to the Nix daemon listening on that socket](./local-daemon-store.md).
+* 否则，如果 `/nix/var/nix/daemon-socket/socket` 存在，[连接到监听该 socket 的 Nix 守护进程](./local-daemon-store.md)。
 
-* Otherwise, on Linux only, use the [local chroot store](@docroot@/store/types/local-store.md#chroot)
-  `~/.local/share/nix/root`, which will be created automatically if it
-  does not exist.
+* 否则（仅 Linux），使用[本地 chroot store](@docroot@/store/types/local-store.md#chroot) `~/.local/share/nix/root`，若不存在会自动创建。
 
-* Otherwise, use the [local store](./local-store.md) `/nix/store`.
-
+* 否则，使用[本地 store](./local-store.md) `/nix/store`。
