@@ -28,8 +28,8 @@ jobs:
       - name: Checkout upstream Nix
         run: |
           git clone --filter=blob:none https://github.com/NixOS/nix.git ../nix-upstream
-          # 锁定验证过可构建的 master 版本（升级时改这里；master 可能出现编译回归）
-          git -C ../nix-upstream checkout b0c0e02
+          # 锁定 2026-11-09 构建成功的 master 版本（上游 11-10 引入 main.cc #embed narrowing 编译回归，修复后可更新此处）
+          git -C ../nix-upstream checkout 57d11f741d14
 
       - name: Overlay translated manual
         run: |
